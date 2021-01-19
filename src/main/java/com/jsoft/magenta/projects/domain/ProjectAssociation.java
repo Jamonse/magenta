@@ -13,18 +13,14 @@ import java.io.Serializable;
 
 @Data
 @Entity
-@IdClass(ProjectAssociationId.class)
 @Table(name = "users_projects")
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(of = "id")
 public class ProjectAssociation implements Serializable
 {
-    @Id
-    private Long projectId;
-
-    @Id
-    private Long userId;
+    @EmbeddedId
+    private ProjectAssociationId id;
 
     @Column(name = "permission", nullable = false)
     @Enumerated(EnumType.ORDINAL)
@@ -32,11 +28,10 @@ public class ProjectAssociation implements Serializable
 
     @ManyToOne
     @JoinColumn(
-            name = "pid",
+            name = "project_id",
             nullable = false,
             insertable = false,
             updatable = false,
-            referencedColumnName = "project_id",
             foreignKey = @ForeignKey(
                     name = "FK_project_association"
             )
@@ -45,14 +40,21 @@ public class ProjectAssociation implements Serializable
 
     @ManyToOne
     @JoinColumn(
-            name = "uid",
+            name = "user_id",
             nullable = false,
             insertable = false,
             updatable = false,
-            referencedColumnName = "user_id",
             foreignKey = @ForeignKey(
                     name = "FK_user_association"
             )
     )
     private User user;
+
+    public ProjectAssociation(User user, Project project, AccessPermission accessPermission)
+    {
+        this.id = new ProjectAssociationId( project.getId(), user.getId());
+        this.user = user;
+        this.project = project;
+        this.permission = accessPermission;
+    }
 }

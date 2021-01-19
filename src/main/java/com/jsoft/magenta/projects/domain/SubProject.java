@@ -1,6 +1,7 @@
 package com.jsoft.magenta.projects.domain;
 
 import com.jsoft.magenta.users.User;
+import com.jsoft.magenta.util.validation.ValidName;
 import com.jsoft.magenta.workplans.WorkPlan;
 import com.jsoft.magenta.worktimes.WorkTime;
 import lombok.AllArgsConstructor;
@@ -32,6 +33,7 @@ public class SubProject
     private Long id;
 
     @Column(name = "sp_name", length = 50, nullable = false)
+    @ValidName
     private String name;
 
     @Column(name = "is_available")

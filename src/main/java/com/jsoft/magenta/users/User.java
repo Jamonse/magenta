@@ -90,25 +90,19 @@ public class User
     @NotNull
     private LocalDate birthDay;
 
-    @OneToMany(
-            cascade = {CascadeType.PERSIST, CascadeType.REMOVE}
-    )
-    @JoinColumn(name = "uid")
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "user_id")
     private Set<AccountAssociation> accounts;
 
-    @OneToMany(
-            cascade = {CascadeType.PERSIST, CascadeType.REMOVE}
-    )
-    @JoinColumn(name = "uid")
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "user_id")
     private Set<ProjectAssociation> projects;
 
     @OneToMany(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id")
     private Set<WorkTime> workTimes;
 
-    @OneToMany(
-            cascade = {CascadeType.PERSIST, CascadeType.REMOVE}
-    )
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     @JoinColumn(name = "user_id")
     private Set<UserNote> notes;
 

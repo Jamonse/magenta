@@ -9,6 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -59,14 +60,20 @@ public class Project
     )
     private Set<Order> orders;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @OneToMany(cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE,
+            CascadeType.REMOVE
+    })
     @JoinColumn(
             name = "project_id",
             referencedColumnName = "project_id",
             foreignKey = @ForeignKey(name = "FK_project_sp")
     )
+    @Valid
     private Set<SubProject> subProjects;
 
-    @OneToMany(mappedBy = "project")
+    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.REMOVE})
+    @JoinColumn(name = "project_id")
     private Set<ProjectAssociation> associations;
 }

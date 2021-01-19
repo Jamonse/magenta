@@ -72,6 +72,6 @@ public class Account
     )
     private Set<Contact> contacts;
 
-    @OneToMany(mappedBy = "account")
+    @OneToMany(mappedBy = "account", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<AccountAssociation> associations;
 }
