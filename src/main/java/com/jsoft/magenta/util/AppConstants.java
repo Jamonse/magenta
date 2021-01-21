@@ -16,4 +16,7 @@ public class AppConstants
     public static final String CONTENT_NULL_MESSAGE = "Content must not be null";
 
     public static final String POSITIVE_NUMBER_MESSAGE = "Number must be greater than or equal to 0";
+
+    public static final String ACCOUNT_PERMISSION = "account";
+    public static final String PROJECT_PERMISSION = "project";
 }

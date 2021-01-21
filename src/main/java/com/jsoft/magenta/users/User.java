@@ -1,6 +1,7 @@
 package com.jsoft.magenta.users;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 import com.jsoft.magenta.accounts.domain.AccountAssociation;
 import com.jsoft.magenta.notes.UserNote;
 import com.jsoft.magenta.projects.domain.ProjectAssociation;
@@ -138,4 +139,14 @@ public class User
     {
         return firstName + " " + lastName;
     }
+
+    public boolean hasPermissionGreaterThanEqual(Privilege privilege)
+    {
+        if(Strings.isNullOrEmpty(privilege.getName()) || privilege.getLevel() == null)
+            return false;
+        return this.getPrivileges().stream()
+                .anyMatch(p -> p.getName().equals(privilege.getName()) &&
+                        p.getLevel().getPermissionLevel() >= privilege.getLevel().getPermissionLevel());
+    }
+
 }

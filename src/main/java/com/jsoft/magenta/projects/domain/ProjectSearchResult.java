@@ -3,5 +3,5 @@ package com.jsoft.magenta.projects.domain;
 public interface ProjectSearchResult
 {
     Long getId();
-    Long getName();
+    String getName();
 }
