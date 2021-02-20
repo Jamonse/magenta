@@ -3,7 +3,7 @@ package com.jsoft.magenta.projects;
 import com.jsoft.magenta.projects.domain.Project;
 import com.jsoft.magenta.projects.domain.ProjectAssociation;
 import com.jsoft.magenta.projects.domain.ProjectSearchResult;
-import com.jsoft.magenta.projects.domain.SubProject;
+import com.jsoft.magenta.subprojects.SubProject;
 import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.users.User;
 import com.jsoft.magenta.users.UserRepository;

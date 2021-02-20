@@ -1,12 +1,13 @@
 package com.jsoft.magenta.notes;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.jsoft.magenta.users.User;
-import com.jsoft.magenta.util.validation.ValidContent;
-import com.jsoft.magenta.util.validation.ValidTitle;
+import com.jsoft.magenta.util.validation.annotations.ValidContent;
+import com.jsoft.magenta.util.validation.annotations.ValidTitle;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -40,6 +41,7 @@ public class UserNote
             name = "user_id",
             foreignKey = @ForeignKey(name = "FK_notes_user")
     )
+    @JsonIgnore
     private User user;
 
     @Column(name = "title", length = 50, nullable = false)

@@ -1,7 +1,7 @@
 package com.jsoft.magenta.notes;
 
-import com.jsoft.magenta.util.validation.ValidContent;
-import com.jsoft.magenta.util.validation.ValidTitle;
+import com.jsoft.magenta.util.validation.annotations.ValidContent;
+import com.jsoft.magenta.util.validation.annotations.ValidTitle;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -50,7 +50,7 @@ public class UserNoteController
     @PatchMapping("reminder/{noteId}")
     public UserNote updateNoteRemindTime(
             @PathVariable Long noteId,
-            @RequestParam("noteRemindTime")
+            @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime noteRemindTime
     )
     {

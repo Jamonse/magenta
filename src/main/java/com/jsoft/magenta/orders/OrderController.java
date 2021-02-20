@@ -2,9 +2,9 @@ package com.jsoft.magenta.orders;
 
 import com.jsoft.magenta.orders.domain.Order;
 import com.jsoft.magenta.security.annotations.projects.ProjectManagePermission;
-import com.jsoft.magenta.util.validation.PositiveNumber;
-import com.jsoft.magenta.util.validation.ValidContent;
-import com.jsoft.magenta.util.validation.ValidTitle;
+import com.jsoft.magenta.util.validation.annotations.PositiveNumber;
+import com.jsoft.magenta.util.validation.annotations.ValidContent;
+import com.jsoft.magenta.util.validation.annotations.ValidTitle;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -12,6 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import static com.jsoft.magenta.util.AppDefaults.*;
 
@@ -23,8 +24,6 @@ import static com.jsoft.magenta.util.AppDefaults.*;
 public class OrderController
 {
     private final OrderService orderService;
-
-    private static final String DEFAULT_ORDER_SORT = "title";
 
     @PostMapping("{projectId}")
     @ResponseStatus(HttpStatus.CREATED)
@@ -65,7 +64,7 @@ public class OrderController
     @PatchMapping("amount/{orderId}")
     public Order updateOrderAmount(
             @PathVariable Long orderId,
-            @RequestBody @PositiveNumber double newAmount
+            @RequestBody @PositiveNumber @NotNull Double newAmount
     )
     {
         return this.orderService.updateOrderAmount(orderId, newAmount);

@@ -1,7 +1,7 @@
 package com.jsoft.magenta.accounts;
 
 import com.jsoft.magenta.accounts.domain.Account;
-import com.jsoft.magenta.accounts.domain.Contact;
+import com.jsoft.magenta.contacts.Contact;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

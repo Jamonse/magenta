@@ -2,16 +2,26 @@ package com.jsoft.magenta.accounts;
 
 import com.google.common.base.Strings;
 import com.jsoft.magenta.accounts.domain.Account;
+import com.jsoft.magenta.accounts.domain.AccountAssociation;
 import com.jsoft.magenta.accounts.domain.AccountSearchResult;
-import com.jsoft.magenta.exceptions.DuplicationException;
-import com.jsoft.magenta.exceptions.NoSuchElementException;
-import com.jsoft.magenta.exceptions.UpdateViolationException;
+import com.jsoft.magenta.events.accounts.AccountAssociatedEntityEvent;
+import com.jsoft.magenta.events.accounts.AccountAssociationCreationEvent;
+import com.jsoft.magenta.events.accounts.AccountAssociationUpdateEvent;
+import com.jsoft.magenta.exceptions.*;
+import com.jsoft.magenta.events.projects.ProjectAssociationCreationEvent;
+import com.jsoft.magenta.events.projects.ProjectAssociationRemovalEvent;
+import com.jsoft.magenta.projects.domain.Project;
+import com.jsoft.magenta.projects.domain.ProjectSearchResult;
 import com.jsoft.magenta.security.UserEvaluator;
 import com.jsoft.magenta.security.model.AccessPermission;
+import com.jsoft.magenta.users.User;
+import com.jsoft.magenta.util.AppDefaults;
 import com.jsoft.magenta.util.PageRequestBuilder;
 import com.jsoft.magenta.util.WordFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -33,10 +43,12 @@ public class AccountService
     private String accountDefaultBackgroundImage;
 
     private final AccountRepository accountRepository;
+    private final AccountAssociationRepository accountAssociationRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public Account createAccount(Account account)
     {
-        verifyAccountName(account);
+        verifyAccountNameUnique(account.getName());
         account.setName(WordFormatter.capitalize(account.getName()));
         account.setCreatedAt(LocalDate.now());
         if(Strings.isNullOrEmpty(account.getImage()))
@@ -46,97 +58,341 @@ public class AccountService
         return this.accountRepository.save(account);
     }
 
+    public void createAssociation(Long userId, Long accountId, AccessPermission accessPermission)
+    {
+        if(accessPermission == AccessPermission.READ)
+            throw new RedundantAssociationException( // READ permission only is redundant
+                    "READ permission with account without project / sub-projects is redundant");
+        isAssociationExists(userId, accountId);
+        User user = UserEvaluator.currentUser();
+        AccessPermission accountsPermission = user.getAccountsPermission();
+        switch(accountsPermission)
+        { // Verify requester permission
+            case READ: // Must be at least WRITE permission
+            case MANAGE:
+                throw new AuthorizationException("User is not authorized to perform such operation");
+            case WRITE: // Verify that WRITE permission association do exist
+                AccessPermission associationPermission = findAssociation(user, accountId);
+                if(associationPermission.getPermissionLevel() < AccessPermission.WRITE.getPermissionLevel())
+                    throw new AuthorizationException(
+                            "User is not authorized to perform such operation with specified account");
+            case ADMIN: // Create the association
+                handleAssociationCreation(userId, accountId, accessPermission);
+        }
+    }
+
+    public void updateAssociation(Long userId, Long accountId, AccessPermission accessPermission)
+    { // Verify that association does exist
+        AccountAssociation accountAssociation = findAssociation(userId, accountId);
+        if(accessPermission == AccessPermission.READ) // If new permission is READ, verify that there are associated projects
+            this.eventPublisher.publishEvent(new AccountAssociationUpdateEvent(accountId, userId, accessPermission));
+        User user = UserEvaluator.currentUser();
+        AccessPermission accountsPermission = user.getAccountsPermission();
+        switch(accountsPermission)
+        { // Verify requester permission
+            case READ: // Must be at least WRITE permission
+            case MANAGE:
+                throw new AuthorizationException("User is not authorized to perform such operation");
+            case WRITE: // Verify that WRITE permission association do exist
+                AccessPermission associationPermission = findAssociation(user, accountId);
+                if(associationPermission.getPermissionLevel() < AccessPermission.WRITE.getPermissionLevel())
+                    throw new AuthorizationException(
+                            "User is not authorized to perform such operation with specified account");
+            case ADMIN: // Verify that user has greater than or equal permission of requested association permission
+                this.eventPublisher.publishEvent(new AccountAssociationCreationEvent(accountId, userId, accessPermission));
+                accountAssociation.setPermission(accessPermission);
+                this.accountAssociationRepository.save(accountAssociation);
+        }
+    }
+
     public Account updateAccountName(Long accountId, String newName)
     {
-        Account accountToUpdate = this.accountRepository
-                .findById(accountId)
-                .orElseThrow(() -> new UpdateViolationException("Cannot update id"));
-        verifyAccountName(newName);
+        Account accountToUpdate = findAccount(accountId);
+        if(!newName.equalsIgnoreCase(accountToUpdate.getName()))
+            verifyAccountNameUnique(newName);
         accountToUpdate.setName(WordFormatter.capitalizeFormat(newName));
         return this.accountRepository.save(accountToUpdate);
     }
 
-    public Account getAccountByName(String name)
+    private Account findAccount(Long accountId)
     {
         return this.accountRepository
-                .findByName(name)
+                .findById(accountId)
                 .orElseThrow(() -> new NoSuchElementException("Account not found"));
     }
 
     public Account getAccountById(Long accountId)
     {
-        return this.accountRepository
-                .findById(accountId)
-                .orElseThrow(() -> new NoSuchElementException("Account not found"));
-    }
-
-    public Account getAssociatedAccountById(Long accountId)
-    {
-        Long userId = UserEvaluator.currentUserId();
-        return this.accountRepository
-                .findByAssociationsUserIdAndId(userId, accountId)
-                .orElseThrow(() -> new NoSuchElementException(
-                        "Specified account or association with account does not exist"));
+        User user = UserEvaluator.currentUser();
+        AccessPermission accountsPermission = user.getAccountsPermission();
+        switch(accountsPermission)
+        { // Verify requester permission
+            case READ: // Must be at least MANAGE permission
+                throw new AuthorizationException("User is not authorized to perform such operation");
+            case MANAGE:
+            case WRITE: // Verify that WRITE permission association do exist
+                AccessPermission associationPermission = findAssociation(user, accountId);
+                if(associationPermission.getPermissionLevel() < AccessPermission.MANAGE.getPermissionLevel())
+                    throw new AuthorizationException(
+                            "User is not authorized to perform such operation with specified account");
+            case ADMIN:
+                return findAccount(accountId);
+            default:
+                throw new UnsupportedOperationException("User is not authorized with accounts");
+        }
     }
 
     public Page<Account> getAllAccounts(int pageIndex, int pageSize, String sortBy, boolean asc)
     {
+        User user = UserEvaluator.currentUser();
+        AccessPermission accessPermission = user.getAccountsPermission();
+        Page<Account> result;
         PageRequest pageRequest = PageRequestBuilder.buildPageRequest(pageIndex, pageSize, sortBy, asc);
-        Page<Account> pageResult = this.accountRepository.findAll(pageRequest);
-        return new PageImpl<>(pageResult.getContent(), pageRequest, pageResult.getTotalElements());
+        switch(accessPermission)
+        {
+            case READ: // READ permission cannot get accounts
+                throw new AuthorizationException("Cannot get accounts with such permission");
+            case MANAGE: // MANAGE and WRITE can get only accounts with MANAGE and WRITE associated with them
+            case WRITE:
+                result = this.accountRepository.findAllByAssociationsUserIdAndAssociationsPermissionGreaterThanEqual(
+                        user.getId(), AccessPermission.MANAGE, pageRequest);
+                break;
+            case ADMIN: // ADMIN can get all accounts
+                result = this.accountRepository.findAll(pageRequest);
+                break;
+            default:
+                return Page.empty();
+        }
+        return new PageImpl<>(result.getContent(), pageRequest, result.getTotalElements());
     }
 
-    public Page<Account> getAllAccountsByPermissionLevel(
-            int pageIndex, int pageSize, String sortBy, boolean asc,
-            AccessPermission accessPermission, boolean andLessThan)
-
+    public List<AccountSearchResult> getAllAccountsResults(int resultsCount)
     {
-        Long userId = UserEvaluator.currentUserId();
-        PageRequest pageRequest = PageRequestBuilder.buildPageRequest(pageIndex, pageSize, sortBy, asc);
-        Page<Account> pageResult =  andLessThan ?
-                this.accountRepository
-                        .findAllByAssociationsUserIdAndAssociationsPermissionLessThanEqual(userId, accessPermission, pageRequest) :
-                this.accountRepository
-                        .findAllByAssociationsUserIdAndAssociationsPermission(userId, accessPermission, pageRequest);
-        return new PageImpl<>(pageResult.getContent(), pageRequest, pageResult.getTotalElements());
+        PageRequest pageRequest = PageRequestBuilder.buildPageRequest(
+                0, resultsCount, AppDefaults.ACCOUNTS_DEFAULT_SORT, false);
+        User user = UserEvaluator.currentUser();
+        boolean isAdmin = user.isAccountAdmin();
+        if(!isAdmin)
+            return this.accountRepository.findAllResultsByAssociationsUserId(user.getId(), pageRequest);
+        return this.accountRepository.findAllResultsBy(pageRequest);
     }
 
-    public List<AccountSearchResult> getAllAccountsByPermissionLevel(
-            AccessPermission accessPermission, int maxResultsCount, boolean andGreaterThan)
+    public List<AccountSearchResult> getAllAccountsResultsByNameExample(String nameExample, int resultsCount)
     {
-        PageRequest pageRequest = PageRequest.of(0, maxResultsCount);
-        Long userId = UserEvaluator.currentUserId();
-        return andGreaterThan ?
-                this.accountRepository
-                        .findResultsByAssociationsUserIdAndAssociationsPermissionGreaterThanEqual(userId, accessPermission, pageRequest) :
-                this.accountRepository
-                        .findResultsByAssociationsUserIdAndAssociationsPermission(userId, accessPermission, pageRequest);
+        PageRequest pageRequest = PageRequestBuilder.buildPageRequest(
+                0, resultsCount, AppDefaults.ACCOUNTS_DEFAULT_SORT, false);
+        User user = UserEvaluator.currentUser();
+        AccessPermission accessPermission = user.getAccountsPermission();
+        switch(accessPermission)
+        {
+            case READ:
+                throw new AuthorizationException("User is not authorized to get such information");
+            case MANAGE:
+            case WRITE:
+                return this.accountRepository.findAllResultsByAssociationsUserIdAndNameContainingIgnoreCase(
+                        user.getId(), nameExample, pageRequest);
+            case ADMIN:
+                return this.accountRepository.findAllResultsByNameContainingIgnoreCase(nameExample, pageRequest);
+            default:
+                return List.of();
+        }
+    }
+
+    public List<AccountSearchResult> getAllAccountsResultsOfUser(Long userId, int resultsCount)
+    {
+        PageRequest pageRequest = PageRequestBuilder.buildPageRequest(
+                0, resultsCount, AppDefaults.ACCOUNTS_DEFAULT_SORT, false);
+        return this.accountRepository.findAllResultsByAssociationsUserId(userId, pageRequest);
+    }
+
+    public Page<Project> getAccountProjects(Long accountId, int pageIndex, int pageSize, String sortBy, boolean asc)
+    {
+        PageRequest pageRequest = PageRequestBuilder.buildPageRequest(
+                pageIndex, pageSize, sortBy, asc);
+        User user = UserEvaluator.currentUser();
+        AccessPermission accessPermission = user.getAccountsPermission();
+        Page<Project> results;
+        if(accessPermission == AccessPermission.ADMIN)
+            results = this.accountRepository.findAllProjectsById(accountId, pageRequest);
+        else
+        {
+            AccessPermission associationPermission = findAssociation(user, accountId);
+            if(associationPermission == AccessPermission.READ)
+                results = this.accountRepository.findAllProjectsByIdAndAssociationsUserId(accountId, user.getId(), pageRequest);
+            else
+                results = this.accountRepository.findAllProjectsById(accountId, pageRequest);
+        }
+        return new PageImpl<>(results.getContent(), pageRequest, results.getTotalElements());
+    }
+
+    public List<ProjectSearchResult> getAccountProjectResults(Long accountId, int resultsCount)
+    {
+        PageRequest pageRequest = PageRequestBuilder.buildPageRequest(
+                0, resultsCount, AppDefaults.ACCOUNTS_DEFAULT_SORT, false);
+        User user = UserEvaluator.currentUser();
+        AccessPermission accessPermission = user.getAccountsPermission();
+        if(accessPermission == AccessPermission.ADMIN)
+            return this.accountRepository.findAllProjectsResultsById(accountId, pageRequest);
+        AccessPermission associationPermission = findAssociation(user, accountId);
+        if(associationPermission == AccessPermission.READ)
+            return this.accountRepository.findAllProjectsResultsByIdAndAssociationsUserId(accountId, user.getId(), pageRequest);
+        return this.accountRepository.findAllProjectsResultsById(accountId, pageRequest);
+    }
+
+    public List<ProjectSearchResult> getAccountProjectResultsByNameExample(Long accountId, String nameExample, int resultsCount)
+    {
+        PageRequest pageRequest = PageRequestBuilder.buildPageRequest(
+                0, resultsCount, AppDefaults.ACCOUNTS_DEFAULT_SORT, false);
+        User user = UserEvaluator.currentUser();
+        AccessPermission accessPermission = user.getAccountsPermission();
+        if(accessPermission == AccessPermission.ADMIN)
+            return this.accountRepository.findAllProjectsResultsByIdAndNameContainingIgnoreCase(accountId, nameExample, pageRequest);
+        AccessPermission associationPermission = findAssociation(user, accountId);
+        if(associationPermission == AccessPermission.READ)
+            return this.accountRepository.findAllProjectsResultsByIdAndAssociationsUserIdAndNameContainingIgnoreCase(
+                    accountId, user.getId(), nameExample, pageRequest);
+        return this.accountRepository.findAllProjectsResultsByIdAndNameContainingIgnoreCase(accountId, nameExample, pageRequest);
     }
 
     public void deleteAccount(Long accountId)
     {
-        getAccountById(accountId);
+        User user = UserEvaluator.currentUser();
+        AccessPermission accessPermission = user.getAccountsPermission();
+        isAccountExists(accountId);
+        switch(accessPermission)
+        {
+            case READ:
+            case MANAGE:
+                throw new AuthorizationException("User is not authorized to perform such action");
+            case WRITE:
+                AccessPermission associationPermission = findAssociation(user, accountId);
+                if(associationPermission.getPermissionLevel() < AccessPermission.WRITE.getPermissionLevel())
+                    throw new AuthorizationException("User is not authorized to perform such action");
+            case ADMIN:
+                this.accountRepository.deleteById(accountId);
+        }
         this.accountRepository.deleteById(accountId);
     }
 
-    private void verifyAccountName(Account account)
-    {
-        this.accountRepository
-                .findByName(account.getName())
-                .ifPresent(this::throwAccountNameExistsException);
+    @EventListener
+    public void handleProjectAssociationCreationEvent(ProjectAssociationCreationEvent associationCreationEvent)
+    { // Will check for association upon project association creation event
+        Long accountId = associationCreationEvent.getPayload();
+        Long userId = associationCreationEvent.getAssociatedUserId();
+        createAssociationIfNotExists(userId, accountId);
     }
 
-    private void verifyAccountName(String accountName)
-    {
-        this.accountRepository
-                .findByName(accountName)
-                .ifPresent(this::throwAccountNameExistsException);
+    @EventListener
+    public void handleProjectAssociationRemovalEvent(ProjectAssociationRemovalEvent associationCreationEvent)
+    { // Will check for redundant association upon project association removal event
+        Account account = associationCreationEvent.getPayload().getAccount();
+        Long userId = associationCreationEvent.getAssociatedUserId();
+        removeRedundantAssociation(userId, account.getId());
     }
 
-    private void throwAccountNameExistsException(Account account)
+    @EventListener
+    public void handleAssociatedEntityEvent(AccountAssociatedEntityEvent associatedEntityEvent)
     {
-        throw new DuplicationException(
-                String.format("Account with name %s already exists", account.getName()));
+        Long accountId = associatedEntityEvent.getPayload();
+        isAccountExists(accountId);
+        User user = UserEvaluator.currentUser();
+        AccessPermission accessPermission = user.getAccountsPermission();
+        switch(accessPermission)
+        {
+            case READ:
+                throw new AuthorizationException("User cannot perform such operation");
+            case MANAGE:
+            case WRITE:
+                AccessPermission associationPermission = findAssociation(user, accountId);
+                if (associationPermission == AccessPermission.READ)
+                    throw new AuthorizationException("User association with account is not allowing to perform such operation");
+            case ADMIN:
+                break;
+            default:
+                throw new UnsupportedOperationException("User is not associated with accounts");
+        }
+    }
+
+    private void isAccountExists(Long accountId)
+    {
+        boolean exists = this.accountRepository.existsById(accountId);
+        if(!exists)
+            throw new NoSuchElementException("Account not found");
+    }
+
+    private void isAssociationExists(Long userId, Long accountId)
+    {
+        boolean exists = this.accountAssociationRepository // Check if association already exists
+                .existsByUserIdAndAccountId(userId, accountId);
+        if(exists)
+            throw new DuplicationException("Association between user and account already exists");
+    }
+
+    private void verifyAccountNameUnique(String accountName)
+    {
+        boolean exists = this.accountRepository
+                .existsByName(accountName);
+        if(exists)
+            throw new DuplicationException(String.format("Account with name %s already exists", accountName));
+    }
+
+    private void createAssociationIfNotExists(Long userId, Long accountId)
+    {
+        boolean exists = this.accountAssociationRepository
+                .existsByUserIdAndAccountId(userId, accountId);
+        if(!exists)
+            createReadAssociation(userId, accountId);
+    }
+
+    private void createReadAssociation(Long userId, Long accountId)
+    {
+        isAccountExists(accountId);
+        AccountAssociation accountAssociation = new AccountAssociation(userId, accountId, AccessPermission.READ);
+        this.eventPublisher.publishEvent(new AccountAssociationCreationEvent(accountId, userId, AccessPermission.READ));
+        this.accountAssociationRepository.save(accountAssociation);
+    }
+
+    private void handleAssociationCreation(Long userId, Long accountId, AccessPermission accessPermission)
+    { // Verify association permission is allowed
+        this.eventPublisher.publishEvent(new AccountAssociationCreationEvent(accountId, userId, accessPermission));
+        AccountAssociation accountAssociation = new AccountAssociation(userId, accountId, accessPermission);
+        this.accountAssociationRepository.save(accountAssociation);
+    }
+
+    private AccessPermission findAssociation(User user, Long accountId)
+    {
+        return this.accountAssociationRepository
+                .findAccessPermissionByUserIdAndAccountId(user.getId(), accountId)
+                .orElseThrow(() -> new NoSuchElementException("User specified is not associated with account"));
+    }
+
+    private AccountAssociation findAssociation(Long userId, Long accountId)
+    {
+        AccountAssociation accountAssociation = this.accountAssociationRepository
+                .findByUserIdAndAccountId(userId, accountId)
+                .orElseThrow(() -> new NoSuchElementException("User specified is not associated with account"));
+        return accountAssociation;
+    }
+
+    private void removeRedundantAssociation(Long userId, Long accountId)
+    { // Check if association exists
+        this.accountAssociationRepository // If it is, check for redundancy
+                .findByUserIdAndAccountId(userId, accountId)
+                .ifPresent(this::checkAssociationRedundancy);
+    }
+
+    private void checkAssociationRedundancy(AccountAssociation accountAssociation)
+    { // Get association permission level
+        AccessPermission accessPermission = accountAssociation.getPermission();
+        if(accessPermission == AccessPermission.READ)
+        { // For READ permission, check for associations with other projects of same account
+            boolean associatedWithOtherProjects = this.accountRepository
+                    .existsByAssociationsUserIdAndProjectsIdGreaterThanEqual(
+                            accountAssociation.getId().getAccountId(), 0);
+            if(!associatedWithOtherProjects) // If there are no other associations,
+                this.accountAssociationRepository // Association is redundant, perform delete operation
+                        .delete(accountAssociation);
+        }
     }
 
 }

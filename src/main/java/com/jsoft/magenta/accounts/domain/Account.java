@@ -1,11 +1,13 @@
 package com.jsoft.magenta.accounts.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.jsoft.magenta.contacts.Contact;
 import com.jsoft.magenta.projects.domain.Project;
-import com.jsoft.magenta.util.validation.ValidName;
+import com.jsoft.magenta.util.validation.annotations.ValidName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -62,6 +64,7 @@ public class Account
             referencedColumnName = "account_id",
             foreignKey = @ForeignKey(name = "FK_account_projects")
     )
+    @JsonIgnore
     private Set<Project> projects;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
@@ -73,5 +76,11 @@ public class Account
     private Set<Contact> contacts;
 
     @OneToMany(mappedBy = "account", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonIgnore
     private Set<AccountAssociation> associations;
+
+    public Account(Long accountId)
+    {
+        this.id = accountId;
+    }
 }

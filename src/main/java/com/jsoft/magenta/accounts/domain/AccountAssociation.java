@@ -56,4 +56,9 @@ public class AccountAssociation implements Serializable
         this.user = user;
         this.permission = accessPermission;
     }
+
+    public AccountAssociation(Long userId, Long accountId, AccessPermission read)
+    {
+        this.id = new AccountAssociationId(accountId, userId);
+    }
 }

@@ -1,11 +1,10 @@
 package com.jsoft.magenta.accounts;
 
 import com.jsoft.magenta.accounts.domain.Account;
-import com.jsoft.magenta.accounts.domain.AccountSearchResult;
-import com.jsoft.magenta.accounts.domain.Contact;
+import com.jsoft.magenta.contacts.Contact;
+import com.jsoft.magenta.contacts.ContactService;
 import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.util.Stringify;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -66,6 +65,36 @@ public class AccountControllerTest {
     }
 
     @Test
+    @DisplayName("Create association")
+    public void createAssociation() throws Exception
+    {
+        doNothing().when(accountService).createAssociation(1L, 1L , AccessPermission.MANAGE);
+
+        mockMvc.perform(post(Stringify.BASE_URL + "accounts/{accountId}/association/{userId}", 1L, 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(AccessPermission.MANAGE.name()))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        verify(accountService).createAssociation(1L, 1L, AccessPermission.MANAGE);
+    }
+
+    @Test
+    @DisplayName("Update association")
+    public void updateAssociation() throws Exception
+    {
+        doNothing().when(accountService).updateAssociation(1L, 1L , AccessPermission.MANAGE);
+
+        mockMvc.perform(patch(Stringify.BASE_URL + "accounts/{accountId}/association/{userId}", 1L, 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(AccessPermission.MANAGE.name()))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        verify(accountService).updateAssociation(1L, 1L, AccessPermission.MANAGE);
+    }
+
+    @Test
     @DisplayName("Update account name")
     public void updateAccountName() throws Exception {
         Account account = new Account();
@@ -109,25 +138,6 @@ public class AccountControllerTest {
     }
 
     @Test
-    @DisplayName("Get associated account by id")
-    public void getAssociatedAccountById() throws Exception {
-        Account account = new Account();
-        account.setId(1L);
-        account.setName("name");
-
-        when(accountService.getAssociatedAccountById(account.getId())).thenReturn(account);
-
-        mockMvc.perform(get(Stringify.BASE_URL + "accounts/associated/{accountId}", account.getId())
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(Stringify.asJsonString(account)))
-                .andExpect(jsonPath("$.name").value("name"))
-                .andExpect(jsonPath("$.id").value(1L));
-    }
-
-    @Test
     @DisplayName("Get all accounts")
     public void getAllAccounts() throws Exception {
         Page<Account> accounts = new PageImpl<>(List.of(new Account()), PageRequest.of(0, 1), 1);
@@ -144,74 +154,6 @@ public class AccountControllerTest {
                 .andExpect(jsonPath("$.content").exists());
 
         verify(accountService).getAllAccounts(0, 5, "name", false);
-    }
-
-    @Test
-    @DisplayName("Get all accounts that allowed to manage")
-    public void getManagementAssociatedAccounts() throws Exception {
-        Page<Account> accounts = new PageImpl<>(List.of(new Account()), PageRequest.of(0, 5), 5);
-
-        when(accountService.getAllAccountsByPermissionLevel(0, 5, "name", false, AccessPermission.MANAGE, false))
-                .thenReturn(accounts);
-
-        mockMvc.perform(get(Stringify.BASE_URL + "accounts/manage")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.totalElements").exists())
-                .andExpect(jsonPath("$.content").exists());
-
-        verify(accountService).getAllAccountsByPermissionLevel(0, 5, "name", false, AccessPermission.MANAGE, false);
-    }
-
-    @Test
-    @DisplayName("Get all accounts that allowed to edit")
-    public void getEditAssociatedAccounts() throws Exception {
-        Page<Account> accounts = new PageImpl<>(List.of(new Account()), PageRequest.of(0, 5), 5);
-
-        when(accountService.getAllAccountsByPermissionLevel(0, 5, "name", false, AccessPermission.WRITE, false))
-                .thenReturn(accounts);
-
-        mockMvc.perform(get(Stringify.BASE_URL + "accounts/edit")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.totalElements").exists())
-                .andExpect(jsonPath("$.content").exists());
-
-        verify(accountService).getAllAccountsByPermissionLevel(0, 5, "name", false, AccessPermission.WRITE, false);
-    }
-
-    @Test
-    @DisplayName("Get all accounts that allowed to edit")
-    public void getAllowedAssociatedAccounts() throws Exception {
-        AccountSearchResult accountSearchResult = new AccountSearchResult() {
-            @Override
-            public Long getId() {
-                return 1L;
-            }
-
-            @Override
-            public String getName() {
-                return "name";
-            }
-        };
-
-        when(accountService.getAllAccountsByPermissionLevel(AccessPermission.READ, 5, true))
-                .thenReturn(List.of(accountSearchResult));
-
-        mockMvc.perform(get(Stringify.BASE_URL + "accounts/allowed")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].id").value(1L))
-                .andExpect(jsonPath("$[0].name").value("name"))
-                .andExpect(jsonPath("$[0].image").doesNotExist());
-
-        verify(accountService).getAllAccountsByPermissionLevel(AccessPermission.READ, 5, true);
     }
 
     @Test
@@ -258,7 +200,7 @@ public class AccountControllerTest {
         Contact contact = new Contact();
         contact.setId(1L);
 
-        when(contactService.updateContact(account.getId(), contact)).thenReturn(contact);
+        when(contactService.updateContact(contact)).thenReturn(contact);
 
         mockMvc.perform(put(Stringify.BASE_URL + "accounts/contacts/{accountId}", account.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -292,7 +234,7 @@ public class AccountControllerTest {
     @DisplayName("Delete contact")
     public void deleteContact() throws Exception
     {
-        doNothing().when(contactService).deleteContact(1L);
+        doNothing().when(contactService).deleteContact(1L, 1L);
 
         mockMvc.perform(delete(Stringify.BASE_URL + "accounts/contacts/{contactId}", 1L)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -300,7 +242,7 @@ public class AccountControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").doesNotExist());
 
-        verify(contactService).deleteContact(1L);
+        verify(contactService).deleteContact(1L, 1L);
     }
 
 }

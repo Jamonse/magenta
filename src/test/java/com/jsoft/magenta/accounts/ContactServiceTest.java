@@ -1,7 +1,9 @@
 package com.jsoft.magenta.accounts;
 
 import com.jsoft.magenta.accounts.domain.Account;
-import com.jsoft.magenta.accounts.domain.Contact;
+import com.jsoft.magenta.contacts.Contact;
+import com.jsoft.magenta.contacts.ContactRepository;
+import com.jsoft.magenta.contacts.ContactService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,7 +18,6 @@ import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.mockito.Mockito.*;
 
@@ -78,7 +79,7 @@ public class ContactServiceTest
         when(contactRepository.findById(contact.getId())).thenReturn(Optional.of(contact));
         when(contactRepository.save(contact)).thenReturn(contact);
 
-        Contact savedContact = this.contactService.updateContact(account.getId(), contact);
+        Contact savedContact = this.contactService.updateContact(contact);
 
         Assertions.assertNotNull(savedContact.getId());
         Assertions.assertEquals(savedContact, contact);
@@ -110,7 +111,7 @@ public class ContactServiceTest
         when(contactRepository.findById(1L)).thenReturn(Optional.of(new Contact()));
         doNothing().when(contactRepository).deleteById(1L);
 
-        this.contactService.deleteContact(1L);
+        this.contactService.deleteContact(1L, 1L);
 
         verify(contactRepository).deleteById(1L);
     }

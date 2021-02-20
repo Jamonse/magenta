@@ -1,8 +1,9 @@
 package com.jsoft.magenta.security.jwt;
 
-import com.jsoft.magenta.security.CustomUserDetailsService;
+import com.jsoft.magenta.security.service.CustomUserDetailsService;
 import com.jsoft.magenta.security.model.CustomGrantedAuthority;
 import com.jsoft.magenta.security.model.Privilege;
+import com.jsoft.magenta.util.AppConstants;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +13,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Set;
@@ -29,7 +32,7 @@ public class JwtManager
     private String tokenPrefix;
 
     @Value("${application.jwt.expiration-length:1}")
-    private int tokenExpirationLengthInDays;
+    private int tokenExpirationLengthInMinutes;
 
     private final CustomUserDetailsService userDetailsService;
 
@@ -47,12 +50,13 @@ public class JwtManager
                 .collect(Collectors.toSet());
         claims.put("auth", grantedAuthorities); // Set authorities to claims
 
-        Date now = new Date(); // Create issue date and expiration date
-        Date expirationDate = java.sql.Date.valueOf(LocalDate.now().plusDays(tokenExpirationLengthInDays));
+        Date issuedAt = Date.from(Instant.now());
+        Date expirationDate = Date.from(
+                Instant.now().plusSeconds(tokenExpirationLengthInMinutes * AppConstants.SECONDS_IN_MINUTE));
         // Build and return the token
         return Jwts.builder()
                 .addClaims(claims)
-                .setIssuedAt(now)
+                .setIssuedAt(issuedAt)
                 .setExpiration(expirationDate)
                 .signWith(SignatureAlgorithm.HS256, tokenSecret)
                 .compact();

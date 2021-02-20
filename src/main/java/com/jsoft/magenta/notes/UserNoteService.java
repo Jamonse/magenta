@@ -144,7 +144,7 @@ public class UserNoteService
 
     public void deleteNote(Long noteId)
     {
-        findNote(noteId);
+        isNoteExists(noteId);
         this.userNoteRepository.deleteById(noteId);
     }
 
@@ -159,6 +159,13 @@ public class UserNoteService
     {
         if(noteRemindAt != null && noteRemindAt.isBefore(LocalDateTime.now().plusMinutes(1)))
             throw new ReminderException("Remind time must be at least one minute from current time");
+    }
+
+    private void isNoteExists(Long noteId)
+    {
+        boolean exists = this.userNoteRepository.existsById(noteId);
+        if(!exists)
+            throw new NoSuchElementException("Note not found for user");
     }
 
 }

@@ -18,6 +18,18 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class MagentaExceptionHandler
 {
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<Object> handleElementNotFoundException(NoSuchElementException e)
+    {
+        return handleException(e, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(DuplicationException.class)
+    public ResponseEntity<Object> handleDuplicationException(DuplicationException e)
+    {
+        return handleException(e, HttpStatus.NOT_ACCEPTABLE);
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException e)
     {
@@ -28,6 +40,12 @@ public class MagentaExceptionHandler
     public ResponseEntity<Object> handleMethodArgumentValidationException(MethodArgumentNotValidException e)
     {
         return handleValidationException(e);
+    }
+
+    @ExceptionHandler(AuthorizationException.class)
+    public ResponseEntity<Object> handleAuthorizationException(AuthorizationException e)
+    {
+        return handleException(e, HttpStatus.UNAUTHORIZED);
     }
 
     private ResponseEntity<Object> handleException(Exception e, HttpStatus httpStatus)

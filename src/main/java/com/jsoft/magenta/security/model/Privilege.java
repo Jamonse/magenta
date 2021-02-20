@@ -1,6 +1,8 @@
 package com.jsoft.magenta.security.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jsoft.magenta.users.User;
+import com.jsoft.magenta.util.validation.annotations.ValidName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -32,6 +34,7 @@ public class Privilege
     private Long id;
 
     @Column(name = "privilege_name", length = 50, nullable = false)
+    @ValidName
     private String name;
 
     @Column(name = "privilege_level", nullable = false)
@@ -39,5 +42,10 @@ public class Privilege
     private AccessPermission level;
 
     @ManyToMany(mappedBy = "privileges")
+    @JsonIgnore
     private Set<User> privilegedUsers;
+
+    @ManyToMany(mappedBy = "privileges")
+    @JsonIgnore
+    private Set<PrivilegesGroup> groups;
 }

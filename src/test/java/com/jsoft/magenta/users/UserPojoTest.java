@@ -14,9 +14,9 @@ public class UserPojoTest
     public void create()
     {
         User user1 = new User(1L, "first name", "last name", "email", "phoneNumber", "password", "image",
-                true, ColorTheme.LIGHT, LocalDate.now(), LocalDate.now(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
+                true, ColorTheme.LIGHT, LocalDate.now(), LocalDate.now(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
         User user2 = new User(1L, "first name", "last name", "email", "phoneNumber", "password", "image",
-                true, ColorTheme.LIGHT, LocalDate.now(), LocalDate.now(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
+                true, ColorTheme.LIGHT, LocalDate.now(), LocalDate.now(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
 
         Assertions.assertEquals(user1.getFirstName(), "first name");
         Assertions.assertEquals(user1, user2);
@@ -27,7 +27,7 @@ public class UserPojoTest
     public void update()
     {
         User user1 = new User(1L, "first name", "last name", "email", "phoneNumber", "password", "image",
-                true, ColorTheme.LIGHT, LocalDate.now(), LocalDate.now(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
+                true, ColorTheme.LIGHT, LocalDate.now(), LocalDate.now(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
         user1.setFirstName("new first name");
 
         Assertions.assertEquals(user1.getFirstName(), "new first name");

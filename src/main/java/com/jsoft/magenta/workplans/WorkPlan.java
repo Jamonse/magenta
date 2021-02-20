@@ -1,13 +1,19 @@
 package com.jsoft.magenta.workplans;
 
-import com.jsoft.magenta.projects.domain.SubProject;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.jsoft.magenta.users.User;
+import com.jsoft.magenta.util.validation.annotations.ValidTitle;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Data
@@ -31,19 +37,26 @@ public class WorkPlan
     private Long id;
 
     @Column(name = "title", length = 50)
-    @Size(min = 2, max = 50)
+    @ValidTitle
     private String title;
 
     @Column(name = "start_date", nullable = false)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @NotNull(message = "Start date is required")
     private LocalDateTime startDate;
 
     @Column(name = "end_date", nullable = false)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @NotNull(message = "End date is required")
     private LocalDateTime endDate;
 
     @ManyToOne
     @JoinColumn(
             name = "sp_id",
-            foreignKey = @ForeignKey(name = "FK_wps_sp")
+            foreignKey = @ForeignKey(name = "FK_wps_user")
     )
-    private SubProject subProject;
+    @JsonIgnore
+    private User user;
 }

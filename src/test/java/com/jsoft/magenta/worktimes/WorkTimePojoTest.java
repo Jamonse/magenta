@@ -1,6 +1,6 @@
 package com.jsoft.magenta.worktimes;
 
-import com.jsoft.magenta.projects.domain.SubProject;
+import com.jsoft.magenta.subprojects.SubProject;
 import com.jsoft.magenta.users.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -16,9 +16,9 @@ public class WorkTimePojoTest
     public void create()
     {
         WorkTime wt1 = new WorkTime(1L, LocalDate.now(), LocalTime.now(), LocalTime.now(), new User(),
-                new SubProject(), 10, "note");
+                new SubProject(), 10D, "note");
         WorkTime wt2 = new WorkTime(1L, LocalDate.now(), LocalTime.now(), LocalTime.now(), new User(),
-                new SubProject(), 10, "note");
+                new SubProject(), 10D, "note");
 
         Assertions.assertEquals(wt1.getNote(), "note");
         Assertions.assertEquals(wt2, wt1);
@@ -29,7 +29,7 @@ public class WorkTimePojoTest
     public void update()
     {
         WorkTime wt1 = new WorkTime(1L, LocalDate.now(), LocalTime.now(), LocalTime.now(), new User(),
-                new SubProject(), 10, "note");
+                new SubProject(), 10D, "note");
 
         wt1.setNote("new note");
         Assertions.assertEquals(wt1.getNote(), "new note");

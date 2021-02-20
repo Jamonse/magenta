@@ -1,8 +1,8 @@
 package com.jsoft.magenta.posts;
 
 import com.jsoft.magenta.security.annotations.posts.PostWritePermission;
-import com.jsoft.magenta.util.validation.ValidContent;
-import com.jsoft.magenta.util.validation.ValidTitle;
+import com.jsoft.magenta.util.validation.annotations.ValidContent;
+import com.jsoft.magenta.util.validation.annotations.ValidTitle;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -20,8 +20,6 @@ import static com.jsoft.magenta.util.AppDefaults.*;
 public class PostController
 {
     private final PostService postService;
-
-    public static final String DEFAULT_POST_SORT = "title";
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

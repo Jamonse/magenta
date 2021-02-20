@@ -93,7 +93,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/magenta/v1/**").allowedOrigins(allowedOrigin);
+                registry.addMapping("/magenta/v1/**")
+                        .allowedOrigins(allowedOrigin);
             }
         };
     }

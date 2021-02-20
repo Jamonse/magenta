@@ -66,7 +66,7 @@ public class PostService
 
     public void deletePost(Long postId)
     {
-        findPost(postId);
+        isPostExists(postId);
         this.postRepository.deleteById(postId);
     }
 
@@ -75,6 +75,13 @@ public class PostService
         return this.postRepository
                 .findById(postId)
                 .orElseThrow(() -> new NoSuchElementException("Post not found"));
+    }
+
+    private void isPostExists(Long postId)
+    {
+        boolean exists = this.postRepository.existsById(postId);
+        if(!exists)
+            throw new NoSuchElementException("Post not found");
     }
 
 }

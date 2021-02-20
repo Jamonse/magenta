@@ -1,11 +1,12 @@
 package com.jsoft.magenta;
 
-import com.jsoft.magenta.security.PrivilegeRepository;
+import com.jsoft.magenta.security.dao.PrivilegeRepository;
 import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.security.model.Privilege;
 import com.jsoft.magenta.users.ColorTheme;
 import com.jsoft.magenta.users.User;
 import com.jsoft.magenta.users.UserRepository;
+import com.jsoft.magenta.worktimes.WorkTimeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ApplicationContextEvent;
@@ -24,6 +25,7 @@ public class UserSetupLoader implements ApplicationListener<ApplicationContextEv
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final PrivilegeRepository privilegeRepository;
+    private final WorkTimeRepository workTimeRepository;
 
     @Override
     @Transactional
@@ -41,14 +43,18 @@ public class UserSetupLoader implements ApplicationListener<ApplicationContextEv
             Privilege privilege2 = new Privilege();
             privilege2.setName("post");
             privilege2.setLevel(AccessPermission.ADMIN);
+            Privilege privilege3 = new Privilege();
+            privilege3.setName("user");
+            privilege3.setLevel(AccessPermission.ADMIN);
             this.privilegeRepository.save(privilege);
             this.privilegeRepository.save(privilege1);
             this.privilegeRepository.save(privilege2);
-            Set<Privilege> privileges = Set.of(privilege, privilege1, privilege2);
+            this.privilegeRepository.save(privilege3);
+            Set<Privilege> privileges = Set.of(privilege, privilege1, privilege2, privilege3);
             String password = passwordEncoder.encode("password");
             User user = new User(1L, "admin", "admin", "admin@admin.com", "phoneNumber",
                     password, "image", true, ColorTheme.LIGHT, LocalDate.now(), LocalDate.now(),
-                    new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), privileges);
+                    new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), privileges, new HashSet<>());
 
             userRepository.save(user);
         }

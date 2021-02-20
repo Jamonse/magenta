@@ -1,8 +1,10 @@
 package com.jsoft.magenta.projects.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jsoft.magenta.accounts.domain.Account;
 import com.jsoft.magenta.orders.domain.Order;
-import com.jsoft.magenta.util.validation.ValidName;
+import com.jsoft.magenta.subprojects.SubProject;
+import com.jsoft.magenta.util.validation.annotations.ValidName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -58,6 +60,7 @@ public class Project
             referencedColumnName = "project_id",
             foreignKey = @ForeignKey(name = "FK_project_order")
     )
+    @Valid
     private Set<Order> orders;
 
     @OneToMany(cascade = {
@@ -75,5 +78,11 @@ public class Project
 
     @OneToMany(cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     @JoinColumn(name = "project_id")
+    @JsonIgnore
     private Set<ProjectAssociation> associations;
+
+    public Project(Long projectId)
+    {
+        this.id = projectId;
+    }
 }

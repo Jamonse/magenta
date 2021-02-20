@@ -57,4 +57,10 @@ public class ProjectAssociation implements Serializable
         this.project = project;
         this.permission = accessPermission;
     }
+
+    public ProjectAssociation(Long userId, Long projectId, AccessPermission accessPermission)
+    {
+        this.id = new ProjectAssociationId(projectId, userId);
+        this.permission = accessPermission;
+    }
 }
