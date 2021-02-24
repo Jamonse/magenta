@@ -56,4 +56,6 @@ public class AppConstants
 
     public static final double HOURS_IN_DAY = 24.0;
     public static final int SECONDS_IN_MINUTE = 60;
+    public static final int HOURS_IN_WEEK = 168;
+    public static final int MAX_HOURS_IN_MONTH = 744;
 }

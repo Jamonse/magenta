@@ -11,4 +11,6 @@ public interface WorkTimeRepository extends JpaRepository<WorkTime, Long>
     Optional<Long> findUserIdById(Long wtId);
 
     List<WorkTime> findAllByUserIdAndDate(Long userId, LocalDate date);
+
+    List<WorkTime> findAllByUserIdAndDateBetween(Long userId, LocalDate startDate, LocalDate endDate);
 }

@@ -11,7 +11,6 @@ import com.jsoft.magenta.accounts.domain.AccountAssociation;
 import com.jsoft.magenta.exceptions.AuthorizationException;
 import com.jsoft.magenta.notes.UserNote;
 import com.jsoft.magenta.projects.domain.ProjectAssociation;
-import com.jsoft.magenta.security.UserEvaluator;
 import com.jsoft.magenta.subprojects.SubProject;
 import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.security.model.Privilege;

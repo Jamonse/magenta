@@ -1,4 +1,4 @@
-package com.jsoft.magenta.mail;
+package com.jsoft.magenta.worktimes.reports;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,5 +9,5 @@ public class HoursDetail
 {
     private String account;
     private String project;
-    private String hours;
+    private double hours;
 }

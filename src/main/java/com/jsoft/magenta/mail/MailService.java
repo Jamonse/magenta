@@ -3,7 +3,7 @@ package com.jsoft.magenta.mail;
 import org.springframework.stereotype.Service;
 
 @Service
-public class EmailService
+public class MailService
 {
 
 }

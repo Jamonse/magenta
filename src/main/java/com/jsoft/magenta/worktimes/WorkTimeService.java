@@ -1,13 +1,14 @@
 package com.jsoft.magenta.worktimes;
 
 import com.jsoft.magenta.events.subprojects.SubProjectRelatedEntityEvent;
-import com.jsoft.magenta.exceptions.AuthorizationException;
 import com.jsoft.magenta.exceptions.NoSuchElementException;
 import com.jsoft.magenta.exceptions.RedundantWorkTimeException;
 import com.jsoft.magenta.subprojects.SubProject;
 import com.jsoft.magenta.security.UserEvaluator;
 import com.jsoft.magenta.users.User;
-import com.jsoft.magenta.util.AppConstants;
+import com.jsoft.magenta.worktimes.reports.HoursDetail;
+import com.jsoft.magenta.worktimes.reports.Week;
+import com.jsoft.magenta.worktimes.reports.WeeklyHoursReport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -103,6 +104,16 @@ public class WorkTimeService
     public List<WorkTime> getAllWorkTimesByUserAndDate(Long userId, LocalDate localDate)
     {
         return this.workTimeRepository.findAllByUserIdAndDate(userId, localDate);
+    }
+
+    public WeeklyHoursReport getWeeklyHoursReport(Long userId, LocalDate startDate)
+    {
+        WeeklyHoursReport weeklyHoursReport = new WeeklyHoursReport();
+        Week week = new Week(startDate);
+        List<WorkTime> workTimes = this.workTimeRepository
+                .findAllByUserIdAndDateBetween(userId, week.getStartDate(), week.getEndDate());
+
+        return weeklyHoursReport;
     }
 
     public void deleteWorkTime(Long wtId)
