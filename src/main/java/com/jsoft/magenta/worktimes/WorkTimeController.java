@@ -3,6 +3,10 @@ package com.jsoft.magenta.worktimes;
 import com.jsoft.magenta.security.annotations.users.SupervisorOrOwner;
 import com.jsoft.magenta.util.validation.annotations.PositiveNumber;
 import com.jsoft.magenta.util.validation.annotations.ValidContent;
+import com.jsoft.magenta.util.validation.annotations.ValidMonth;
+import com.jsoft.magenta.util.validation.annotations.ValidYear;
+import com.jsoft.magenta.worktimes.reports.BusinessMonth;
+import com.jsoft.magenta.worktimes.reports.MonthlyHoursReport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -12,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.List;
 
 @Validated
@@ -107,6 +112,17 @@ public class WorkTimeController
     )
     {
         return this.workTimeService.getAllWorkTimesByUserAndDate(userId, date);
+    }
+
+    @GetMapping("report/{userId}/year/{year}/month/{month}")
+    public MonthlyHoursReport getMonthlyHoursReport(
+            @PathVariable @SupervisorOrOwner Long userId,
+            @PathVariable @ValidYear Integer year,
+            @PathVariable @ValidMonth Integer month
+    )
+    {
+        BusinessMonth businessMonth = new BusinessMonth(YearMonth.of(year, month));
+        return this.workTimeService.getMonthlyHoursReport(userId, businessMonth);
     }
 
     @DeleteMapping("{wtId}")

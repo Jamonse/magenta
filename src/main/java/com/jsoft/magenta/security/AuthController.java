@@ -1,6 +1,7 @@
 package com.jsoft.magenta.security;
 
 import com.jsoft.magenta.security.annotations.users.UserWritePermission;
+import com.jsoft.magenta.security.jwt.JwtManager;
 import com.jsoft.magenta.security.model.PrivilegesGroup;
 import com.jsoft.magenta.security.model.PrivilegesGroupSearchResult;
 import com.jsoft.magenta.security.service.AuthService;
@@ -8,7 +9,9 @@ import com.jsoft.magenta.security.service.PrivilegesGroupService;
 import com.jsoft.magenta.users.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +31,19 @@ public class AuthController
 {
     private final PrivilegesGroupService privilegesGroupService;
     private final AuthService authService;
+    private final JwtManager jwtManager;
+
+    @PostMapping
+    public boolean authenticate(@RequestBody @NotBlank String passwordToMatch)
+    {
+        return this.authService.authenticate(passwordToMatch);
+    }
+
+    @PostMapping("logout")
+    public void logout()
+    {
+        this.authService.logout();
+    }
 
     @PostMapping("pg")
     @UserWritePermission
@@ -35,12 +51,6 @@ public class AuthController
     public PrivilegesGroup createPrivilegesGroup(@RequestBody @Valid PrivilegesGroup privilegesGroup)
     {
         return this.privilegesGroupService.createPrivilegesGroup(privilegesGroup);
-    }
-
-    @PostMapping
-    public boolean authenticate(@RequestBody @NotBlank String passwordToMatch)
-    {
-        return this.authService.authenticate(passwordToMatch);
     }
 
     @PutMapping("pg")
@@ -86,6 +96,15 @@ public class AuthController
     )
     {
         return this.privilegesGroupService.getAllPrivilegesGroupsResults(resultsCount);
+    }
+
+    @GetMapping("refresh")
+    public ResponseEntity refreshToken(String refreshToken)
+    {
+        String token = authService.generateRefreshedJwt(refreshToken);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.AUTHORIZATION, String.format("%s %s", jwtManager.getTokenPrefix(), token))
+                .body(null);
     }
 
     @DeleteMapping("pg/{groupId}")

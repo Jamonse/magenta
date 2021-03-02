@@ -2,19 +2,23 @@ package com.jsoft.magenta.worktimes.reports;
 
 import com.jsoft.magenta.util.AppConstants;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.Month;
 import java.time.Year;
 import java.util.List;
 
 @Getter
-@NoArgsConstructor
 public class MonthlyHoursReport extends HoursReport
 {
     private Month month;
     private Year year;
     private double monthHours;
+
+    public MonthlyHoursReport(BusinessMonth businessMonth)
+    {
+        this.year = businessMonth.getYear();
+        this.month = businessMonth.getMonth();
+    }
 
     public MonthlyHoursReport(
             String userName, List<HoursDetail> hoursDetails, Month month, Year year, double monthHours)
@@ -50,7 +54,7 @@ public class MonthlyHoursReport extends HoursReport
         double hoursRemainder = this.monthHours - this.totalHours;
         if(hoursRemainder > 0)
             this.hoursStatus = HoursStatus.MISSING;
-        if(hoursRemainder < 0)
+        else if(hoursRemainder < 0)
             this.hoursStatus = HoursStatus.EXTRA;
         else
             this.hoursStatus = HoursStatus.EXACT;

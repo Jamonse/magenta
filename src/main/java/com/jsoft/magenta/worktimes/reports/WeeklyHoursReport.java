@@ -2,25 +2,33 @@ package com.jsoft.magenta.worktimes.reports;
 
 import com.jsoft.magenta.util.AppConstants;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
-@NoArgsConstructor
 public class WeeklyHoursReport extends HoursReport
 {
-    private Week week;
+    private BusinessWeek week;
     private double weekHours;
+
+    public WeeklyHoursReport(BusinessWeek businessWeek)
+    {
+        this.week = businessWeek;
+    }
 
     public WeeklyHoursReport(
             String userName, List<HoursDetail> hoursDetails,
-            Week week, double weekHours
+            BusinessWeek week, double weekHours
     )
     {
         super(userName, hoursDetails);
         this.week = week;
         setWeekHours(weekHours);
+    }
+
+    public void setWeek(BusinessWeek businessWeek)
+    {
+        this.week = businessWeek;
     }
 
     public void setWeekHours(double weekHours)
@@ -37,7 +45,7 @@ public class WeeklyHoursReport extends HoursReport
         double hoursRemainder = this.weekHours - this.totalHours;
         if(hoursRemainder > 0)
             this.hoursStatus = HoursStatus.MISSING;
-        if(hoursRemainder < 0)
+        else if(hoursRemainder < 0)
             this.hoursStatus = HoursStatus.EXTRA;
         else
             this.hoursStatus = HoursStatus.EXACT;

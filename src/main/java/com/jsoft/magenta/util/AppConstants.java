@@ -3,6 +3,8 @@ package com.jsoft.magenta.util;
 import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.users.ColorTheme;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.Set;
 
 public class AppConstants
@@ -35,6 +37,13 @@ public class AppConstants
 
     public static final String SUPERVISOR_OR_OWNER_MESSAGE = "User is not supervisor or owner of requested resource";
 
+    public static final String YEAR_MESSAGE = "Year value is not valid";
+    public static final String MONTH_MESSAGE = "Month value is not valid";
+
+    public static final String SECURITY_MESSAGE = "Error during keystore loading";
+
+    public static final String ALIAS = "magenta";
+
     // Permission names
 
     public static final String ACCOUNT_PERMISSION = "account";
@@ -58,4 +67,12 @@ public class AppConstants
     public static final int SECONDS_IN_MINUTE = 60;
     public static final int HOURS_IN_WEEK = 168;
     public static final int MAX_HOURS_IN_MONTH = 744;
+    public static final int BUSINESS_DAY_HOURS = 9;
+    public static final int SHORT_BUSINESS_DAY_HOURS = BUSINESS_DAY_HOURS - 1;
+
+    public static final DayOfWeek SHORT_DAY = DayOfWeek.THURSDAY;
+    public static final DayOfWeek FIRST_WD_DAY = DayOfWeek.FRIDAY;
+    public static final DayOfWeek SECOND_WD_DAY = DayOfWeek.SATURDAY;
+
+    public static final String WEEKLY_MAIL_MESSAGE = "Hello %s, we have a weekly mail for you from magenta!";
 }

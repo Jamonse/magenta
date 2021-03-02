@@ -5,7 +5,9 @@ import com.jsoft.magenta.security.model.CustomGrantedAuthority;
 import com.jsoft.magenta.security.model.Privilege;
 import com.jsoft.magenta.util.AppConstants;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.SignatureException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -13,18 +15,23 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class JwtManager
 {
+    private KeyStore keyStore;
+
     @Value("${application.jwt.secret}")
     private String tokenSecret;
 
@@ -38,8 +45,14 @@ public class JwtManager
 
     @PostConstruct
     private void init()
-    { // Encode the token secret with base 64 before encoding it in JWT construction
-        tokenSecret = Base64.getEncoder().encodeToString(tokenSecret.getBytes());
+    {
+        try { // Load keystore from keystore file
+            keyStore = KeyStore.getInstance("JKS");
+            InputStream inputStream = getClass().getResourceAsStream("/magenta.jks");
+            keyStore.load(inputStream, tokenSecret.toCharArray());
+        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
+            log.error(AppConstants.SECURITY_MESSAGE);
+        }
     }
 
     public String createToken(String email, Set<Privilege> privileges)
@@ -58,7 +71,7 @@ public class JwtManager
                 .addClaims(claims)
                 .setIssuedAt(issuedAt)
                 .setExpiration(expirationDate)
-                .signWith(SignatureAlgorithm.HS256, tokenSecret)
+                .signWith(SignatureAlgorithm.RS512, getPrivateKey())
                 .compact();
     }
 
@@ -71,7 +84,7 @@ public class JwtManager
     private String getUsername(String token)
     {
         return Jwts.parser()
-                .setSigningKey(tokenSecret)
+                .setSigningKey(getPublicKey())
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
@@ -80,7 +93,7 @@ public class JwtManager
     public boolean validateToken(String token)
     {
         try {
-            Jwts.parser().setSigningKey(tokenSecret).parseClaimsJws(token);
+            Jwts.parser().setSigningKey(getPublicKey()).parseClaimsJws(token);
             return true;
         } catch (ExpiredJwtException |
                 UnsupportedJwtException |
@@ -94,5 +107,25 @@ public class JwtManager
     public String getTokenPrefix()
     {
         return tokenPrefix;
+    }
+
+    private PrivateKey getPrivateKey()
+    {
+        try {
+            return (PrivateKey) keyStore.getKey(AppConstants.ALIAS, tokenSecret.toCharArray());
+        } catch(KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
+            log.error("Error during pk loading");
+        }
+        throw new IllegalStateException("An uncaught exception was raised during keystore operation");
+    }
+
+    private PublicKey getPublicKey()
+    {
+        try {
+            return keyStore.getCertificate(AppConstants.ALIAS).getPublicKey();
+        } catch(KeyStoreException e) {
+            log.error("Error during public key loading");
+        }
+        throw new IllegalStateException("An uncaught exception was raised during keystore operation");
     }
 }

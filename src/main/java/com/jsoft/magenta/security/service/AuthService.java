@@ -2,22 +2,43 @@ package com.jsoft.magenta.security.service;
 
 import com.jsoft.magenta.exceptions.NoSuchElementException;
 import com.jsoft.magenta.security.UserEvaluator;
+import com.jsoft.magenta.security.jwt.JwtManager;
+import com.jsoft.magenta.security.model.Privilege;
 import com.jsoft.magenta.users.User;
 import com.jsoft.magenta.users.UserRepository;
-import com.jsoft.magenta.users.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Set;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class AuthService
 {
+    private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final JwtManager jwtManager;
+
+    public String generateRefreshedJwt(String refreshToken)
+    { // Verify refresh token
+        this.refreshTokenService.validateToken(refreshToken);
+        // Fetch user date and create new JWT
+        User user = UserEvaluator.currentUser();
+        String userName = user.getEmail();
+        Set<Privilege> privileges = user.getPrivileges();
+        return this.jwtManager.createToken(userName, privileges);
+    }
+
+    public void logout()
+    { // Remove refresh token if exists
+        this.refreshTokenService.removeRefreshTokenIfExist();
+        SecurityContextHolder.clearContext(); // Clear security context
+    }
 
     public boolean authenticate(String passwordToMatch)
     {

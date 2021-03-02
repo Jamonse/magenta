@@ -5,6 +5,7 @@ import com.jsoft.magenta.exceptions.InvalidCredentialsException;
 import com.jsoft.magenta.security.model.CustomGrantedAuthority;
 import com.jsoft.magenta.security.model.Privilege;
 import com.jsoft.magenta.security.payload.UsernamePasswordRequest;
+import com.jsoft.magenta.security.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter
 {
     private final AuthenticationManager authenticationManager;
+    private final RefreshTokenService refreshTokenService;
     private final JwtManager jwtManager;
 
     @Override
@@ -59,8 +61,16 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
                .filter(grantedAuthority -> grantedAuthority instanceof CustomGrantedAuthority)
                .map(grantedAuthority -> ((CustomGrantedAuthority) grantedAuthority).getPrivilege())
                .collect(Collectors.toSet());
-        String token = jwtManager.createToken(authResult.getName(), privileges); // Create token with privileges
+        String userName = authResult.getName();
+        String token = jwtManager.createToken(userName, privileges); // Create token with privileges
+        String refreshToken = refreshTokenService.createRefreshToken(userName);
         // Add token to response header
         response.addHeader(HttpHeaders.AUTHORIZATION, String.format("%s %s", jwtManager.getTokenPrefix(), token));
+        try {
+            response.getWriter().write(refreshToken);
+        } catch (IOException e) {
+            log.error("Error during response writing operation");
+            throw new IllegalStateException("Error during response writing operation");
+        }
     }
 }

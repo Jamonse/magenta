@@ -31,4 +31,6 @@ public interface UserRepository extends JpaRepository<User, Long>
         return this.findAllByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
                 nameExample, nameExample, nameExample, pageRequest);
     }
+
+    List<UserSearchResult> findAllResults();
 }

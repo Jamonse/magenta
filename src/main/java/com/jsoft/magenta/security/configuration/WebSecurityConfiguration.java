@@ -1,14 +1,13 @@
 package com.jsoft.magenta.security.configuration;
 
 import com.jsoft.magenta.security.jwt.CustomAuthenticationFilter;
-import com.jsoft.magenta.security.CustomPermissionEvaluator;
 import com.jsoft.magenta.security.jwt.JwtFilter;
 import com.jsoft.magenta.security.jwt.JwtManager;
+import com.jsoft.magenta.security.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -34,6 +33,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter
     private static final String LOGIN_URL = "/magenta/v1/login";
 
     private final JwtManager jwtManager;
+    private final RefreshTokenService refreshTokenService;
     private final UserDetailsService userDetailsService;
 
     @Override
@@ -101,7 +101,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter
 
     private CustomAuthenticationFilter authFilter() throws Exception
     {
-        CustomAuthenticationFilter authFilter = new CustomAuthenticationFilter(authenticationManager(), jwtManager);
+        CustomAuthenticationFilter authFilter = new CustomAuthenticationFilter(
+                authenticationManager(),refreshTokenService, jwtManager);
         authFilter.setFilterProcessesUrl(LOGIN_URL);
         return authFilter;
     }

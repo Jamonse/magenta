@@ -1,24 +1,22 @@
 package com.jsoft.magenta.worktimes;
 
+import com.jsoft.magenta.dates.HolidayService;
 import com.jsoft.magenta.events.subprojects.SubProjectRelatedEntityEvent;
 import com.jsoft.magenta.exceptions.NoSuchElementException;
 import com.jsoft.magenta.exceptions.RedundantWorkTimeException;
 import com.jsoft.magenta.subprojects.SubProject;
 import com.jsoft.magenta.security.UserEvaluator;
 import com.jsoft.magenta.users.User;
-import com.jsoft.magenta.worktimes.reports.HoursDetail;
-import com.jsoft.magenta.worktimes.reports.Week;
-import com.jsoft.magenta.worktimes.reports.WeeklyHoursReport;
+import com.jsoft.magenta.worktimes.reports.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.time.DateTimeException;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -27,6 +25,7 @@ public class WorkTimeService
 {
     private final WorkTimeRepository workTimeRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final HolidayService holidayService;
 
     public WorkTime createWorkTime(Long subProjectId, WorkTime workTime)
     { // Validate work time type and values, set amount in case of date type work time
@@ -106,14 +105,36 @@ public class WorkTimeService
         return this.workTimeRepository.findAllByUserIdAndDate(userId, localDate);
     }
 
-    public WeeklyHoursReport getWeeklyHoursReport(Long userId, LocalDate startDate)
-    {
-        WeeklyHoursReport weeklyHoursReport = new WeeklyHoursReport();
-        Week week = new Week(startDate);
-        List<WorkTime> workTimes = this.workTimeRepository
-                .findAllByUserIdAndDateBetween(userId, week.getStartDate(), week.getEndDate());
-
+    public WeeklyHoursReport getWeeklyHoursReport(Long userId, BusinessWeek businessWeek)
+    { // Create report
+        WeeklyHoursReport weeklyHoursReport = new WeeklyHoursReport(businessWeek);
+        String userName = findUserName(userId);
+        double weekHours = this.holidayService.getBusinessHoursInWeek(businessWeek); // Get amount of hours excluding holidays
+        List<WorkTimeReportResult> workTimes = this.workTimeRepository // Get all work times of user in that week
+                .findAllByUserIdAndDateBetween(userId, businessWeek.getStartDate(), businessWeek.getEndDate());
+        List<HoursDetail> hoursDetails = mapWorkTimeToHourDetails(workTimes); // Map work times to hour details
+        // Set fetched and processed details to the report
+        weeklyHoursReport.setUserName(userName);
+        weeklyHoursReport.setHoursDetails(hoursDetails);
+        weeklyHoursReport.setWeekHours(weekHours);
+        // Return the report
         return weeklyHoursReport;
+    }
+
+    public MonthlyHoursReport getMonthlyHoursReport(Long userId, BusinessMonth businessMonth)
+    {
+        MonthlyHoursReport monthlyHoursReport = new MonthlyHoursReport(businessMonth);
+        String userName = findUserName(userId);
+        double monthHours = this.holidayService.getBusinessHoursInMonth(businessMonth); // Get amount of hours excluding holidays
+        List<WorkTimeReportResult> workTimes = this.workTimeRepository // Get all work times of user in that month
+                .findAllByUserIdAndDateBetween(userId, businessMonth.getFirstDate(), businessMonth.getLastDate());
+        List<HoursDetail> hoursDetails = mapWorkTimeToHourDetails(workTimes); // Map work times to hour details
+        // Set fetched and processed details to the report
+        monthlyHoursReport.setUserName(userName);
+        monthlyHoursReport.setHoursDetails(hoursDetails);
+        monthlyHoursReport.setMonthHours(monthHours);
+        // Return the report
+        return monthlyHoursReport;
     }
 
     public void deleteWorkTime(Long wtId)
@@ -171,6 +192,37 @@ public class WorkTimeService
         return this.workTimeRepository
                 .findUserIdById(wtId)
                 .orElseThrow(() -> new NoSuchElementException("Work time not found"));
+    }
+
+    private String findUserName(Long userId)
+    {
+        return this.workTimeRepository.getUserByUserId(userId)
+                .map(User::getName) // Fetch user name by user id
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
+    }
+
+    private List<HoursDetail> mapWorkTimeToHourDetails(List<WorkTimeReportResult> workTimes)
+    {
+        Map<HoursDetail, Double> hoursDetailsMap = new HashMap<>(); // Create hour details - amount of hours map
+        // Iterate over all work times and combine them into matching hour details (same account and project)
+        for(WorkTimeReportResult workTime : workTimes)
+        {
+            HoursDetail hoursDetail = new HoursDetail(
+                    workTime.getSubProjectProjectAccountName(),
+                    workTime.getSubProjectProjectName(),
+                    workTime.getAmount());
+            if(hoursDetailsMap.containsKey(hoursDetail)) // Hour details exist - add new one hours
+                hoursDetailsMap.put(hoursDetail, hoursDetailsMap.get(hoursDetail) + hoursDetail.getHours());
+            else // Hour details does not exist - create new one
+                hoursDetailsMap.put(hoursDetail, hoursDetail.getHours());
+        }// Iterate over hour details - amount of hours map and collect totals to list
+        List<HoursDetail> hoursDetails = hoursDetailsMap.keySet().stream()
+                .map(hoursDetail -> new HoursDetail(
+                        hoursDetail.getAccount(),
+                        hoursDetail.getProject(),
+                        hoursDetailsMap.get(hoursDetail)))
+                .collect(Collectors.toList());
+        return hoursDetails;
     }
 
 }

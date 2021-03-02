@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface HolidayRepository extends CrudRepository<Holiday, LocalDate>
 {
-    List<Holiday> findAllByIdBetween(LocalDate start, LocalDate end);
+    List<Holiday> findAllByDateBetween(LocalDate start, LocalDate end);
 }

@@ -33,7 +33,7 @@ public class HolidayController
         return this.holidayService.updateHoliday(holiday);
     }
 
-    @GetMapping
+    @GetMapping("is")
     public boolean isHoliday(
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
