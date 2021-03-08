@@ -66,7 +66,7 @@ public class AccountServiceTest
 
         when(accountRepository.save(account1)).thenReturn(account1);
 
-        Account savedAccount = this.accountService.createAccount(account1);
+        Account savedAccount = this.accountService.createAccount(account1, null, null, null);
         Assertions.assertEquals(savedAccount.getName(), "Name");
     }
 
@@ -143,7 +143,7 @@ public class AccountServiceTest
 
         when(accountRepository.findByName("name")).thenReturn(Optional.of(account1));
 
-        Assertions.assertThrows(DuplicationException.class, () -> this.accountService.createAccount(account1));
+        Assertions.assertThrows(DuplicationException.class, () -> this.accountService.createAccount(account1, null, null, null));
     }
 
     @Test
@@ -158,7 +158,7 @@ public class AccountServiceTest
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account1));
         when(accountRepository.save(account1)).thenReturn(account1);
 
-        this.accountService.createAccount(account1);
+        this.accountService.createAccount(account1, null, null, null);
 
         account1.setName("new name");
         Account updatedAccount = this.accountService.updateAccountName(account1.getId(), account1.getName());
@@ -252,7 +252,7 @@ public class AccountServiceTest
 
         when(accountRepository.save(account1)).thenReturn(account1);
 
-        this.accountService.createAccount(account1);
+        this.accountService.createAccount(account1, null, null, null);
     }
 
 }

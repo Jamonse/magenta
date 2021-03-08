@@ -35,7 +35,7 @@ public class MailService
     @Scheduled(cron = "${application.mail.weekly-mail}")
     public void weeklyMailsJob()
     { // Fetch user details
-        List<UserSearchResult> users = this.userRepository.findAllResults();
+        List<UserSearchResult> users = this.userRepository.findAllResultsBy();
         users.forEach(user -> {
             try { // Send weekly email to each user
                 sendWeeklyMail(

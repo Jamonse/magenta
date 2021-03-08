@@ -10,6 +10,9 @@ import com.jsoft.magenta.events.accounts.AccountAssociationUpdateEvent;
 import com.jsoft.magenta.exceptions.*;
 import com.jsoft.magenta.events.projects.ProjectAssociationCreationEvent;
 import com.jsoft.magenta.events.projects.ProjectAssociationRemovalEvent;
+import com.jsoft.magenta.files.MagentaImage;
+import com.jsoft.magenta.files.MagentaImageService;
+import com.jsoft.magenta.files.MagentaImageType;
 import com.jsoft.magenta.projects.domain.Project;
 import com.jsoft.magenta.projects.domain.ProjectSearchResult;
 import com.jsoft.magenta.security.UserEvaluator;
@@ -26,6 +29,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
@@ -36,25 +40,24 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AccountService
 {
-    @Value("${application.images.default.account-image}")
-    private String accountDefaultImage;
-
-    @Value("${application.images.default.account-background-image}")
-    private String accountDefaultBackgroundImage;
-
     private final AccountRepository accountRepository;
     private final AccountAssociationRepository accountAssociationRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final MagentaImageService imageService;
 
-    public Account createAccount(Account account)
+    public Account createAccount(
+            Account account, MultipartFile coverImage, MultipartFile logoImage, MultipartFile profileImage)
     {
         verifyAccountNameUnique(account.getName());
-        account.setName(WordFormatter.capitalize(account.getName()));
+        String name = WordFormatter.capitalize(account.getName());
+        account.setName(name);
         account.setCreatedAt(LocalDate.now());
-        if(Strings.isNullOrEmpty(account.getImage()))
-            account.setImage(accountDefaultImage);
-        if(Strings.isNullOrEmpty(account.getBackgroundImage()))
-            account.setBackgroundImage(accountDefaultBackgroundImage);
+        MagentaImage cover = coverImage != null ? imageService.processImageUpload(name, coverImage, MagentaImageType.COVER) : null;
+        MagentaImage logo = logoImage != null ? imageService.processImageUpload(name, logoImage, MagentaImageType.LOGO) : null;
+        MagentaImage profile = profileImage != null ? imageService.processImageUpload(name, profileImage, MagentaImageType.PROFILE) : null;
+        account.setCoverImage(cover);
+        account.setLogo(logo);
+        account.setProfileImage(profile);
         return this.accountRepository.save(account);
     }
 

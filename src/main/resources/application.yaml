@@ -1,0 +1,85 @@
+# Profile
+
+spring:
+  profiles:
+    active: dev
+
+  # Datasource
+
+  jpa:
+    datasource:
+      url: jdbc:postgresql://localhost:5432/magentadb
+      username: postgres
+      password: adminqwer
+      hibernate:
+        ddl-auto: update
+        dialect: org.hibernate.dialect.PostgreSQL9Dialect
+        show_sql: true
+
+  # Schema
+
+    properties:
+      javax:
+        persistence:
+          schema-generation:
+            scripts:
+              action: drop-and-create
+              create-target: create.sql
+              drop-target: drop.sql
+              create-source: metadata
+              drop-source: metadata
+
+  # Mail
+
+    mail:
+      host: smtp.mailtrap.io
+      port: 2525
+      ssl: no
+      tls: yes
+      username: 2e2b32449f4ee8
+      password: d15660ae3fb297
+      protocol: smtp
+
+  # Web
+
+  application:
+    url: magenta/v1/
+
+  # Schedule
+
+  schedule:
+    token-job: 0 0 0 * * ?
+
+  # Security
+
+  jwt:
+    tokenPrefix: Bearer
+    secret: Jjenta
+    expiration-length: 15
+    cors:
+      allowed-origin: http://localhost:4200
+
+  # Mail
+
+  mail:
+    address: magenta@mgn.com
+    weekly-mail: 0 0 0 ? * SUN
+
+  # Images
+
+  image:
+    size:
+      cover-height:
+      cover-width:
+      profile-height:
+      profile-width:
+      logo-height:
+      logo-width:
+      thumbnail-height:
+      thumbnail-width:
+
+# Logging
+
+logging:
+  level:
+    web: DEBUG

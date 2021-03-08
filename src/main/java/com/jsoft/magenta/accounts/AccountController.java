@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -29,9 +30,14 @@ public class AccountController
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @AccountWritePermission
-    public Account createAccount(@RequestBody @Valid Account account)
+    public Account createAccount(
+            @RequestParam MultipartFile coverImage,
+            @RequestParam MultipartFile profileImage,
+            @RequestParam MultipartFile logoImage,
+            @RequestBody @Valid Account account
+    )
     {
-        return this.accountService.createAccount(account);
+        return this.accountService.createAccount(account, coverImage, logoImage, profileImage);
     }
 
     @PostMapping("{accountId}/association/{userId}")

@@ -32,5 +32,5 @@ public interface UserRepository extends JpaRepository<User, Long>
                 nameExample, nameExample, nameExample, pageRequest);
     }
 
-    List<UserSearchResult> findAllResults();
+    List<UserSearchResult> findAllResultsBy();
 }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.jsoft.magenta.contacts.Contact;
+import com.jsoft.magenta.files.MagentaImage;
 import com.jsoft.magenta.projects.domain.Project;
 import com.jsoft.magenta.util.validation.annotations.ValidName;
 import lombok.AllArgsConstructor;
@@ -52,11 +53,29 @@ public class Account
     @JsonSerialize(using = LocalDateSerializer.class)
     private LocalDate createdAt;
 
-    @Column(name = "account_image", nullable = false)
-    private String image;
+    @JoinColumn(
+            name = "cover_image",
+            foreignKey = @ForeignKey(name = "FK_cimg_account")
+    )
+    @ManyToOne
+    @JsonIgnore
+    private MagentaImage coverImage;
 
-    @Column(name = "account_background_image", nullable = false)
-    private String backgroundImage;
+    @JoinColumn(
+            name = "logo_image",
+            foreignKey = @ForeignKey(name = "FK_limg_account")
+    )
+    @ManyToOne
+    @JsonIgnore
+    private MagentaImage logo;
+
+    @JoinColumn(
+            name = "thumbnail_image",
+            foreignKey = @ForeignKey(name = "FK_timg_account")
+    )
+    @ManyToOne
+    @JsonIgnore
+    private MagentaImage profileImage;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     @JoinColumn(

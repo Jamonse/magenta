@@ -25,7 +25,6 @@ public class UserSetupLoader implements ApplicationListener<ApplicationContextEv
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final PrivilegeRepository privilegeRepository;
-    private final WorkTimeRepository workTimeRepository;
 
     @Override
     @Transactional

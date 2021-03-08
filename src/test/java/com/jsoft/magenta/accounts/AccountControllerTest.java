@@ -52,7 +52,7 @@ public class AccountControllerTest {
         Account returnedAccount = new Account();
         returnedAccount.setId(1L);
 
-        when(accountService.createAccount(account)).thenReturn(returnedAccount);
+        when(accountService.createAccount(account, null, null, null)).thenReturn(returnedAccount);
 
         mockMvc.perform(post(Stringify.BASE_URL + "accounts")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -105,7 +105,7 @@ public class AccountControllerTest {
         returnedAccount.setId(1L);
         returnedAccount.setName("new name");
 
-        when(accountService.createAccount(account)).thenReturn(account);
+        when(accountService.createAccount(account, null, null, null)).thenReturn(account);
         when(accountService.updateAccountName(account.getId(), "new name")).thenReturn(returnedAccount);
 
         mockMvc.perform(patch(Stringify.BASE_URL + "accounts/{accountId}", account.getId())
