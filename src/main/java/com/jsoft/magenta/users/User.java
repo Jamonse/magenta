@@ -9,6 +9,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.google.common.base.Strings;
 import com.jsoft.magenta.accounts.domain.AccountAssociation;
 import com.jsoft.magenta.exceptions.AuthorizationException;
+import com.jsoft.magenta.files.MagentaImage;
 import com.jsoft.magenta.notes.UserNote;
 import com.jsoft.magenta.projects.domain.ProjectAssociation;
 import com.jsoft.magenta.subprojects.SubProject;
@@ -86,20 +87,26 @@ public class User
     @NotBlank(message = AppConstants.PASSWORD_BLANK_MESSAGE)
     private String password;
 
-    @Column(name = "image")
-    private String image;
+    @JoinColumn(
+            name = "profile_image",
+            foreignKey = @ForeignKey(name = "FK_pimg_user")
+    )
+    @ManyToOne
+    @JsonIgnore
+    private MagentaImage profileImage;
 
     @Column(name = "is_enabled")
     private boolean enabled;
 
     @Column(name = "pref_theme", length = 50, nullable = false)
     @Enumerated(EnumType.STRING)
-    @ValidTheme
+    @NotNull
     private ColorTheme preferredTheme;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     @JsonDeserialize(using = LocalDateDeserializer.class)
     @JsonSerialize(using = LocalDateSerializer.class)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDate createdAt;
 
     @Column(name = "birth_day", nullable = false)

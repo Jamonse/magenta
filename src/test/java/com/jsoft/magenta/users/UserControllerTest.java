@@ -59,7 +59,7 @@ public class UserControllerTest
             user.setPassword("password");
             user.setPreferredTheme(ColorTheme.LIGHT);
 
-            Mockito.when(userService.createUser(user)).thenReturn(user);
+            Mockito.when(userService.createUser(user, null)).thenReturn(user);
 
             mockMvc.perform(MockMvcRequestBuilders.post(Stringify.BASE_URL + "users")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -68,7 +68,7 @@ public class UserControllerTest
                     .andExpect(MockMvcResultMatchers.status().isCreated())
                     .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
 
-            Mockito.verify(userService).createUser(user);
+            Mockito.verify(userService).createUser(user, null);
         }
 
         @Test
@@ -84,7 +84,7 @@ public class UserControllerTest
             user.setPassword("password");
             user.setPreferredTheme(ColorTheme.LIGHT);
 
-            Mockito.when(userService.createUser(user)).thenReturn(user);
+            Mockito.when(userService.createUser(user, null)).thenReturn(user);
 
             mockMvc.perform(MockMvcRequestBuilders.post(Stringify.BASE_URL + "users")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -94,7 +94,7 @@ public class UserControllerTest
                     .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0]").value(AppConstants.NAME_LENGTH_MESSAGE));
 
-            Mockito.verify(userService, Mockito.never()).createUser(user);
+            Mockito.verify(userService, Mockito.never()).createUser(user, null);
         }
 
         @Test
@@ -110,7 +110,7 @@ public class UserControllerTest
             user.setPassword("password");
             user.setPreferredTheme(ColorTheme.LIGHT);
 
-            Mockito.when(userService.createUser(user)).thenReturn(user);
+            Mockito.when(userService.createUser(user, null)).thenReturn(user);
 
             mockMvc.perform(MockMvcRequestBuilders.post(Stringify.BASE_URL + "users")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -120,7 +120,7 @@ public class UserControllerTest
                     .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0]").value(AppConstants.EMAIL_INVALID_MESSAGE));
 
-            Mockito.verify(userService, Mockito.never()).createUser(user);
+            Mockito.verify(userService, Mockito.never()).createUser(user, null);
         }
 
         @Test
@@ -136,7 +136,7 @@ public class UserControllerTest
             user.setPassword("password");
             user.setPreferredTheme(ColorTheme.LIGHT);
 
-            Mockito.when(userService.createUser(user)).thenReturn(user);
+            Mockito.when(userService.createUser(user, null)).thenReturn(user);
 
             mockMvc.perform(MockMvcRequestBuilders.post(Stringify.BASE_URL + "users")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -146,7 +146,7 @@ public class UserControllerTest
                     .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0]").value(AppConstants.PHONE_NUMBER_MESSAGE));
 
-            Mockito.verify(userService, Mockito.never()).createUser(user);
+            Mockito.verify(userService, Mockito.never()).createUser(user, null);
         }
 
         @Test
@@ -161,7 +161,7 @@ public class UserControllerTest
             user.setBirthDay(LocalDate.now().minusYears(20));
             user.setPreferredTheme(ColorTheme.LIGHT);
 
-            Mockito.when(userService.createUser(user)).thenReturn(user);
+            Mockito.when(userService.createUser(user, null)).thenReturn(user);
 
             mockMvc.perform(MockMvcRequestBuilders.post(Stringify.BASE_URL + "users")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -171,7 +171,7 @@ public class UserControllerTest
                     .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0]").value(AppConstants.PASSWORD_BLANK_MESSAGE));
 
-            Mockito.verify(userService, Mockito.never()).createUser(user);
+            Mockito.verify(userService, Mockito.never()).createUser(user, null);
         }
 
         @Test

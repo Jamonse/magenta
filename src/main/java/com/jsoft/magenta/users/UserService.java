@@ -1,5 +1,6 @@
 package com.jsoft.magenta.users;
 
+import com.jsoft.magenta.accounts.domain.Account;
 import com.jsoft.magenta.events.PermissionEvent;
 import com.jsoft.magenta.events.accounts.AccountAssociationCreationEvent;
 import com.jsoft.magenta.events.projects.ProjectAssociationCreationEvent;
@@ -9,6 +10,9 @@ import com.jsoft.magenta.exceptions.AuthorizationException;
 import com.jsoft.magenta.exceptions.DuplicationException;
 import com.jsoft.magenta.exceptions.NoSuchElementException;
 import com.jsoft.magenta.exceptions.RedundantAssociationException;
+import com.jsoft.magenta.files.MagentaImage;
+import com.jsoft.magenta.files.MagentaImageService;
+import com.jsoft.magenta.files.MagentaImageType;
 import com.jsoft.magenta.security.UserEvaluator;
 import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.security.model.Privilege;
@@ -21,8 +25,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.util.Pair;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
@@ -36,13 +42,17 @@ public class UserService
 {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MagentaImageService imageService;
 
-    public User createUser(User user)
+    public User createUser(User user, MultipartFile profileImage)
     {
         verifyUserUniques(user);
         user.setCreatedAt(LocalDate.now());
         user.setEnabled(true);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        MagentaImage magentaImage = profileImage != null ?
+                this.imageService.uploadImage(user.getName(), profileImage, MagentaImageType.PROFILE) : null;
+        user.setProfileImage(magentaImage);
         return this.userRepository.save(user);
     }
 
@@ -58,6 +68,22 @@ public class UserService
             throw new DuplicationException("Supervision already exists");
         supervisor.setSupervisedUsers(Set.of(supervised)); // Create supervision and save
         return this.userRepository.save(supervisor);
+    }
+
+    public MagentaImage updateUserProfileImage(Long userId, MultipartFile profileImage)
+    { // Fetch user
+        User user = findUser(userId);
+        MagentaImage userImage = user.getProfileImage();
+        if(userImage == null)
+        { // User does not have profile image yet -> upload a new one
+            MagentaImage magentaImage = this.imageService
+                    .uploadImage(user.getName(), profileImage, MagentaImageType.PROFILE);
+            user.setProfileImage(magentaImage);
+            this.userRepository.save(user);
+            return magentaImage;
+        } // User profile image exists -> perform update
+        return this.imageService
+                .updateImage(userImage.getId(), user.getName(), profileImage, MagentaImageType.PROFILE);
     }
 
     public User updateUser(User user)
@@ -144,6 +170,14 @@ public class UserService
     {
         PageRequest pageRequest = PageRequestBuilder.buildPageRequest(0, resultsCount, AppDefaults.USER_DEFAULT_SORT, false);
         return this.userRepository.findAllByNameExample(nameExample, pageRequest);
+    }
+
+    public void removeUserProfileImage(Long userId, Long imageId)
+    {
+        User user = findUser(userId);
+        user.setProfileImage(null);
+        this.userRepository.save(user);
+        this.imageService.removeImage(imageId, MagentaImageType.PROFILE);
     }
 
     public void deleteUser(Long userId)

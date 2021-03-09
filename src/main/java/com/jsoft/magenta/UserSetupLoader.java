@@ -51,8 +51,8 @@ public class UserSetupLoader implements ApplicationListener<ApplicationContextEv
             this.privilegeRepository.save(privilege3);
             Set<Privilege> privileges = Set.of(privilege, privilege1, privilege2, privilege3);
             String password = passwordEncoder.encode("password");
-            User user = new User(1L, "admin", "admin", "admin@admin.com", "phoneNumber",
-                    password, "image", true, ColorTheme.LIGHT, LocalDate.now(), LocalDate.now(),
+            User user = new User(1L, "admin", "admin", "admin@admin.com", "055-5555555",
+                    password, null, true, ColorTheme.LIGHT, LocalDate.now(), LocalDate.now(),
                     new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), privileges, new HashSet<>());
 
             userRepository.save(user);

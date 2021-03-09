@@ -34,8 +34,6 @@ public class AccountRepositoryTest
         Account ac1 = new Account();
         ac1.setName("name");
         ac1.setCreatedAt(LocalDate.now());
-        ac1.setImage("image");
-        ac1.setBackgroundImage("background_image");
 
         Assertions.assertNull(ac1.getId());
         this.accountRepository.save(ac1);
@@ -49,8 +47,6 @@ public class AccountRepositoryTest
         Account ac1 = new Account();
         ac1.setName("name");
         ac1.setCreatedAt(LocalDate.now());
-        ac1.setImage("image");
-        ac1.setBackgroundImage("background_image");
 
         this.accountRepository.save(ac1);
 
@@ -67,13 +63,9 @@ public class AccountRepositoryTest
         Account ac1 = new Account();
         ac1.setName("account a");
         ac1.setCreatedAt(LocalDate.now());
-        ac1.setImage("image");
-        ac1.setBackgroundImage("background_image");
         Account ac2 = new Account();
         ac2.setName("account b");
         ac2.setCreatedAt(LocalDate.now());
-        ac2.setImage("image");
-        ac2.setBackgroundImage("background_image");
 
         Sort sort = Sort.by("name");
 
@@ -93,8 +85,6 @@ public class AccountRepositoryTest
     {
         Account ac = new Account();
         ac.setName("name");
-        ac.setImage("image");
-        ac.setBackgroundImage("background_image");
         ac.setCreatedAt(LocalDate.now());
         User user = new User();
         user.setId(1L);

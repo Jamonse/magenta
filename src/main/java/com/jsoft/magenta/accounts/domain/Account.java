@@ -1,6 +1,7 @@
 package com.jsoft.magenta.accounts.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
@@ -51,6 +52,7 @@ public class Account
     @Column(name = "created_at", nullable = false, updatable = false)
     @JsonDeserialize(using = LocalDateDeserializer.class)
     @JsonSerialize(using = LocalDateSerializer.class)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDate createdAt;
 
     @JoinColumn(
@@ -71,7 +73,7 @@ public class Account
 
     @JoinColumn(
             name = "thumbnail_image",
-            foreignKey = @ForeignKey(name = "FK_timg_account")
+            foreignKey = @ForeignKey(name = "FK_pimg_account")
     )
     @ManyToOne
     @JsonIgnore

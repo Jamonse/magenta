@@ -13,9 +13,9 @@ public class UserPojoTest
     @DisplayName("Create two users and check getter and equals")
     public void create()
     {
-        User user1 = new User(1L, "first name", "last name", "email", "phoneNumber", "password", "image",
+        User user1 = new User(1L, "first name", "last name", "email", "phoneNumber", "password", null,
                 true, ColorTheme.LIGHT, LocalDate.now(), LocalDate.now(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
-        User user2 = new User(1L, "first name", "last name", "email", "phoneNumber", "password", "image",
+        User user2 = new User(1L, "first name", "last name", "email", "phoneNumber", "password", null,
                 true, ColorTheme.LIGHT, LocalDate.now(), LocalDate.now(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
 
         Assertions.assertEquals(user1.getFirstName(), "first name");
@@ -26,7 +26,7 @@ public class UserPojoTest
     @DisplayName("Update user and check getter")
     public void update()
     {
-        User user1 = new User(1L, "first name", "last name", "email", "phoneNumber", "password", "image",
+        User user1 = new User(1L, "first name", "last name", "email", "phoneNumber", "password", null,
                 true, ColorTheme.LIGHT, LocalDate.now(), LocalDate.now(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
         user1.setFirstName("new first name");
 

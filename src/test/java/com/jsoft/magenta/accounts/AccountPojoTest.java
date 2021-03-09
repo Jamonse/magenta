@@ -15,9 +15,9 @@ public class AccountPojoTest
     @DisplayName("Create two accounts and check getter and equals")
     public void create()
     {
-        Account ac1 = new Account(1L, "account", LocalDate.now(), "image", "backgroundImage",
+        Account ac1 = new Account(1L, "account", LocalDate.now(), null, null, null,
                 new HashSet<>(), new HashSet<>(), new HashSet<>());
-        Account ac2 = new Account(1L, "ac", LocalDate.now(), "image", "backgroundImage",
+        Account ac2 = new Account(1L, "ac", LocalDate.now(), null, null, null,
                 new HashSet<>(), new HashSet<>(), new HashSet<>());
 
         Assertions.assertEquals(ac1.getName(), "account");
@@ -28,7 +28,7 @@ public class AccountPojoTest
     @DisplayName("Update account and check getter")
     public void update()
     {
-        Account ac1 = new Account(1L, "account", LocalDate.now(), "image", "backgroundImage",
+        Account ac1 = new Account(1L, "account", LocalDate.now(), null, null, null,
                 new HashSet<>(), new HashSet<>(), new HashSet<>());
         ac1.setName("new name");
 

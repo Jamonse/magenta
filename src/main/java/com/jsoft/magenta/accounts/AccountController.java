@@ -2,6 +2,8 @@ package com.jsoft.magenta.accounts;
 
 import com.jsoft.magenta.accounts.domain.Account;
 import com.jsoft.magenta.accounts.domain.AccountSearchResult;
+import com.jsoft.magenta.files.MagentaImage;
+import com.jsoft.magenta.files.MagentaImageType;
 import com.jsoft.magenta.projects.domain.Project;
 import com.jsoft.magenta.projects.domain.ProjectSearchResult;
 import com.jsoft.magenta.security.annotations.accounts.AccountAdminPermission;
@@ -12,6 +14,7 @@ import com.jsoft.magenta.util.validation.annotations.ValidPermission;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,9 +34,9 @@ public class AccountController
     @ResponseStatus(HttpStatus.CREATED)
     @AccountWritePermission
     public Account createAccount(
-            @RequestParam MultipartFile coverImage,
-            @RequestParam MultipartFile profileImage,
-            @RequestParam MultipartFile logoImage,
+            @RequestParam(required = false) MultipartFile coverImage,
+            @RequestParam(required = false) MultipartFile profileImage,
+            @RequestParam(required = false) MultipartFile logoImage,
             @RequestBody @Valid Account account
     )
     {
@@ -64,7 +67,7 @@ public class AccountController
         this.accountService.updateAssociation(userId, accountId, accessPermission);
     }
 
-    @PatchMapping("{accountId}")
+    @PatchMapping("name/{accountId}")
     @AccountWritePermission
     public Account updateAccountName(
             @PathVariable Long accountId,
@@ -72,6 +75,36 @@ public class AccountController
     )
     {
         return this.accountService.updateAccountName(accountId, newName);
+    }
+
+    @PatchMapping("cover/{accountId}")
+    @AccountWritePermission
+    public MagentaImage updateAccountCoverImage(
+            @PathVariable("{accountId}") Long accountId,
+            @RequestParam MultipartFile coverImage
+    )
+    {
+        return this.accountService.updateAccountImage(accountId, coverImage, MagentaImageType.COVER);
+    }
+
+    @PatchMapping("profile/{accountId}")
+    @AccountWritePermission
+    public MagentaImage updateAccountProfileImage(
+            @PathVariable("{accountId}") Long accountId,
+            @RequestParam MultipartFile profileImage
+    )
+    {
+        return this.accountService.updateAccountImage(accountId, profileImage, MagentaImageType.PROFILE);
+    }
+
+    @PatchMapping("logo/{accountId}")
+    @AccountWritePermission
+    public MagentaImage updateAccountLogoImage(
+            @PathVariable("{accountId}") Long accountId,
+            @RequestParam MultipartFile logoImage
+    )
+    {
+        return this.accountService.updateAccountImage(accountId, logoImage, MagentaImageType.LOGO);
     }
 
     @GetMapping
@@ -141,6 +174,36 @@ public class AccountController
         if(nameExample == null)
             return this.accountService.getAccountProjectResults(accountId, resultsCount);
         return this.accountService.getAccountProjectResultsByNameExample(accountId, nameExample, resultsCount);
+    }
+
+    @DeleteMapping("cover/{accountId}/{imageId}")
+    @AccountWritePermission
+    public void removeAccountCoverImage(
+            @PathVariable Long accountId,
+            @PathVariable Long imageId
+    )
+    {
+        this.accountService.removeAccountImage(accountId, imageId, MagentaImageType.COVER);
+    }
+
+    @DeleteMapping("profile/{accountId}/{imageId}")
+    @AccountWritePermission
+    public void removeAccountProfileImage(
+            @PathVariable Long accountId,
+            @PathVariable Long imageId
+    )
+    {
+        this.accountService.removeAccountImage(accountId, imageId, MagentaImageType.PROFILE);
+    }
+
+    @DeleteMapping("logo/{accountId}/{imageId}")
+    @AccountWritePermission
+    public void removeAccountLogoImage(
+            @PathVariable Long accountId,
+            @PathVariable Long imageId
+    )
+    {
+        this.accountService.removeAccountImage(accountId, imageId, MagentaImageType.LOGO);
     }
 
     @DeleteMapping("{accountId}")

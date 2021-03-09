@@ -65,7 +65,7 @@ public class UserServiceTest
 
             Mockito.when(userRepository.save(user)).thenReturn(user);
 
-            User savedUser = userService.createUser(user);
+            User savedUser = userService.createUser(user, null);
 
             Assertions.assertThat(savedUser)
                     .isNotNull()
@@ -94,7 +94,7 @@ public class UserServiceTest
             Mockito.when(userRepository.existsByEmail(user.getEmail())).thenReturn(true);
             Mockito.when(userRepository.save(user)).thenReturn(user);
 
-            Assertions.assertThatThrownBy(() -> userService.createUser(user))
+            Assertions.assertThatThrownBy(() -> userService.createUser(user, null))
                     .isInstanceOf(DuplicationException.class)
                     .hasMessage(String.format("User with email address %s already exists", user.getEmail()));
 
@@ -118,7 +118,7 @@ public class UserServiceTest
             Mockito.when(userRepository.existsByPhoneNumber(user.getPhoneNumber())).thenReturn(true);
             Mockito.when(userRepository.save(user)).thenReturn(user);
 
-            Assertions.assertThatThrownBy(() -> userService.createUser(user))
+            Assertions.assertThatThrownBy(() -> userService.createUser(user, null))
                     .isInstanceOf(DuplicationException.class)
                     .hasMessage(String.format("User with phone number %s already exists", user.getPhoneNumber()));
 
@@ -213,7 +213,7 @@ public class UserServiceTest
             Mockito.when(userRepository.existsByEmail(user.getEmail())).thenReturn(true);
             Mockito.when(userRepository.save(user)).thenReturn(user);
 
-            Assertions.assertThatThrownBy(() -> userService.createUser(user))
+            Assertions.assertThatThrownBy(() -> userService.createUser(user, null))
                     .isInstanceOf(DuplicationException.class)
                     .hasMessage(String.format("User with email address %s already exists", user.getEmail()));
 
@@ -238,7 +238,7 @@ public class UserServiceTest
             Mockito.when(userRepository.existsByPhoneNumber(user.getPhoneNumber())).thenReturn(true);
             Mockito.when(userRepository.save(user)).thenReturn(user);
 
-            Assertions.assertThatThrownBy(() -> userService.createUser(user))
+            Assertions.assertThatThrownBy(() -> userService.createUser(user, null))
                     .isInstanceOf(DuplicationException.class)
                     .hasMessage(String.format("User with phone number %s already exists", user.getPhoneNumber()));
 

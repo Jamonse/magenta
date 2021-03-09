@@ -4,20 +4,24 @@ spring:
   profiles:
     active: dev
 
+---
   # Datasource
 
+spring:
   jpa:
-    datasource:
-      url: jdbc:postgresql://localhost:5432/magentadb
-      username: postgres
-      password: adminqwer
-      hibernate:
-        ddl-auto: update
-        dialect: org.hibernate.dialect.PostgreSQL9Dialect
-        show_sql: true
+    database: POSTGRESQL
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQL9Dialect
+      show_sql: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/magentadb
+    username: postgres
+    password: adminqwer
 
+---
   # Schema
-
+spring:
     properties:
       javax:
         persistence:
@@ -28,9 +32,9 @@ spring:
               drop-target: drop.sql
               create-source: metadata
               drop-source: metadata
-
+---
   # Mail
-
+spring:
     mail:
       host: smtp.mailtrap.io
       port: 2525
@@ -42,41 +46,49 @@ spring:
 
   # Web
 
-  application:
-    url: magenta/v1/
+application:
+  url: magenta/v1/
 
+---
   # Schedule
 
+application:
   schedule:
     token-job: 0 0 0 * * ?
 
+---
   # Security
 
+application:
   jwt:
     tokenPrefix: Bearer
     secret: Jjenta
     expiration-length: 15
-    cors:
-      allowed-origin: http://localhost:4200
+  cors:
+    allowed-origin: http://localhost:4200
 
+---
   # Mail
 
+application:
   mail:
     address: magenta@mgn.com
     weekly-mail: 0 0 0 ? * SUN
 
+---
   # Images
 
+application:
   image:
     size:
-      cover-height:
-      cover-width:
-      profile-height:
-      profile-width:
-      logo-height:
-      logo-width:
-      thumbnail-height:
-      thumbnail-width:
+      cover-height: 100
+      cover-width: 100
+      profile-height: 50
+      profile-width: 50
+      logo-height: 30
+      logo-width: 30
+      thumbnail-height: 40
+      thumbnail-width: 40
 
 # Logging
 

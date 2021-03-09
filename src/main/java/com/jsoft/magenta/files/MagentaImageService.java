@@ -1,6 +1,7 @@
 package com.jsoft.magenta.files;
 
 import com.jsoft.magenta.exceptions.ImageProcessException;
+import com.jsoft.magenta.exceptions.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
@@ -45,7 +46,29 @@ public class MagentaImageService
 
     private final MagentaImageRepository imageRepository;
 
-    public MagentaImage processImageUpload(String name, MultipartFile imageFile, MagentaImageType imageType)
+    public MagentaImage uploadImage(String name, MultipartFile imageFile, MagentaImageType imageType)
+    { // Process image
+        MagentaImage magentaImage = processImage(name, imageFile, imageType);
+        // Persist and return the saved image
+        return this.imageRepository.save(magentaImage);
+    }
+
+    public MagentaImage updateImage(Long imageId, String name, MultipartFile imageFile, MagentaImageType imageType)
+    {
+        isExists(imageId, imageType);
+        MagentaImage magentaImage = processImage(name, imageFile, imageType);
+        magentaImage.setId(imageId);
+        // Persist and return the saved image
+        return this.imageRepository.save(magentaImage);
+    }
+
+    public void removeImage(Long imageId, MagentaImageType imageType)
+    {
+        isExists(imageId, imageType);
+        this.imageRepository.deleteById(imageId);
+    }
+
+    private MagentaImage processImage(String name, MultipartFile imageFile, MagentaImageType imageType)
     { // Convert the image into File
         File file = new File(imageFile.getOriginalFilename());
         int imageWidth = 0;
@@ -55,12 +78,15 @@ public class MagentaImageService
             case THUMBNAIL:
                 imageWidth = thumbnailImageSizeWidth;
                 imageHeight = thumbnailImageSizeHeight;
+                break;
             case PROFILE:
                 imageWidth = profileImageSizeWidth;
                 imageHeight = profileImageHeight;
+                break;
             case LOGO:
                 imageWidth = logoImageSizeWidth;
                 imageHeight = logoImageSizeHeight;
+                break;
             case COVER:
                 imageWidth = coverImageSizeWidth;
                 imageHeight = coverImageSizeHeight;
@@ -86,7 +112,13 @@ public class MagentaImageService
             log.error(String.format("Failure during image processing of %s entity", name));
             throw new ImageProcessException(String.format("Failure during image processing of %s entity", name));
         }
-        // Persist and return the saved image
-        return this.imageRepository.save(magentaImage);
+        return magentaImage;
+    }
+
+    private void isExists(Long imageId, MagentaImageType imageType)
+    {
+        boolean exist = this.imageRepository.existsByIdAndImageType(imageId, imageType);
+        if(!exist)
+            throw new NoSuchElementException("Image not found");
     }
 }

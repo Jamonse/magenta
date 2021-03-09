@@ -24,6 +24,12 @@ public class MagentaExceptionHandler
         return handleException(e, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<Object> handleInvalidCredentialsException(InvalidCredentialsException e)
+    {
+        return handleException(e, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(DuplicationException.class)
     public ResponseEntity<Object> handleDuplicationException(DuplicationException e)
     {

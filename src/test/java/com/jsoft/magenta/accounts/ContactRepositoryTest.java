@@ -38,8 +38,6 @@ public class ContactRepositoryTest
         Account account = new Account();
         account.setName("account");
         account.setCreatedAt(LocalDate.now());
-        account.setImage("image");
-        account.setBackgroundImage("background_image");
         Contact contact = new Contact();
         contact.setFirstName("first name");
         contact.setLastName("last name");
@@ -62,8 +60,6 @@ public class ContactRepositoryTest
         Account account = new Account();
         account.setName("account");
         account.setCreatedAt(LocalDate.now());
-        account.setImage("image");
-        account.setBackgroundImage("background_image");
         Contact contact = new Contact();
         contact.setFirstName("first name");
         contact.setLastName("last name");
@@ -87,8 +83,6 @@ public class ContactRepositoryTest
         Account account = new Account();
         account.setName("account");
         account.setCreatedAt(LocalDate.now());
-        account.setImage("image");
-        account.setBackgroundImage("background_image");
         Contact contact = new Contact();
         contact.setFirstName("first name");
         contact.setLastName("last name");
@@ -115,8 +109,6 @@ public class ContactRepositoryTest
         Account account = new Account();
         account.setName("account");
         account.setCreatedAt(LocalDate.now());
-        account.setImage("image");
-        account.setBackgroundImage("background_image");
         Contact contact = new Contact();
         contact.setFirstName("first name");
         contact.setLastName("last name");

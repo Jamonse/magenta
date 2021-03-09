@@ -52,9 +52,9 @@ public class AccountService
         String name = WordFormatter.capitalize(account.getName());
         account.setName(name);
         account.setCreatedAt(LocalDate.now());
-        MagentaImage cover = coverImage != null ? imageService.processImageUpload(name, coverImage, MagentaImageType.COVER) : null;
-        MagentaImage logo = logoImage != null ? imageService.processImageUpload(name, logoImage, MagentaImageType.LOGO) : null;
-        MagentaImage profile = profileImage != null ? imageService.processImageUpload(name, profileImage, MagentaImageType.PROFILE) : null;
+        MagentaImage cover = coverImage != null ? imageService.uploadImage(name, coverImage, MagentaImageType.COVER) : null;
+        MagentaImage logo = logoImage != null ? imageService.uploadImage(name, logoImage, MagentaImageType.LOGO) : null;
+        MagentaImage profile = profileImage != null ? imageService.uploadImage(name, profileImage, MagentaImageType.PROFILE) : null;
         account.setCoverImage(cover);
         account.setLogo(logo);
         account.setProfileImage(profile);
@@ -115,6 +115,47 @@ public class AccountService
             verifyAccountNameUnique(newName);
         accountToUpdate.setName(WordFormatter.capitalizeFormat(newName));
         return this.accountRepository.save(accountToUpdate);
+    }
+
+    public MagentaImage updateAccountImage(Long accountId, MultipartFile accountImage, MagentaImageType imageType)
+    { // Fetch account if exists
+        Account accountToUpdate = findAccount(accountId);
+        MagentaImage image = null;
+        switch(imageType)
+        { // Fetch image by type
+            case COVER:
+                image = accountToUpdate.getCoverImage();
+                break;
+            case PROFILE:
+                image = accountToUpdate.getProfileImage();
+                break;
+            case LOGO:
+                image = accountToUpdate.getLogo();
+                break;
+            case THUMBNAIL:
+                throw new IllegalArgumentException("Account does not have thumbnail image");
+        }
+        if(image == null)
+        { // Image does not exists -> upload a new one
+            MagentaImage magentaImage = this.imageService.uploadImage(accountToUpdate.getName(), accountImage, imageType);
+            switch(imageType)
+            {
+                case COVER:
+                    accountToUpdate.setCoverImage(magentaImage);
+                    break;
+                case PROFILE:
+                    accountToUpdate.setProfileImage(magentaImage);
+                    break;
+                case LOGO:
+                    accountToUpdate.setLogo(magentaImage);
+                    break;
+                case THUMBNAIL:
+                    throw new IllegalArgumentException("Account does not have thumbnail image");
+            }
+            this.accountRepository.save(accountToUpdate);
+            return magentaImage;
+        } // Image exists -> perform update
+        return this.imageService.updateImage(image.getId(), accountToUpdate.getName(), accountImage, imageType);
     }
 
     private Account findAccount(Long accountId)
@@ -255,6 +296,28 @@ public class AccountService
             return this.accountRepository.findAllProjectsResultsByIdAndAssociationsUserIdAndNameContainingIgnoreCase(
                     accountId, user.getId(), nameExample, pageRequest);
         return this.accountRepository.findAllProjectsResultsByIdAndNameContainingIgnoreCase(accountId, nameExample, pageRequest);
+    }
+
+    public void removeAccountImage(Long accountId, Long imageId, MagentaImageType imageType)
+    {
+        Account account = findAccount(accountId);
+        switch(imageType)
+        { // Remove image from account
+            case COVER:
+                account.setCoverImage(null);
+                break;
+            case PROFILE:
+                account.setProfileImage(null);
+                break;
+            case LOGO:
+                account.setLogo(null);
+                break;
+            case THUMBNAIL:
+                throw new IllegalArgumentException("Account does not have thumbnail image");
+        }
+        this.accountRepository.save(account);
+        // Delete the image from DB
+        this.imageService.removeImage(imageId, imageType);
     }
 
     public void deleteAccount(Long accountId)

@@ -1,5 +1,6 @@
 package com.jsoft.magenta.users;
 
+import com.jsoft.magenta.files.MagentaImage;
 import com.jsoft.magenta.security.annotations.users.UserManagePermission;
 import com.jsoft.magenta.security.annotations.users.UserWritePermission;
 import com.jsoft.magenta.util.validation.annotations.ValidTheme;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 
@@ -27,9 +29,12 @@ public class UserController
     @PostMapping
     @UserWritePermission
     @ResponseStatus(HttpStatus.CREATED)
-    public User createUser(@RequestBody @Valid User user)
+    public User createUser(
+            @RequestParam MultipartFile profileImage,
+            @RequestBody @Valid User user
+    )
     {
-        return this.userService.createUser(user);
+        return this.userService.createUser(user, profileImage);
     }
 
     @PostMapping("{supervisorId}/supervise/{supervisedId}")
@@ -54,6 +59,16 @@ public class UserController
     {
         ColorTheme colorTheme = ColorTheme.valueOf(preferredTheme.toUpperCase());
         return this.userService.updatePreferredTheme(colorTheme);
+    }
+
+    @PatchMapping("{userId}")
+    @UserWritePermission
+    public MagentaImage updateUserProfileImage(
+            @PathVariable Long userId,
+            @RequestParam MultipartFile profileImage
+    )
+    {
+        return this.userService.updateUserProfileImage(userId, profileImage);
     }
 
     @GetMapping
@@ -133,6 +148,16 @@ public class UserController
     )
     {
         return this.userService.getAllUsersByNameExample(nameExample, resultsCount);
+    }
+
+    @DeleteMapping("{userId}/image/{imageId}")
+    @UserWritePermission
+    public void removeUserProfileImage(
+            @PathVariable Long userId,
+            @PathVariable Long imageId
+    )
+    {
+        this.userService.removeUserProfileImage(userId, imageId);
     }
 
     @DeleteMapping("{userId}")
