@@ -44,6 +44,8 @@ public class AppConstants
 
     public static final String ALIAS = "magenta";
 
+    public static final String INVALID_CREDENTIALS = "INVALID_CREDENTIALS";
+
     // Permission names
 
     public static final String ACCOUNT_PERMISSION = "account";
@@ -66,6 +68,7 @@ public class AppConstants
     public static final double HOURS_IN_DAY = 24.0;
     public static final int SECONDS_IN_MINUTE = 60;
     public static final int HOURS_IN_WEEK = 168;
+    public static final int HOURS_IN_BUSINESS_WEEK = 44;
     public static final int MAX_HOURS_IN_MONTH = 744;
     public static final int BUSINESS_DAY_HOURS = 9;
     public static final int SHORT_BUSINESS_DAY_HOURS = BUSINESS_DAY_HOURS - 1;

@@ -14,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
@@ -118,11 +119,12 @@ public class WorkTimeController
     public MonthlyHoursReport getMonthlyHoursReport(
             @PathVariable @SupervisorOrOwner Long userId,
             @PathVariable @ValidYear Integer year,
-            @PathVariable @ValidMonth Integer month
+            @PathVariable @ValidMonth Integer month,
+            @RequestParam @NotBlank String userName
     )
     {
         BusinessMonth businessMonth = new BusinessMonth(YearMonth.of(year, month));
-        return this.workTimeService.getMonthlyHoursReport(userId, businessMonth);
+        return this.workTimeService.getMonthlyHoursReport(userId, userName, businessMonth);
     }
 
     @DeleteMapping("{wtId}")

@@ -32,13 +32,13 @@
         <li>Total hours for previous week: <b th:text="${weekHours}"></b></li>
         <li>Total hours worked previous week: <b th:text="${totalHours}"></b></li>
     </ul>
-    <p th:if="${hoursDetails.status.name() == 'MISSING'}">
+    <p th:if="${hoursStatus.name() == 'MISSING'}">
         <span> A total of
             <b th:text="${weekHours - totalHours}"></b>
             were missing for previous week.
         </span>
     </p>
-    <p th:if="${hoursDetails.status.name() == 'EXTRA'}">
+    <p th:if="${hoursStatus.name() == 'EXTRA'}">
         <span> A total of
             <b th:text="${totalHours - weekHours}"></b>
             were worked extra for previous week.

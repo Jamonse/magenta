@@ -54,7 +54,7 @@ public class MailService
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
         // Fetch weekly hours report for specified user
         BusinessWeek businessWeek = new BusinessWeek(LocalDate.now().minusWeeks(1));
-        WeeklyHoursReport weeklyHoursReport = workTimeService.getWeeklyHoursReport(userId, businessWeek);
+        WeeklyHoursReport weeklyHoursReport = workTimeService.getWeeklyHoursReport(userId, userName, businessWeek);
         // Build email data
         mimeMessageHelper.setFrom(from);
         mimeMessageHelper.setSubject(String.format(AppConstants.WEEKLY_MAIL_MESSAGE, userName));

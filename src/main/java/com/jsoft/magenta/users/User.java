@@ -211,11 +211,13 @@ public class User
                         p.getLevel().getPermissionLevel() >= privilege.getLevel().getPermissionLevel());
     }
 
+    @JsonIgnore
     public boolean isAccountAdmin()
     {
         return isAdminOf(AppConstants.ACCOUNT_PERMISSION);
     }
 
+    @JsonIgnore
     public boolean isUserAdmin()
     {
         return isAdminOf(AppConstants.USER_PERMISSION);
@@ -228,11 +230,13 @@ public class User
                         p.getLevel() == AccessPermission.ADMIN);
     }
 
+    @JsonIgnore
     public AccessPermission getAccountsPermission()
     {
         return getPermission(AppConstants.ACCOUNT_PERMISSION);
     }
 
+    @JsonIgnore
     public AccessPermission getProjectPermission()
     {
         return getPermission(AppConstants.PROJECT_PERMISSION);

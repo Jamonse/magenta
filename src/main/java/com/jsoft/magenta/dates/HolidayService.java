@@ -58,7 +58,7 @@ public class HolidayService
     { // Get all holidays of week
         List<Holiday> holidays = getAllWeekHolidays(week);
         if(holidays.isEmpty()) // No Holidays
-            return AppConstants.HOURS_IN_WEEK;
+            return AppConstants.HOURS_IN_BUSINESS_WEEK;
         Set<LocalDate> weekDates = week.getWeekDates();
         double weekHours = weekDates.stream() // Extract amount of hours from each day excluding holidays span and sum
                 .mapToDouble(localDate -> getBusinessHoursOfDate(localDate, holidays))

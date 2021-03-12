@@ -153,11 +153,10 @@ public class UserController
     @DeleteMapping("{userId}/image/{imageId}")
     @UserWritePermission
     public void removeUserProfileImage(
-            @PathVariable Long userId,
-            @PathVariable Long imageId
+            @PathVariable Long userId
     )
     {
-        this.userService.removeUserProfileImage(userId, imageId);
+        this.userService.removeUserProfileImage(userId);
     }
 
     @DeleteMapping("{userId}")

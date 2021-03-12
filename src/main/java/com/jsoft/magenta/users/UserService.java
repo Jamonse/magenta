@@ -172,9 +172,10 @@ public class UserService
         return this.userRepository.findAllByNameExample(nameExample, pageRequest);
     }
 
-    public void removeUserProfileImage(Long userId, Long imageId)
+    public void removeUserProfileImage(Long userId)
     {
         User user = findUser(userId);
+        Long imageId = user.getProfileImage().getId();
         user.setProfileImage(null);
         this.userRepository.save(user);
         this.imageService.removeImage(imageId, MagentaImageType.PROFILE);

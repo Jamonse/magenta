@@ -19,6 +19,7 @@ public class MailBuilder
         context.setVariable("hoursDetails", weeklyHoursReport.getHoursDetails());
         context.setVariable("weekHours", weeklyHoursReport.getWeekHours());
         context.setVariable("totalHours", weeklyHoursReport.getTotalHours());
+        context.setVariable("hoursStatus", weeklyHoursReport.getHoursStatus());
         return templateEngine.process("weeklyMailTemplate", context);
     }
 }

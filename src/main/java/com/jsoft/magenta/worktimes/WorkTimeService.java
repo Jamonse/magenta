@@ -105,10 +105,9 @@ public class WorkTimeService
         return this.workTimeRepository.findAllByUserIdAndDate(userId, localDate);
     }
 
-    public WeeklyHoursReport getWeeklyHoursReport(Long userId, BusinessWeek businessWeek)
+    public WeeklyHoursReport getWeeklyHoursReport(Long userId, String userName, BusinessWeek businessWeek)
     { // Create report
         WeeklyHoursReport weeklyHoursReport = new WeeklyHoursReport(businessWeek);
-        String userName = findUserName(userId);
         double weekHours = this.holidayService.getBusinessHoursInWeek(businessWeek); // Get amount of hours excluding holidays
         List<WorkTimeReportResult> workTimes = this.workTimeRepository // Get all work times of user in that week
                 .findAllByUserIdAndDateBetween(userId, businessWeek.getStartDate(), businessWeek.getEndDate());
@@ -121,10 +120,9 @@ public class WorkTimeService
         return weeklyHoursReport;
     }
 
-    public MonthlyHoursReport getMonthlyHoursReport(Long userId, BusinessMonth businessMonth)
+    public MonthlyHoursReport getMonthlyHoursReport(Long userId, String userName, BusinessMonth businessMonth)
     {
         MonthlyHoursReport monthlyHoursReport = new MonthlyHoursReport(businessMonth);
-        String userName = findUserName(userId);
         double monthHours = this.holidayService.getBusinessHoursInMonth(businessMonth); // Get amount of hours excluding holidays
         List<WorkTimeReportResult> workTimes = this.workTimeRepository // Get all work times of user in that month
                 .findAllByUserIdAndDateBetween(userId, businessMonth.getFirstDate(), businessMonth.getLastDate());
@@ -192,13 +190,6 @@ public class WorkTimeService
         return this.workTimeRepository
                 .findUserIdById(wtId)
                 .orElseThrow(() -> new NoSuchElementException("Work time not found"));
-    }
-
-    private String findUserName(Long userId)
-    {
-        return this.workTimeRepository.getUserByUserId(userId)
-                .map(User::getName) // Fetch user name by user id
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
     }
 
     private List<HoursDetail> mapWorkTimeToHourDetails(List<WorkTimeReportResult> workTimes)
