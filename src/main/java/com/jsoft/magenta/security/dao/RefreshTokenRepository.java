@@ -12,14 +12,14 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Stri
 {
     @Modifying
     @Transactional
-    void deleteByUserName(String userName);
+    void deleteByToken(String refreshToken);
 
     @Modifying
     @Transactional
     @Query("delete from RefreshToken token where token.expiresAt < CURRENT_TIMESTAMP")
     void removeExpiredTokens();
 
-    boolean existsByUserName(String userName);
+    boolean existsByToken(String refreshToken);
 
     Optional<RefreshToken> findByToken(String token);
 }

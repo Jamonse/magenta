@@ -34,9 +34,9 @@ public class AuthService
         return this.jwtManager.createToken(userName, privileges);
     }
 
-    public void logout()
+    public void logout(String refreshToken)
     { // Remove refresh token if exists
-        this.refreshTokenService.removeRefreshTokenIfExist();
+        this.refreshTokenService.removeRefreshTokenIfExist(refreshToken);
         SecurityContextHolder.clearContext(); // Clear security context
     }
 

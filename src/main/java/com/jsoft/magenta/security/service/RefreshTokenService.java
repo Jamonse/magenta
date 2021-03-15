@@ -1,7 +1,6 @@
 package com.jsoft.magenta.security.service;
 
 import com.jsoft.magenta.exceptions.NoSuchElementException;
-import com.jsoft.magenta.security.UserEvaluator;
 import com.jsoft.magenta.security.dao.RefreshTokenRepository;
 import com.jsoft.magenta.security.model.RefreshToken;
 import lombok.RequiredArgsConstructor;
@@ -40,12 +39,11 @@ public class RefreshTokenService
 
     }
 
-    public void removeRefreshTokenIfExist()
+    public void removeRefreshTokenIfExist(String refreshToken)
     {
-        String userName = UserEvaluator.currentUserName();
-        boolean exist = this.refreshTokenRepository.existsByUserName(userName);
+        boolean exist = this.refreshTokenRepository.existsByToken(refreshToken);
         if(exist)
-            this.refreshTokenRepository.deleteByUserName(userName);
+            this.refreshTokenRepository.deleteByToken(refreshToken);
     }
 
 }

@@ -25,6 +25,6 @@ public class RefreshToken
     @Column(name = "expires_at", nullable = false, updatable = false)
     private LocalDateTime expiresAt;
 
-    @Column(name = "user_name", nullable = false, updatable = false)
-    private String userName;
+    @Column(name = "email", nullable = false, updatable = false)
+    private String email;
 }

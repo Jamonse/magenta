@@ -78,4 +78,9 @@ public class AppConstants
     public static final DayOfWeek SECOND_WD_DAY = DayOfWeek.SATURDAY;
 
     public static final String WEEKLY_MAIL_MESSAGE = "Hello %s, we have a weekly mail for you from magenta!";
+
+    // URL
+
+    public static final String LOGIN_URL = "login";
+    public static final String LOGOUT_URL = "auth/logout";
 }

@@ -40,9 +40,9 @@ public class AuthController
     }
 
     @PostMapping("logout")
-    public void logout()
+    public void logout(@RequestBody @NotBlank String refreshToken)
     {
-        this.authService.logout();
+        this.authService.logout(refreshToken);
     }
 
     @PostMapping("pg")

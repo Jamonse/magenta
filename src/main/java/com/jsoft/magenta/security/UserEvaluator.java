@@ -26,6 +26,11 @@ public class UserEvaluator
         return currentUser().getName();
     }
 
+    public static String currentUserEmail()
+    {
+        return currentUser().getEmail();
+    }
+
     public static User currentUser()
     { // Get authentication from security context holder
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

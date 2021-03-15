@@ -4,6 +4,7 @@ import com.jsoft.magenta.security.jwt.CustomAuthenticationFilter;
 import com.jsoft.magenta.security.jwt.JwtFilter;
 import com.jsoft.magenta.security.jwt.JwtManager;
 import com.jsoft.magenta.security.service.RefreshTokenService;
+import com.jsoft.magenta.util.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -30,7 +31,9 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter
     @Value("${application.cors.allowed-origin}")
     private String allowedOrigin;
 
-    private static final String LOGIN_URL = "/magenta/v1/login";
+    private static final String API_URL = "/magenta/v1/";
+    private static final String LOGIN_URL = API_URL + "login";
+    private static final String LOGOUT_URL = API_URL + "auth/logout";
 
     private final JwtManager jwtManager;
     private final RefreshTokenService refreshTokenService;
@@ -47,9 +50,10 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         // Add custom UsernamePasswordAuthenticationFilter to return token upon successful authentication
         http.addFilter(authFilter());
-        // Allow all requests to login endpoint and authenticate all others
+        // Allow all requests to login and logout endpoint and authenticate all others
         http.authorizeRequests()
                 .antMatchers(LOGIN_URL).permitAll()
+                .antMatchers(LOGOUT_URL).permitAll()
                 .anyRequest().authenticated();
         // Add JWT filter before UsernamePasswordAuthenticationFilter
         http.addFilterBefore(new JwtFilter(jwtManager), UsernamePasswordAuthenticationFilter.class);
