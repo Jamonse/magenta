@@ -1,6 +1,6 @@
 package com.jsoft.magenta.workplans;
 
-import com.jsoft.magenta.security.UserEvaluator;
+import com.jsoft.magenta.security.SecurityService;
 import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.security.model.Privilege;
 import com.jsoft.magenta.users.User;
@@ -25,6 +25,9 @@ public class WorkPlansServiceTest
     private WorkPlanService workPlanService;
 
     @Mock
+    private SecurityService securityService;
+
+    @Mock
     private WorkPlanRepository workPlanRepository;
 
     @Mock
@@ -34,14 +37,6 @@ public class WorkPlansServiceTest
     private void init()
     {
         MockitoAnnotations.openMocks(this);
-    }
-
-    private static MockedStatic mockedStatic;
-
-    @BeforeAll
-    private static void initStatic()
-    {
-        mockedStatic = Mockito.mockStatic(UserEvaluator.class);
     }
 
     @Nested
@@ -65,8 +60,7 @@ public class WorkPlansServiceTest
             User supervised = new User(1L);
             user.setSupervisedUsers(Set.of(supervised));
 
-            mockedStatic.when(UserEvaluator::currentUser)
-                    .thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(workPlanRepository.save(workPlan))
                     .thenReturn(workPlan);
 
@@ -91,8 +85,7 @@ public class WorkPlansServiceTest
             User supervised = new User(1L);
             user.setSupervisedUsers(Set.of(supervised));
 
-            mockedStatic.when(UserEvaluator::currentUser)
-                    .thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
 
             Mockito.when(workPlanRepository.save(workPlan))
                     .thenReturn(workPlan);

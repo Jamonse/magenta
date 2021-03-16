@@ -4,20 +4,20 @@ import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.users.ColorTheme;
 
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.util.Set;
 
-public class AppConstants
-{
+public class AppConstants {
     // Validation messages
 
     public static final String TITLE_BLANK_MESSAGE = "Title must not be null or empty";
     public static final String TITLE_LENGTH_MESSAGE = "Title must contain at least 2 characters and maximum of 50";
-    public static final String TITLE_DEFAULT_MESSAGE = "Title must not be null, empty or contain less than 2 or more than 50 characters";
+    public static final String TITLE_DEFAULT_MESSAGE = "Title must not be null, empty or contain less than 2 or more " +
+            "than 50 characters";
 
     public static final String NAME_BLANK_MESSAGE = "Name must not be null or empty";
     public static final String NAME_LENGTH_MESSAGE = "Name must contain at least 2 characters and maximum of 50";
-    public static final String NAME_DEFAULT_MESSAGE = "Name must not be null, empty or contain less than 2 or more than 50 characters";
+    public static final String NAME_DEFAULT_MESSAGE = "Name must not be null, empty or contain less than 2 or more " +
+            "than 50 characters";
     public static final String EMAIL_INVALID_MESSAGE = "Email pattern is invalid";
     public static final String PASSWORD_BLANK_MESSAGE = "Password must not be null or empty";
 
@@ -45,6 +45,8 @@ public class AppConstants
     public static final String ALIAS = "magenta";
 
     public static final String INVALID_CREDENTIALS = "INVALID_CREDENTIALS";
+
+    public static final String IMAGE_MESSAGE = "File is not an image or image is not valid";
 
     // Permission names
 
@@ -78,9 +80,4 @@ public class AppConstants
     public static final DayOfWeek SECOND_WD_DAY = DayOfWeek.SATURDAY;
 
     public static final String WEEKLY_MAIL_MESSAGE = "Hello %s, we have a weekly mail for you from magenta!";
-
-    // URL
-
-    public static final String LOGIN_URL = "login";
-    public static final String LOGOUT_URL = "auth/logout";
 }

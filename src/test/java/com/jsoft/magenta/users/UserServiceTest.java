@@ -1,9 +1,10 @@
 package com.jsoft.magenta.users;
 
 import com.jsoft.magenta.exceptions.DuplicationException;
-import com.jsoft.magenta.security.UserEvaluator;
+import com.jsoft.magenta.security.SecurityService;
 import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.security.model.Privilege;
+import com.jsoft.magenta.util.AppConstants;
 import com.jsoft.magenta.util.AppDefaults;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
@@ -27,18 +28,13 @@ public class UserServiceTest
     private UserService userService;
 
     @Mock
+    private SecurityService securityService;
+
+    @Mock
     private UserRepository userRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
-
-    private static MockedStatic<UserEvaluator> mockedStatic;
-
-    @BeforeAll
-    private static void initStatic()
-    {
-        mockedStatic = Mockito.mockStatic(UserEvaluator.class);
-    }
 
     @BeforeEach
     private void init()
@@ -141,6 +137,12 @@ public class UserServiceTest
             user.setPassword("password");
             user.setSupervisedUsers(Set.of());
             User supervised = new User();
+            Privilege privilege = new Privilege();
+            privilege.setName(AppConstants.USER_PERMISSION);
+            privilege.setLevel(AccessPermission.ADMIN);
+            Set<Privilege> privileges = new HashSet<>();
+            privileges.add(privilege);
+            user.setPrivileges(privileges);
             supervised.setId(2L);
             supervised.setFirstName("First name");
             supervised.setLastName("Last name");
@@ -260,7 +262,7 @@ public class UserServiceTest
             user.setPreferredTheme(ColorTheme.LIGHT);
             user.setPassword("password");
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(userRepository.save(user)).thenReturn(user);
 
             userService.updatePreferredTheme(ColorTheme.DARK);
@@ -296,7 +298,7 @@ public class UserServiceTest
             privilege.setLevel(AccessPermission.ADMIN);
             user.setPrivileges(Set.of(privilege));
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(new User()));
 
             userService.getUser(1L);
@@ -322,7 +324,7 @@ public class UserServiceTest
             privilege.setLevel(AccessPermission.ADMIN);
             user.setPrivileges(Set.of(privilege));
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
 
             userService.getDetails();
         }
@@ -356,7 +358,7 @@ public class UserServiceTest
             Sort sort = Sort.by("firstName").and(Sort.by("lastName")).descending();
             PageRequest pageRequest = PageRequest.of(0, 5, sort);
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(userRepository.findSupervisedUsersBySupervisorId(user.getId(), pageRequest))
                     .thenReturn(new PageImpl<>(List.of(new User()), pageRequest, 1));
 
@@ -396,7 +398,7 @@ public class UserServiceTest
             Sort sort = Sort.by("firstName").and(Sort.by("lastName")).descending();
             PageRequest pageRequest = PageRequest.of(0, 5, sort);
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(userRepository.findSupervisedUsersResultsBySupervisorId(1L, pageRequest))
                     .thenReturn(List.of());
 

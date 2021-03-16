@@ -12,9 +12,10 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = HoursAmountValidator.class)
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidHoursAmount
-{
+public @interface ValidHoursAmount {
     String message() default AppConstants.AMOUNT_OF_HOURS_MESSAGE;
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

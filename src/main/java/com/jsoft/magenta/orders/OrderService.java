@@ -5,7 +5,7 @@ import com.jsoft.magenta.exceptions.NoSuchElementException;
 import com.jsoft.magenta.orders.domain.Order;
 import com.jsoft.magenta.orders.domain.OrderSearchResult;
 import com.jsoft.magenta.projects.domain.Project;
-import com.jsoft.magenta.security.UserEvaluator;
+import com.jsoft.magenta.security.SecurityService;
 import com.jsoft.magenta.util.PageRequestBuilder;
 import com.jsoft.magenta.util.WordFormatter;
 import lombok.RequiredArgsConstructor;
@@ -22,15 +22,14 @@ import java.util.List;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class OrderService
-{
+public class OrderService {
     private final OrderRepository orderRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final SecurityService securityService;
 
     private static final String DEFAULT_SORT_TYPE = "title";
 
-    public Order createOrder(Long projectId, Order order)
-    {
+    public Order createOrder(Long projectId, Order order) {
         this.eventPublisher.publishEvent(new ProjectRelatedEntityEvent(projectId));
         order.setTitle(WordFormatter.capitalizeFormat(order.getTitle()));
         order.setCreatedAt(LocalDate.now());
@@ -38,8 +37,7 @@ public class OrderService
         return this.orderRepository.save(order);
     }
 
-    public Order updateOrder(Order order)
-    {
+    public Order updateOrder(Order order) {
         validateProjectAndPermission(order.getId());
         Order orderToUpdate = findOrder(order.getId());
         orderToUpdate.setTitle(WordFormatter.capitalizeFormat(order.getTitle()));
@@ -48,24 +46,21 @@ public class OrderService
         return this.orderRepository.save(orderToUpdate);
     }
 
-    public Order updateOrderTitle(Long orderId, String newTitle)
-    {
+    public Order updateOrderTitle(Long orderId, String newTitle) {
         validateProjectAndPermission(orderId);
         Order order = findOrder(orderId);
         order.setTitle(WordFormatter.capitalizeFormat(newTitle));
         return this.orderRepository.save(order);
     }
 
-    public Order updateOrderDescription(Long orderId, String newDescription)
-    {
+    public Order updateOrderDescription(Long orderId, String newDescription) {
         validateProjectAndPermission(orderId);
         Order order = findOrder(orderId);
         order.setDescription(newDescription);
         return this.orderRepository.save(order);
     }
 
-    public Order updateOrderAmount(Long orderId, double newAmount)
-    {
+    public Order updateOrderAmount(Long orderId, double newAmount) {
         validateProjectAndPermission(orderId);
         Order order = findOrder(orderId);
         order.setAmount(newAmount);
@@ -73,8 +68,7 @@ public class OrderService
     }
 
     public Page<Order> getAllOrders(
-            Long projectId, int pageIndex, int pageSize, String sortBy, boolean asc)
-    {
+            Long projectId, int pageIndex, int pageSize, String sortBy, boolean asc) {
         this.eventPublisher.publishEvent(new ProjectRelatedEntityEvent(projectId));
         PageRequest pageRequest = PageRequestBuilder.buildPageRequest(pageIndex, pageSize, sortBy, asc);
         Page<Order> pageResult = this.orderRepository.findAllByProjectId(projectId, pageRequest);
@@ -82,8 +76,7 @@ public class OrderService
     }
 
     public List<OrderSearchResult> getOrdersResults(
-            Long projectId, String example, int resultsCount)
-    {
+            Long projectId, String example, int resultsCount) {
         this.eventPublisher.publishEvent(new ProjectRelatedEntityEvent(projectId));
         PageRequest pageRequest = PageRequestBuilder.buildPageRequest(
                 0, resultsCount, DEFAULT_SORT_TYPE, true);
@@ -91,43 +84,37 @@ public class OrderService
                 .findAllByProjectIdAndTitleContainingIgnoreCase(projectId, example, pageRequest);
     }
 
-    public Order getOrder(Long orderId)
-    {
+    public Order getOrder(Long orderId) {
         validateProjectAndPermission(orderId);
         return findOrder(orderId);
     }
 
-    public void deleteOrder(Long orderId)
-    {
+    public void deleteOrder(Long orderId) {
         isOrderExists(orderId);
         validateProjectAndPermission(orderId);
         this.orderRepository.deleteById(orderId);
     }
 
-    private Order findOrder(Long orderId)
-    {
-        Long userId = UserEvaluator.currentUserId();
+    private Order findOrder(Long orderId) {
+        Long userId = securityService.currentUserId();
         return this.orderRepository
                 .findByIdAndProjectAssociationsUserId(orderId, userId)
                 .orElseThrow(() -> new NoSuchElementException("Order not found"));
     }
 
-    private Long findProjectId(Long orderId)
-    {
+    private Long findProjectId(Long orderId) {
         return this.orderRepository
                 .findProjectIdById(orderId)
                 .orElseThrow(() -> new NoSuchElementException("Project not found"));
     }
 
-    private void isOrderExists(Long orderId)
-    {
+    private void isOrderExists(Long orderId) {
         boolean exists = this.orderRepository.existsById(orderId);
-        if(!exists)
+        if (!exists)
             throw new NoSuchElementException("Order not found");
     }
 
-    private void validateProjectAndPermission(Long orderId)
-    {
+    private void validateProjectAndPermission(Long orderId) {
         Long projectId = findProjectId(orderId);
         this.eventPublisher.publishEvent(new ProjectRelatedEntityEvent(projectId));
     }

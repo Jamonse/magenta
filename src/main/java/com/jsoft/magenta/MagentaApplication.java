@@ -8,8 +8,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 public class MagentaApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(MagentaApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(MagentaApplication.class, args);
+    }
 
 }

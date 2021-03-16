@@ -20,8 +20,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class SubProject
-{
+public class SubProject {
     @Id
     @SequenceGenerator(
             name = "sp_sequence",
@@ -66,13 +65,11 @@ public class SubProject
     @JsonIgnore
     private Set<User> users;
 
-    public SubProject(Long spId)
-    {
+    public SubProject(Long spId) {
         this.id = spId;
     }
 
-    public void removeAssociation(Long userId)
-    {
+    public void removeAssociation(Long userId) {
         getUsers().removeIf(user -> user.getId().equals(userId));
     }
 }

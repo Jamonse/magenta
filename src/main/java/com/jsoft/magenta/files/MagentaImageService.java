@@ -18,8 +18,7 @@ import java.nio.file.Files;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class MagentaImageService
-{
+public class MagentaImageService {
     @Value("${application.image.size.cover-width}")
     private int coverImageSizeWidth;
 
@@ -46,15 +45,13 @@ public class MagentaImageService
 
     private final MagentaImageRepository imageRepository;
 
-    public MagentaImage uploadImage(String name, MultipartFile imageFile, MagentaImageType imageType)
-    { // Process image
+    public MagentaImage uploadImage(String name, MultipartFile imageFile, MagentaImageType imageType) { // Process image
         MagentaImage magentaImage = processImage(name, imageFile, imageType);
         // Persist and return the saved image
         return this.imageRepository.save(magentaImage);
     }
 
-    public MagentaImage updateImage(Long imageId, String name, MultipartFile imageFile, MagentaImageType imageType)
-    {
+    public MagentaImage updateImage(Long imageId, String name, MultipartFile imageFile, MagentaImageType imageType) {
         isExists(imageId, imageType);
         MagentaImage magentaImage = processImage(name, imageFile, imageType);
         magentaImage.setId(imageId);
@@ -62,19 +59,17 @@ public class MagentaImageService
         return this.imageRepository.save(magentaImage);
     }
 
-    public void removeImage(Long imageId, MagentaImageType imageType)
-    {
+    public void removeImage(Long imageId, MagentaImageType imageType) {
         isExists(imageId, imageType);
         this.imageRepository.deleteById(imageId);
     }
 
-    private MagentaImage processImage(String name, MultipartFile imageFile, MagentaImageType imageType)
-    { // Convert the image into File
+    private MagentaImage processImage(String name, MultipartFile imageFile, MagentaImageType imageType) { // Convert
+        // the image into File
         File file = new File(imageFile.getOriginalFilename());
         int imageWidth = 0;
         int imageHeight = 0;
-        switch(imageType)
-        { // Set size by requested image type
+        switch (imageType) { // Set size by requested image type
             case THUMBNAIL:
                 imageWidth = thumbnailImageSizeWidth;
                 imageHeight = thumbnailImageSizeHeight;
@@ -100,7 +95,7 @@ public class MagentaImageService
         }
         // Prepare custom image object
         MagentaImage magentaImage = new MagentaImage();
-        magentaImage.setName(String.format("%s-%s",name , imageType)); // Set custom name
+        magentaImage.setName(String.format("%s-%s", name, imageType)); // Set custom name
         String extension = imageFile.getOriginalFilename();
         magentaImage.setType(extension.substring(extension.lastIndexOf(".") + 1)); // Get image file type and set
         magentaImage.setImageType(imageType); // Set image type as requested
@@ -115,10 +110,9 @@ public class MagentaImageService
         return magentaImage;
     }
 
-    private void isExists(Long imageId, MagentaImageType imageType)
-    {
+    private void isExists(Long imageId, MagentaImageType imageType) {
         boolean exist = this.imageRepository.existsByIdAndImageType(imageId, imageType);
-        if(!exist)
+        if (!exist)
             throw new NoSuchElementException("Image not found");
     }
 }

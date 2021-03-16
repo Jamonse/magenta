@@ -10,13 +10,11 @@ import javax.validation.Valid;
 import java.util.List;
 
 import static com.jsoft.magenta.util.AppDefaults.*;
-import static com.jsoft.magenta.util.AppDefaults.RESULTS_COUNT;
 
 @RestController
 @RequestMapping("${application.url}contacts")
 @RequiredArgsConstructor
-public class ContactController
-{
+public class ContactController {
     private final ContactService contactService;
 
     @PostMapping("{accountId}")
@@ -25,15 +23,13 @@ public class ContactController
     public Contact createContact(
             @PathVariable Long accountId,
             @RequestBody @Valid Contact contact
-    )
-    {
+    ) {
         return this.contactService.createContact(accountId, contact);
     }
 
     @PutMapping
     @AccountManagePermission
-    public Contact updateContact(@RequestBody @Valid Contact contact)
-    {
+    public Contact updateContact(@RequestBody @Valid Contact contact) {
         return this.contactService.updateContact(contact);
     }
 
@@ -45,8 +41,7 @@ public class ContactController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = CONTACT_DEFAULT_SORT_NAME) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.contactService.getAllContacts(accountId, pageIndex, pageSize, sortBy, asc);
     }
 
@@ -56,19 +51,16 @@ public class ContactController
             @PathVariable Long accountId,
             @RequestParam String nameExample,
             @RequestParam(required = false, defaultValue = RESULTS_COUNT) int resultsCount
-    )
-    {
+    ) {
         return this.contactService.getAllContactsByNameExample(accountId, nameExample, resultsCount);
     }
 
     @DeleteMapping("{contactId}")
     @AccountManagePermission
     public void deleteContact(
-            @PathVariable Long accountId,
             @PathVariable Long contactId
-    )
-    {
-        this.contactService.deleteContact(accountId, contactId);
+    ) {
+        this.contactService.deleteContact(contactId);
     }
 
 }

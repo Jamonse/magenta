@@ -11,14 +11,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.jsoft.magenta.util.AppDefaults.*;
-import static com.jsoft.magenta.util.AppDefaults.ASCENDING_SORT;
 
 @RestController
 @RequestMapping("${application.url}wp")
 @UserManagePermission
 @RequiredArgsConstructor
-public class WorkPlanController
-{
+public class WorkPlanController {
     private final WorkPlanService workPlanService;
 
     @PostMapping("{userId}")
@@ -26,14 +24,12 @@ public class WorkPlanController
     public WorkPlan createWorkPlan(
             @PathVariable Long userId,
             @RequestBody @Valid WorkPlan workPlan
-    )
-    {
+    ) {
         return this.workPlanService.createWorkPlan(userId, workPlan);
     }
 
     @PutMapping
-    public WorkPlan updateWorkPlan(@RequestBody @Valid WorkPlan workPlan)
-    {
+    public WorkPlan updateWorkPlan(@RequestBody @Valid WorkPlan workPlan) {
         return this.workPlanService.updateWorkPlan(workPlan);
     }
 
@@ -42,8 +38,7 @@ public class WorkPlanController
             @PathVariable Long wpId,
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime newStartDate
-    )
-    {
+    ) {
         return this.workPlanService.updateWorkPlanStartDate(wpId, newStartDate);
     }
 
@@ -52,8 +47,7 @@ public class WorkPlanController
             @PathVariable Long wpId,
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime newEndDate
-    )
-    {
+    ) {
         return this.workPlanService.updateWorkPlanEndDate(wpId, newEndDate);
     }
 
@@ -64,14 +58,12 @@ public class WorkPlanController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = WORK_PLANS_DEFAULT_SORT) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.workPlanService.getAllWorkPlansByUserId(userId, pageIndex, pageSize, sortBy, asc);
     }
 
     @DeleteMapping("{wpId}")
-    public void deleteWorkPlan(@PathVariable Long wpId)
-    {
+    public void deleteWorkPlan(@PathVariable Long wpId) {
         this.workPlanService.deleteWorkPlan(wpId);
     }
 }

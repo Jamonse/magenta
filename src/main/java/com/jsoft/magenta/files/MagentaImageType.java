@@ -1,7 +1,6 @@
 package com.jsoft.magenta.files;
 
-public enum MagentaImageType
-{
+public enum MagentaImageType {
     COVER,
     PROFILE,
     LOGO,

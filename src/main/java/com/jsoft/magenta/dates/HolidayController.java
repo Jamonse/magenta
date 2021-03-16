@@ -14,22 +14,19 @@ import java.util.List;
 @RestController
 @RequestMapping("${application.url}holidays")
 @RequiredArgsConstructor
-public class HolidayController
-{
+public class HolidayController {
     private final HolidayService holidayService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @SystemConfigurator
-    public Holiday setHoliday(@RequestBody @Valid Holiday holiday)
-    {
+    public Holiday setHoliday(@RequestBody @Valid Holiday holiday) {
         return this.holidayService.setHoliday(holiday);
     }
 
     @PutMapping
     @SystemConfigurator
-    public Holiday updateHoliday(@RequestBody @Valid Holiday holiday)
-    {
+    public Holiday updateHoliday(@RequestBody @Valid Holiday holiday) {
         return this.holidayService.updateHoliday(holiday);
     }
 
@@ -37,8 +34,7 @@ public class HolidayController
     public boolean isHoliday(
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
-    )
-    {
+    ) {
         return this.holidayService.isHoliday(date);
     }
 
@@ -48,8 +44,7 @@ public class HolidayController
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
-    )
-    {
+    ) {
         return this.holidayService.getAllHolidaysBetween(startDate, endDate);
     }
 
@@ -58,8 +53,7 @@ public class HolidayController
     public void removeHoliday(
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
-    )
-    {
+    ) {
         this.holidayService.removeHoliday(date);
     }
 }

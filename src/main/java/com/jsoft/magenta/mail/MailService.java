@@ -22,8 +22,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MailService
-{
+public class MailService {
     @Value("${application.mail.address}")
     private String from;
 
@@ -33,8 +32,7 @@ public class MailService
     private final UserRepository userRepository;
 
     @Scheduled(cron = "${application.mail.weekly-mail}")
-    public void weeklyMailsJob()
-    { // Fetch user details
+    public void weeklyMailsJob() { // Fetch user details
         List<UserSearchResult> users = this.userRepository.findAllResultsBy();
         users.forEach(user -> {
             try { // Send weekly email to each user
@@ -48,8 +46,8 @@ public class MailService
         });
     }
 
-    public void sendWeeklyMail(Long userId, String userEmail, String userName) throws MessagingException
-    { // Create mime message and mime message helper in order to send HTML template
+    public void sendWeeklyMail(Long userId, String userEmail, String userName) throws MessagingException { // Create
+        // mime message and mime message helper in order to send HTML template
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
         // Fetch weekly hours report for specified user

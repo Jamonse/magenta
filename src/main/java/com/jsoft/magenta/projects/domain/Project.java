@@ -21,8 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Project
-{
+public class Project {
     @Id
     @SequenceGenerator(
             name = "project_sequence",
@@ -81,8 +80,7 @@ public class Project
     @JsonIgnore
     private Set<ProjectAssociation> associations;
 
-    public Project(Long projectId)
-    {
+    public Project(Long projectId) {
         this.id = projectId;
     }
 }

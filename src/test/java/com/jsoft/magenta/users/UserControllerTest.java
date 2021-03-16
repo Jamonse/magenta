@@ -17,12 +17,15 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -30,8 +33,7 @@ import java.util.Set;
 @SpringBootTest
 @WithUserDetails("admin@admin.com")
 @AutoConfigureMockMvc
-public class UserControllerTest
-{
+public class UserControllerTest {
     @MockBean
     private UserService userService;
 
@@ -44,12 +46,10 @@ public class UserControllerTest
     @Nested
     @WithUserDetails("admin@admin.com")
     @DisplayName("User creation tests")
-    class UserCreationTests
-    {
+    class UserCreationTests {
         @Test
         @DisplayName("Create user")
-        public void createUser() throws Exception
-        {
+        public void createUser() throws Exception {
             User user = new User();
             user.setFirstName("first name");
             user.setLastName("last name");
@@ -59,22 +59,24 @@ public class UserControllerTest
             user.setPassword("password");
             user.setPreferredTheme(ColorTheme.LIGHT);
 
-            Mockito.when(userService.createUser(user, null)).thenReturn(user);
+            MockMultipartFile profileImage = new MockMultipartFile(
+                    "profileImage", "profileImage.jpg", MediaType.IMAGE_JPEG_VALUE, "profileImage".getBytes());
 
-            mockMvc.perform(MockMvcRequestBuilders.post(Stringify.BASE_URL + "users")
-                    .contentType(MediaType.APPLICATION_JSON)
+            Mockito.when(userService.createUser(user, profileImage)).thenReturn(user);
+
+            mockMvc.perform(MockMvcRequestBuilders.multipart(Stringify.BASE_URL + "users")
+                    .file(profileImage)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .content(Stringify.asJsonString(user)))
                     .andDo(MockMvcResultHandlers.print())
-                    .andExpect(MockMvcResultMatchers.status().isCreated())
-                    .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+                    .andExpect(MockMvcResultMatchers.status().isCreated());
 
-            Mockito.verify(userService).createUser(user, null);
+            Mockito.verify(userService).createUser(Mockito.any(User.class), Mockito.any(MultipartFile.class));
         }
 
         @Test
         @DisplayName("Create user with invalid name - should return 400")
-        public void createUserWithInvalidName() throws Exception
-        {
+        public void createUserWithInvalidName() throws Exception {
             User user = new User();
             user.setFirstName("f");
             user.setLastName("last name");
@@ -86,7 +88,7 @@ public class UserControllerTest
 
             Mockito.when(userService.createUser(user, null)).thenReturn(user);
 
-            mockMvc.perform(MockMvcRequestBuilders.post(Stringify.BASE_URL + "users")
+            mockMvc.perform(MockMvcRequestBuilders.multipart(Stringify.BASE_URL + "users")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(Stringify.asJsonString(user)))
                     .andDo(MockMvcResultHandlers.print())
@@ -99,8 +101,7 @@ public class UserControllerTest
 
         @Test
         @DisplayName("Create user with invalid email - should return 400")
-        public void createUserWithInvalidEmail() throws Exception
-        {
+        public void createUserWithInvalidEmail() throws Exception {
             User user = new User();
             user.setFirstName("first name");
             user.setLastName("last name");
@@ -125,8 +126,7 @@ public class UserControllerTest
 
         @Test
         @DisplayName("Create user with invalid phone number - should return 400")
-        public void createUserWithInvalidPhoneNumber() throws Exception
-        {
+        public void createUserWithInvalidPhoneNumber() throws Exception {
             User user = new User();
             user.setFirstName("first name");
             user.setLastName("last name");
@@ -151,8 +151,7 @@ public class UserControllerTest
 
         @Test
         @DisplayName("Create user with invalid password - should return 400")
-        public void createUserWithInvalidPassword() throws Exception
-        {
+        public void createUserWithInvalidPassword() throws Exception {
             User user = new User();
             user.setFirstName("first name");
             user.setLastName("last name");
@@ -176,8 +175,7 @@ public class UserControllerTest
 
         @Test
         @DisplayName("Create supervision")
-        public void createSupervision() throws Exception
-        {
+        public void createSupervision() throws Exception {
             User user = new User();
             user.setId(1L);
             user.setFirstName("first name");
@@ -203,20 +201,18 @@ public class UserControllerTest
     @Nested
     @WithUserDetails("admin@admin.com")
     @DisplayName("User update tests")
-    class UserUpdateTests
-    {
+    class UserUpdateTests {
         @Test
         @DisplayName("Update user")
-        public void updateUser() throws Exception
-        {
+        public void updateUser() throws Exception {
             User user = new User();
             user.setId(1L);
             user.setFirstName("first name");
             user.setLastName("last name");
             user.setEmail("email@email.com");
             user.setPhoneNumber("055-5555555");
-            user.setPassword("password");
             user.setBirthDay(LocalDate.now().minusYears(20));
+            user.setPassword("password");
             user.setPreferredTheme(ColorTheme.LIGHT);
 
             Mockito.when(userService.updateUser(user)).thenReturn(user);
@@ -233,8 +229,7 @@ public class UserControllerTest
 
         @Test
         @DisplayName("Update preferred theme")
-        public void updatePreferredTheme() throws Exception
-        {
+        public void updatePreferredTheme() throws Exception {
             Mockito.when(userService.updatePreferredTheme(ColorTheme.LIGHT))
                     .thenReturn(new User());
 
@@ -250,8 +245,7 @@ public class UserControllerTest
 
         @Test
         @DisplayName("Update preferred them to none existing theme - should return 400")
-        public void updatePreferredThemeToNoneExistingTheme() throws Exception
-        {
+        public void updatePreferredThemeToNoneExistingTheme() throws Exception {
             Mockito.when(userService.updatePreferredTheme(ColorTheme.LIGHT))
                     .thenReturn(new User());
 
@@ -271,12 +265,10 @@ public class UserControllerTest
     @Nested
     @WithUserDetails("admin@admin.com")
     @DisplayName("User get tests")
-    class UserGetTests
-    {
+    class UserGetTests {
         @Test
         @DisplayName("Get user details")
-        public void getUserDetails() throws Exception
-        {
+        public void getUserDetails() throws Exception {
             Mockito.when(userService.getDetails()).thenReturn(new User());
 
             mockMvc.perform(MockMvcRequestBuilders.get(Stringify.BASE_URL + "users"))
@@ -288,8 +280,7 @@ public class UserControllerTest
 
         @Test
         @DisplayName("Get user")
-        public void getUser() throws Exception
-        {
+        public void getUser() throws Exception {
             User user = new User();
             user.setId(1L);
 
@@ -306,8 +297,7 @@ public class UserControllerTest
 
         @Test
         @DisplayName("Get all users")
-        public void getAllUsers() throws Exception
-        {
+        public void getAllUsers() throws Exception {
             User user = new User();
             user.setId(1L);
             user.setFirstName("First name");
@@ -340,8 +330,7 @@ public class UserControllerTest
 
         @Test
         @DisplayName("Get all supervised users")
-        public void getAllSupervisedUsers() throws Exception
-        {
+        public void getAllSupervisedUsers() throws Exception {
             User user = new User();
             user.setId(1L);
             user.setFirstName("First name");
@@ -374,8 +363,7 @@ public class UserControllerTest
 
         @Test
         @DisplayName("Get all supervised users of user")
-        public void getAllSupervisedUsersOfUsers() throws Exception
-        {
+        public void getAllSupervisedUsersOfUsers() throws Exception {
             User user = new User();
             user.setId(1L);
             user.setFirstName("First name");
@@ -408,8 +396,7 @@ public class UserControllerTest
 
         @Test
         @DisplayName("Get all supervised users results")
-        public void getAllSupervisedUsersResults() throws Exception
-        {
+        public void getAllSupervisedUsersResults() throws Exception {
             Mockito.when(userService.getAllSupervisedUsersResults(5))
                     .thenReturn(List.of());
 
@@ -424,8 +411,7 @@ public class UserControllerTest
 
         @Test
         @DisplayName("Get all supervised users results of user")
-        public void getAllSupervisedUsersResultsOfUser() throws Exception
-        {
+        public void getAllSupervisedUsersResultsOfUser() throws Exception {
             User user = new User();
             user.setId(1L);
 
@@ -443,8 +429,7 @@ public class UserControllerTest
 
         @Test
         @DisplayName("Get user results by name example")
-        public void getAllUsersByNameExample() throws Exception
-        {
+        public void getAllUsersByNameExample() throws Exception {
             Mockito.when(userService.getAllUsersByNameExample("name", 5))
                     .thenReturn(List.of());
 
@@ -462,12 +447,10 @@ public class UserControllerTest
     @Nested
     @WithUserDetails("admin@admin.com")
     @DisplayName("User delete tests")
-    class UserDeleteTests
-    {
+    class UserDeleteTests {
         @Test
         @DisplayName("Delete user")
-        public void deleteUser() throws Exception
-        {
+        public void deleteUser() throws Exception {
             Mockito.doNothing().when(userService).deleteUser(1L);
 
             mockMvc.perform(MockMvcRequestBuilders.delete(Stringify.BASE_URL + "users/{userId}", 1L)
@@ -480,8 +463,7 @@ public class UserControllerTest
 
         @Test
         @DisplayName("Remove user supervision")
-        public void removeAssociation() throws Exception
-        {
+        public void removeAssociation() throws Exception {
             Mockito.doNothing().when(userService).removeSupervision(1L, 1L);
 
             mockMvc.perform(MockMvcRequestBuilders.delete(Stringify.BASE_URL + "users/{supervisorId}/supervise/{supervisedId}", 1L, 1L)

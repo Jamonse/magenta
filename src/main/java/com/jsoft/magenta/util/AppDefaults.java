@@ -1,7 +1,6 @@
 package com.jsoft.magenta.util;
 
-public class AppDefaults
-{
+public class AppDefaults {
     public static final String PAGE_SIZE = "5";
     public static final String PAGE_INDEX = "0";
     public static final String ASCENDING_SORT = "false";
@@ -21,7 +20,7 @@ public class AppDefaults
     public static final String[] USER_DEFAULT_SORT = {
             AppDefaults.USER_DEFAULT_FIRST_SORT,
             AppDefaults.USER_DEFAULT_SECOND_SORT
-        };
+    };
     public static final String[] CONTACT_DEFAULT_SORT = {
             AppDefaults.USER_DEFAULT_FIRST_SORT,
             AppDefaults.USER_DEFAULT_SECOND_SORT

@@ -16,9 +16,10 @@ import java.lang.annotation.*;
 @Size(min = 2, max = 50, message = AppConstants.TITLE_LENGTH_MESSAGE)
 @GroupSequence({NotBlank.class, Size.class})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidTitle
-{
+public @interface ValidTitle {
     String message() default AppConstants.TITLE_DEFAULT_MESSAGE;
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

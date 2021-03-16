@@ -2,7 +2,6 @@ package com.jsoft.magenta.security.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
@@ -16,8 +15,7 @@ import java.time.LocalDateTime;
 @Table(name = "refresh_tokens")
 @NoArgsConstructor
 @AllArgsConstructor
-public class RefreshToken
-{
+public class RefreshToken {
     @Id
     @Column(updatable = false)
     private String token;

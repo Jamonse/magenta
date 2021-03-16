@@ -36,7 +36,7 @@ public class ProjectRepositoryTest
     @BeforeEach
     public void init()
     {
-        User user = userRepository.findById(150L).orElse(null);
+        User user = userRepository.findById(179L).orElse(null);
 
         Project project = new Project();
         project.setName("project");
@@ -89,7 +89,7 @@ public class ProjectRepositoryTest
         PageRequest pageRequest = PageRequest.of(0, 5, sort);
 
         Page<Project> result = this.projectRepository
-                .findAllByAssociationsUserIdAndAssociationsPermission(150L, AccessPermission.ADMIN, pageRequest);
+                .findAllByAssociationsUserIdAndAssociationsPermission(179L, AccessPermission.ADMIN, pageRequest);
 
         Assertions.assertThat(result)
                 .isNotNull()
@@ -104,7 +104,7 @@ public class ProjectRepositoryTest
         PageRequest pageRequest = PageRequest.of(0, 5, sort);
 
         List<ProjectSearchResult> result = this.projectRepository
-                .findAllByAssociationsUserId(150L, pageRequest);
+                .findAllByAssociationsUserId(179L, pageRequest);
 
         Assertions.assertThat(result)
                 .isNotNull()
@@ -120,7 +120,7 @@ public class ProjectRepositoryTest
         PageRequest pageRequest = PageRequest.of(0, 5, sort);
 
         List<ProjectSearchResult> result = this.projectRepository
-                .findAllResultsByAssociationsUserIdAndAssociationsPermission(150L, AccessPermission.ADMIN, pageRequest);
+                .findAllResultsByAssociationsUserIdAndAssociationsPermission(179L, AccessPermission.ADMIN, pageRequest);
 
         Assertions.assertThat(result)
                 .isNotNull()

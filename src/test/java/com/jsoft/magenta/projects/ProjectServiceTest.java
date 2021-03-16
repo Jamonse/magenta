@@ -1,23 +1,18 @@
 package com.jsoft.magenta.projects;
 
-import com.jsoft.magenta.accounts.AccountAssociationRepository;
-import com.jsoft.magenta.accounts.AccountRepository;
 import com.jsoft.magenta.accounts.domain.Account;
-import com.jsoft.magenta.accounts.domain.AccountAssociation;
 import com.jsoft.magenta.exceptions.AuthorizationException;
 import com.jsoft.magenta.exceptions.DuplicationException;
 import com.jsoft.magenta.exceptions.NoSuchElementException;
 import com.jsoft.magenta.exceptions.RedundantAssociationException;
+import com.jsoft.magenta.security.SecurityService;
 import com.jsoft.magenta.subprojects.SubProject;
 import com.jsoft.magenta.projects.domain.*;
 import com.jsoft.magenta.events.projects.ProjectAssociationRemovalEvent;
 import com.jsoft.magenta.events.projects.ProjectAssociationUpdateEvent;
-import com.jsoft.magenta.security.UserEvaluator;
 import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.security.model.Privilege;
-import com.jsoft.magenta.subprojects.SubProjectRepository;
 import com.jsoft.magenta.users.User;
-import com.jsoft.magenta.users.UserRepository;
 import com.jsoft.magenta.util.AppConstants;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
@@ -33,41 +28,22 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.mockito.Mockito.mockStatic;
-
 public class ProjectServiceTest
 {
     @InjectMocks
     private ProjectService projectService;
 
     @Mock
+    private SecurityService securityService;
+
+    @Mock
     private ProjectRepository projectRepository;
-
-    @Mock
-    private AccountRepository accountRepository;
-
-    @Mock
-    private UserRepository userRepository;
 
     @Mock
     private ProjectAssociationRepository projectAssociationRepository;
 
     @Mock
-    private AccountAssociationRepository accountAssociationRepository;
-
-    @Mock
-    private SubProjectRepository subProjectRepository;
-
-    @Mock
-    private ApplicationEventPublisher applicationEventPublisher;
-
-    private static MockedStatic<UserEvaluator> mockedStatic;
-
-    @BeforeAll
-    private static void initStaticMock()
-    {
-        mockedStatic = mockStatic(UserEvaluator.class);
-    }
+    private ApplicationEventPublisher eventPublisher;
 
     @BeforeEach
     public void init()
@@ -113,8 +89,7 @@ public class ProjectServiceTest
             user.setPrivileges(Set.of(privilege));
 
             Mockito.when(projectRepository.save(project)).thenReturn(returnedProject);
-            Mockito.when(accountRepository.findById(1L)).thenReturn(Optional.of(new Account()));
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
 
             projectService.createProject(1L, project);
 
@@ -123,52 +98,6 @@ public class ProjectServiceTest
                     .isNotNull();
 
             Mockito.verify(projectRepository).save(project);
-            Mockito.verify(accountRepository).findById(1L);
-        }
-
-        @Test
-        @DisplayName("Create project of account that does not exist - should throw exception")
-        public void createProjectOfAccountThatDoesNotExist()
-        {
-            Project project = new Project();
-            project.setName("project");
-
-            SubProject subProject = new SubProject();
-            subProject.setName("sp");
-            subProject.setAvailable(true);
-
-            SubProject returnedSP = new SubProject();
-            returnedSP.setName("sp");
-            returnedSP.setAvailable(true);
-            returnedSP.setId(1L);
-            Set<SubProject> subProjects = new HashSet<>();
-            subProjects.add(subProject);
-            project.setSubProjects(subProjects);
-
-            Project returnedProject = new Project();
-            returnedProject.setName("project");
-            returnedProject.setId(1L);
-            Set<SubProject> returnedSPs = new HashSet<>();
-            returnedSPs.add(returnedSP);
-            project.setSubProjects(returnedSPs);
-
-            User user = new User();
-            user.setId(1L);
-            Privilege privilege = new Privilege();
-            privilege.setName(AppConstants.ACCOUNT_PERMISSION);
-            privilege.setLevel(AccessPermission.ADMIN);
-            user.setPrivileges(Set.of(privilege));
-
-            Mockito.when(projectRepository.save(project)).thenReturn(returnedProject);
-            Mockito.when(accountRepository.findById(1L)).thenReturn(Optional.empty());
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
-
-            Assertions.assertThatThrownBy(() -> projectService.createProject(1L, project))
-                    .isInstanceOf(NoSuchElementException.class)
-                    .hasMessage("Account not found");
-
-            Mockito.verify(projectRepository, Mockito.never()).save(project);
-            Mockito.verify(accountRepository).findById(1L);
         }
     }
 
@@ -198,11 +127,10 @@ public class ProjectServiceTest
             privilege1.setLevel(AccessPermission.ADMIN);
             user.setPrivileges(Set.of(privilege, privilege1));
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(projectRepository.findAccountIdById(1L)).thenReturn(Optional.of(account.getId()));
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(projectRepository.save(project)).thenReturn(project);
             Mockito.when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
-            Mockito.when(projectRepository.findByAccountIdAndName(1L, project.getName()))
-                    .thenReturn(Optional.empty());
 
             projectService.updateProject(project);
 
@@ -212,7 +140,6 @@ public class ProjectServiceTest
 
             Mockito.verify(projectRepository).save(project);
             Mockito.verify(projectRepository).findById(1L);
-            Mockito.verify(projectRepository).findByAccountIdAndName(1L, project.getName());
         }
 
         @Test
@@ -225,11 +152,20 @@ public class ProjectServiceTest
             Account account = new Account();
             account.setId(1L);
             project.setAccount(account);
+            User user = new User(1L);
+            Privilege privilege = new Privilege();
+            privilege.setId(1L);
+            privilege.setName(AppConstants.PROJECT_PERMISSION);
+            privilege.setLevel(AccessPermission.ADMIN);
+            user.setPrivileges(Set.of(privilege));
+            Project project1 = new Project(1L);
+            project.setName("new name");
 
+            Mockito.when(projectRepository.findAccountIdById(project.getId())).thenReturn(Optional.of(account.getId()));
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(projectRepository.save(project)).thenReturn(project);
-            Mockito.when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
-            Mockito.when(projectRepository.findByAccountIdAndName(1L, project.getName()))
-                    .thenReturn(Optional.of(project));
+            Mockito.when(projectRepository.findById(1L)).thenReturn(Optional.of(project1));
+            Mockito.when(projectRepository.existsByAccountIdAndName(account.getId(), project.getName())).thenReturn(true);
 
             Assertions.assertThatThrownBy(() -> projectService.updateProject(project))
                     .isInstanceOf(DuplicationException.class)
@@ -237,7 +173,6 @@ public class ProjectServiceTest
 
             Mockito.verify(projectRepository, Mockito.never()).save(project);
             Mockito.verify(projectRepository).findById(1L);
-            Mockito.verify(projectRepository).findByAccountIdAndName(1L, project.getName());
         }
 
         @Test
@@ -288,11 +223,10 @@ public class ProjectServiceTest
             privilege1.setLevel(AccessPermission.ADMIN);
             user.setPrivileges(Set.of(privilege, privilege1));
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(projectRepository.findAccountIdById(1L)).thenReturn(Optional.of(account.getId()));
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(projectRepository.save(project)).thenReturn(project);
             Mockito.when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
-            Mockito.when(projectRepository.findByAccountIdAndName(1L, newName))
-                    .thenReturn(Optional.empty());
 
             projectService.updateProject(project);
 
@@ -302,7 +236,6 @@ public class ProjectServiceTest
 
             Mockito.verify(projectRepository).save(project);
             Mockito.verify(projectRepository).findById(1L);
-            Mockito.verify(projectRepository).findByAccountIdAndName(1L, project.getName());
         }
 
         @Test
@@ -353,9 +286,9 @@ public class ProjectServiceTest
 
             ProjectAssociation projectAssociation = new ProjectAssociation(user, project, AccessPermission.ADMIN);
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
-            Mockito.when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
-            Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+            Mockito.when(securityService.currentUser()).thenReturn(user);
+            Mockito.when(projectRepository.findAccountIdById(project.getId())).thenReturn(Optional.of(account.getId()));
+            Mockito.when(projectRepository.existsById(1L)).thenReturn(true);
             Mockito.when(projectAssociationRepository.findByUserIdAndProjectId(user.getId(), project.getId()))
                     .thenReturn(Optional.empty());
             Mockito.when(projectAssociationRepository.save(projectAssociation))
@@ -363,9 +296,6 @@ public class ProjectServiceTest
 
             projectService.createAssociation(user.getId(), project.getId(), AccessPermission.ADMIN);
 
-            Mockito.verify(projectRepository).findById(1L);
-            Mockito.verify(userRepository).findById(1L);
-            Mockito.verify(projectAssociationRepository).findByUserIdAndProjectId(user.getId(), project.getId());
             Mockito.verify(projectAssociationRepository).save(projectAssociation);
         }
 
@@ -391,17 +321,9 @@ public class ProjectServiceTest
             user.setPrivileges(Set.of(privilege, privilege1));
 
             ProjectAssociation projectAssociation = new ProjectAssociation(user, project, AccessPermission.ADMIN);
-            AccountAssociation accountAssociation = new AccountAssociation(user, account, AccessPermission.ADMIN);
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
-            Mockito.when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
-            Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-            Mockito.when(accountAssociationRepository.findByUserIdAndAccountId(1L, 1L))
-                    .thenReturn(Optional.of(accountAssociation));
-            Mockito.when(accountAssociationRepository.save(accountAssociation))
-                    .thenReturn(accountAssociation);
-            Mockito.when(projectAssociationRepository.findByUserIdAndProjectId(user.getId(), project.getId()))
-                    .thenReturn(Optional.empty());
+            Mockito.when(projectRepository.existsById(1L)).thenReturn(true);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(projectAssociationRepository.save(projectAssociation))
                     .thenReturn(projectAssociation);
 
@@ -410,11 +332,7 @@ public class ProjectServiceTest
                     .isInstanceOf(RedundantAssociationException.class)
                     .hasMessage("Read association with project while no sub project exist is redundant");
 
-            Mockito.verify(projectRepository).findById(1L);
-            Mockito.verify(userRepository).findById(1L);
-            Mockito.verify(accountAssociationRepository, Mockito.never()).findByUserIdAndAccountId(1L, 1L);
-            Mockito.verify(accountAssociationRepository, Mockito.never()).save(accountAssociation);
-            Mockito.verify(projectAssociationRepository).findByUserIdAndProjectId(user.getId(), project.getId());
+            Mockito.verify(projectRepository).existsById(1L);
             Mockito.verify(projectAssociationRepository, Mockito.never()).save(projectAssociation);
         }
 
@@ -442,8 +360,7 @@ public class ProjectServiceTest
 
             ProjectAssociation projectAssociation = new ProjectAssociation(user, project, AccessPermission.ADMIN);
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
-            Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(projectAssociationRepository.findByUserIdAndProjectId(user.getId(), project.getId()))
                     .thenReturn(Optional.of(projectAssociation));
             Mockito.when(projectAssociationRepository.save(projectAssociation))
@@ -451,7 +368,6 @@ public class ProjectServiceTest
 
             projectService.updateAssociation(user.getId(), project.getId(), AccessPermission.MANAGE);
 
-            Mockito.verify(userRepository).findById(1L);
             Mockito.verify(projectAssociationRepository).findByUserIdAndProjectId(user.getId(), project.getId());
             Mockito.verify(projectAssociationRepository).save(projectAssociation);
         }
@@ -480,29 +396,25 @@ public class ProjectServiceTest
 
             ProjectAssociation projectAssociation = new ProjectAssociation(user, project, AccessPermission.ADMIN);
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
-            Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(projectAssociationRepository.findByUserIdAndProjectId(user.getId(), project.getId()))
                     .thenReturn(Optional.of(projectAssociation));
             Mockito.when(projectAssociationRepository.save(projectAssociation))
                     .thenReturn(projectAssociation);
-            Mockito.when(subProjectRepository.findFirstByUsersId(user.getId()))
-                    .thenReturn(Optional.empty());
-            Mockito.doThrow(new RedundantAssociationException()).when(applicationEventPublisher)
+            Mockito.doThrow(new RedundantAssociationException()).when(eventPublisher)
                     .publishEvent(Mockito.any(ProjectAssociationUpdateEvent.class));
 
             Assertions.assertThatThrownBy(
                     () -> projectService.updateAssociation(user.getId(), project.getId(), AccessPermission.READ))
             .isInstanceOf(RedundantAssociationException.class);
 
-            Mockito.verify(applicationEventPublisher)
+            Mockito.verify(eventPublisher)
                     .publishEvent(Mockito.any(ProjectAssociationUpdateEvent.class));
-            Mockito.verify(userRepository, Mockito.never()).findById(1L);
             Mockito.verify(projectAssociationRepository, Mockito.never()).save(projectAssociation);
         }
 
         @Test
-        @DisplayName("Update association to MANAGE permission without valid permission - should throw exception")
+        @DisplayName("Update association to MANAGE permission with invalid permission - should throw exception")
         public void updateAssociationToReadPermissionWithoutValidPermission()
         {
             Project project = new Project();
@@ -514,27 +426,33 @@ public class ProjectServiceTest
             User user = new User();
             user.setId(1L);
             Privilege privilege = new Privilege();
-            privilege.setName(AppConstants.ACCOUNT_PERMISSION);
+            privilege.setName(AppConstants.PROJECT_PERMISSION);
             privilege.setLevel(AccessPermission.READ);
             user.setPrivileges(Set.of(privilege));
 
-            ProjectAssociation projectAssociation = new ProjectAssociation(user, project, AccessPermission.MANAGE);
+            User moderator = new User();
+            moderator.setId(1L);
+            Privilege privilege1 = new Privilege();
+            privilege1.setName(AppConstants.PROJECT_PERMISSION);
+            privilege1.setLevel(AccessPermission.ADMIN);
+            moderator.setPrivileges(Set.of(privilege));
 
-            Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+            ProjectAssociation projectAssociation = new ProjectAssociation(user, project, AccessPermission.MANAGE);
+            user.setProjects(Set.of(projectAssociation));
+
+            Mockito.when(securityService.currentUser()).thenReturn(moderator);
+            Mockito.when(securityService.currentUserId()).thenReturn(user.getId());
+            Mockito.when(projectRepository.existsById(1L)).thenReturn(true);
             Mockito.when(projectAssociationRepository.findByUserIdAndProjectId(user.getId(), project.getId()))
                     .thenReturn(Optional.of(projectAssociation));
             Mockito.when(projectAssociationRepository.save(projectAssociation))
                     .thenReturn(projectAssociation);
-            Mockito.when(subProjectRepository.findFirstByUsersId(user.getId()))
-                    .thenReturn(Optional.empty());
 
             Assertions.assertThatThrownBy(
                     () -> projectService.updateAssociation(user.getId(), project.getId(), AccessPermission.MANAGE))
                     .isInstanceOf(AuthorizationException.class)
-                    .hasMessage("User is unauthorized to handle such association level");
+                    .hasMessage("User is not authorized to update specified project");
 
-            Mockito.verify(userRepository).findById(1L);
-            Mockito.verify(subProjectRepository, Mockito.never()).findFirstByUsersId(user.getId());
             Mockito.verify(projectAssociationRepository).findByUserIdAndProjectId(user.getId(), project.getId());
             Mockito.verify(projectAssociationRepository, Mockito.never()).save(projectAssociation);
         }
@@ -558,7 +476,7 @@ public class ProjectServiceTest
             privilege.setLevel(AccessPermission.ADMIN);
             user.setPrivileges(Set.of(privilege));
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(projectRepository.findById(project.getId())).thenReturn(Optional.of(project));
 
             Project result = projectService.getProject(project.getId());
@@ -587,11 +505,13 @@ public class ProjectServiceTest
             ProjectAssociation projectAssociation = new ProjectAssociation();
             projectAssociation.setProject(project);
             projectAssociation.setUser(user);
+            user.setProjects(Set.of(projectAssociation));
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
+            Mockito.when(securityService.currentUserId()).thenReturn(1L);
+            Mockito.when(projectAssociationRepository.findAccessPermissionByUserIdAndProjectId(user.getId(), project.getId()))
+                    .thenReturn(Optional.of(AccessPermission.MANAGE));
             Mockito.when(projectRepository.findById(project.getId())).thenReturn(Optional.of(project));
-            Mockito.when(projectAssociationRepository.findByUserIdAndProjectId(user.getId(), project.getId()))
-                    .thenReturn(Optional.of(projectAssociation));
 
             Project result = projectService.getProject(project.getId());
 
@@ -601,7 +521,7 @@ public class ProjectServiceTest
                     .isEqualTo(project);
 
             Mockito.verify(projectRepository).findById(1L);
-            Mockito.verify(projectAssociationRepository).findByUserIdAndProjectId(user.getId(), project.getId());
+            Mockito.verify(projectAssociationRepository).findAccessPermissionByUserIdAndProjectId(user.getId(), project.getId());
         }
 
         @Test
@@ -621,7 +541,7 @@ public class ProjectServiceTest
             projectAssociation.setProject(project);
             projectAssociation.setUser(user);
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(projectRepository.findById(project.getId())).thenReturn(Optional.of(project));
             Mockito.when(projectAssociationRepository.findByUserIdAndProjectId(user.getId(), project.getId()))
                     .thenReturn(Optional.of(projectAssociation));
@@ -654,7 +574,8 @@ public class ProjectServiceTest
             List<Project> projectList = List.of(project);
             Page<Project> projects = new PageImpl<>(projectList, pageRequest, 1);
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
+            Mockito.when(securityService.currentUserId()).thenReturn(1L);
             Mockito.when(projectRepository.findAllByAssociationsUserIdAndAssociationsPermission(
                     user.getId(), AccessPermission.READ, pageRequest))
                     .thenReturn(projects);
@@ -675,7 +596,7 @@ public class ProjectServiceTest
         @DisplayName("Get all projects as manager")
         public void getAllProjectsAsManager()
         {
-            Sort sort =  Sort.by("name").ascending();
+            Sort sort = Sort.by("name").ascending();
             PageRequest pageRequest = PageRequest.of(0, 5, sort);
             Project project = new Project();
             project.setId(1L);
@@ -691,7 +612,8 @@ public class ProjectServiceTest
             List<Project> projectList = List.of(project);
             Page<Project> projects = new PageImpl<>(projectList, pageRequest, 1);
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
+            Mockito.when(securityService.currentUserId()).thenReturn(1L);
             Mockito.when(projectRepository.findAllByAssociationsUserIdAndAssociationsPermissionGreaterThanEqual(
                     user.getId(), AccessPermission.MANAGE, pageRequest))
                     .thenReturn(projects);
@@ -728,7 +650,7 @@ public class ProjectServiceTest
             List<Project> projectList = List.of(project);
             Page<Project> projects = new PageImpl<>(projectList, pageRequest, 1);
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(projectRepository.findAll(pageRequest))
                     .thenReturn(projects);
 
@@ -771,7 +693,8 @@ public class ProjectServiceTest
             List<ProjectSearchResult> projectList = List.of(project);
             String nameExample = "name";
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUserId()).thenReturn(1L);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(projectRepository.findAllResultsByAssociationsUserIdAndNameContainingIgnoreCaseAndAssociationsPermission(
                     user.getId(), nameExample, AccessPermission.READ, pageRequest))
                     .thenReturn(projectList);
@@ -814,7 +737,8 @@ public class ProjectServiceTest
             List<ProjectSearchResult> projectList = List.of(project);
             String nameExample = "name";
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUserId()).thenReturn(1L);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(projectRepository.findAllResultsByAssociationsUserIdAndNameContainingIgnoreCaseAndAssociationsPermissionGreaterThanEqual(
                     user.getId(), nameExample, AccessPermission.MANAGE, pageRequest))
                     .thenReturn(projectList);
@@ -857,7 +781,7 @@ public class ProjectServiceTest
             List<ProjectSearchResult> projectList = List.of(project);
             String nameExample = "name";
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(projectRepository.findAllResultsByNameContainingIgnoreCase(
                     nameExample, pageRequest))
                     .thenReturn(projectList);
@@ -891,7 +815,7 @@ public class ProjectServiceTest
 
             Mockito.when(projectRepository.findById(project.getId())).thenReturn(Optional.of(project));
             Mockito.doNothing().when(projectRepository).deleteById(project.getId());
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
 
             projectService.deleteProject(project.getId());
 
@@ -928,18 +852,16 @@ public class ProjectServiceTest
             );
             project.setAssociations(Set.of(projectAssociation));
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(projectRepository.findById(project.getId())).thenReturn(Optional.of(project));
-            Mockito.when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
             Mockito.when(projectAssociationRepository.existsById(projectAssociationId)).thenReturn(true);
             Mockito.doNothing().when(projectAssociationRepository).deleteById(projectAssociationId);
-            Mockito.doNothing().when(applicationEventPublisher)
+            Mockito.doNothing().when(eventPublisher)
                     .publishEvent(new ProjectAssociationRemovalEvent(project, user.getId()));
 
             projectService.removeAssociation(user.getId(), project.getId());
 
             Mockito.verify(projectRepository).findById(project.getId());
-            Mockito.verify(userRepository).findById(user.getId());
             Mockito.verify(projectAssociationRepository).existsById(projectAssociationId);
             Mockito.verify(projectAssociationRepository).deleteById(projectAssociationId);
         }
@@ -972,17 +894,15 @@ public class ProjectServiceTest
             );
             project.setAssociations(Set.of(projectAssociation));
 
-            mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
-            Mockito.when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(projectAssociationRepository.existsById(projectAssociationId)).thenReturn(true);
             Mockito.when(projectRepository.findById(project.getId())).thenReturn(Optional.of(project));
             Mockito.doNothing().when(projectAssociationRepository).deleteById(projectAssociationId);
-            Mockito.doNothing().when(applicationEventPublisher)
+            Mockito.doNothing().when(eventPublisher)
                     .publishEvent(new ProjectAssociationRemovalEvent(project, user.getId()));
 
             projectService.removeAllAssociations(project.getId());
 
-            Mockito.verify(userRepository).findById(user.getId());
             Mockito.verify(projectAssociationRepository).existsById(projectAssociationId);
             Mockito.verify(projectRepository, Mockito.times(2)).findById(project.getId());
             Mockito.verify(projectAssociationRepository).deleteById(projectAssociationId);

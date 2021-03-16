@@ -22,8 +22,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class WorkPlan
-{
+public class WorkPlan {
     @Id
     @SequenceGenerator(
             name = "wp_sequence",

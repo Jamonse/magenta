@@ -6,13 +6,11 @@ import org.springframework.security.core.GrantedAuthority;
 
 @Getter
 @RequiredArgsConstructor
-public class CustomGrantedAuthority implements GrantedAuthority
-{
+public class CustomGrantedAuthority implements GrantedAuthority {
     private final Privilege privilege;
 
     @Override
-    public String getAuthority()
-    {
+    public String getAuthority() {
         return privilege.getName();
     }
 }

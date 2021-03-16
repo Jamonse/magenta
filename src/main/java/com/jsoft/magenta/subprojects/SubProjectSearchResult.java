@@ -1,7 +1,7 @@
 package com.jsoft.magenta.subprojects;
 
-public interface SubProjectSearchResult
-{
+public interface SubProjectSearchResult {
     Long getId();
+
     String getName();
 }

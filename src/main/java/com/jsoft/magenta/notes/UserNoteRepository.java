@@ -8,8 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface UserNoteRepository extends JpaRepository<UserNote, Long>
-{
+public interface UserNoteRepository extends JpaRepository<UserNote, Long> {
     Optional<UserNote> findByIdAndUserId(Long noteId, Long userId);
 
     Page<UserNote> findAllByUserId(Long userId, Pageable pageable);
@@ -18,13 +17,16 @@ public interface UserNoteRepository extends JpaRepository<UserNote, Long>
 
     Page<UserNote> findAllByUserIdAndTakenAtGreaterThanEqual(Long userId, LocalDateTime minDate, Pageable pageable);
 
-    Page<UserNote> findAllByUserIdAndTakenAtBetween(Long userId, LocalDateTime minDate, LocalDateTime maxDate, Pageable pageable);
+    Page<UserNote> findAllByUserIdAndTakenAtBetween(Long userId, LocalDateTime minDate, LocalDateTime maxDate,
+                                                    Pageable pageable);
 
     Page<UserNote> findAllByUserIdAndRemindAtLessThanEqual(Long userId, LocalDateTime maxDate, Pageable pageable);
 
     Page<UserNote> findAllByUserIdAndRemindAtGreaterThanEqual(Long userId, LocalDateTime minDate, Pageable pageable);
 
-    Page<UserNote> findAllByUserIdAndRemindAtBetween(Long userId, LocalDateTime minDate, LocalDateTime maxDate, Pageable pageable);
+    Page<UserNote> findAllByUserIdAndRemindAtBetween(Long userId, LocalDateTime minDate, LocalDateTime maxDate,
+                                                     Pageable pageable);
 
-    List<UserNoteSearchResult> findAllByUserIdAndTitleContainingIgnoreCase(Long userId, String title, Pageable pageable);
+    List<UserNoteSearchResult> findAllByUserIdAndTitleContainingIgnoreCase(Long userId, String title,
+                                                                           Pageable pageable);
 }

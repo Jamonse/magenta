@@ -21,18 +21,15 @@ import java.util.Set;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class PrivilegesGroupService
-{
+public class PrivilegesGroupService {
     private final PrivilegesGroupRepository privilegesGroupRepository;
 
-    public PrivilegesGroup createPrivilegesGroup(PrivilegesGroup privilegesGroup)
-    {
+    public PrivilegesGroup createPrivilegesGroup(PrivilegesGroup privilegesGroup) {
         verifyUniqueName(privilegesGroup.getName());
         return this.privilegesGroupRepository.save(privilegesGroup);
     }
 
-    public PrivilegesGroup createPrivilegesGroupInheritFrom(PrivilegesGroup newGroup, Long superGroupId)
-    {
+    public PrivilegesGroup createPrivilegesGroupInheritFrom(PrivilegesGroup newGroup, Long superGroupId) {
         verifyUniqueName(newGroup.getName());
         PrivilegesGroup privilegesGroup = findGroup(superGroupId);
         Set<Privilege> privileges = privilegesGroup.getPrivileges();
@@ -40,61 +37,53 @@ public class PrivilegesGroupService
         return this.privilegesGroupRepository.save(newGroup);
     }
 
-    public PrivilegesGroup updatePrivilegesGroup(PrivilegesGroup privilegesGroup)
-    {
+    public PrivilegesGroup updatePrivilegesGroup(PrivilegesGroup privilegesGroup) {
         PrivilegesGroup groupToUpdate = findGroup(privilegesGroup.getId());
-        if(!privilegesGroup.getName().equalsIgnoreCase(groupToUpdate.getName()))
+        if (!privilegesGroup.getName().equalsIgnoreCase(groupToUpdate.getName()))
             verifyUniqueName(privilegesGroup.getName());
         groupToUpdate.setName(privilegesGroup.getName());
         groupToUpdate.setPrivileges(privilegesGroup.getPrivileges());
         return this.privilegesGroupRepository.save(groupToUpdate);
     }
 
-    public PrivilegesGroup updateGroupName(Long groupId, String newName)
-    {
+    public PrivilegesGroup updateGroupName(Long groupId, String newName) {
         PrivilegesGroup privilegesGroup = findGroup(groupId);
         verifyUniqueName(newName);
         privilegesGroup.setName(newName);
         return this.privilegesGroupRepository.save(privilegesGroup);
     }
 
-    public PrivilegesGroup getPrivilegesGroup(Long groupId)
-    {
+    public PrivilegesGroup getPrivilegesGroup(Long groupId) {
         return findGroup(groupId);
     }
 
-    public Page<PrivilegesGroup> getAllPrivilegesGroups(int pageIndex, int pageSize, String sortBy, boolean asc)
-    {
+    public Page<PrivilegesGroup> getAllPrivilegesGroups(int pageIndex, int pageSize, String sortBy, boolean asc) {
         PageRequest pageRequest = PageRequestBuilder.buildPageRequest(pageIndex, pageSize, sortBy, asc);
         Page<PrivilegesGroup> results = this.privilegesGroupRepository.findAll(pageRequest);
         return new PageImpl<>(results.getContent(), pageRequest, results.getTotalElements());
     }
 
-    public List<PrivilegesGroupSearchResult> getAllPrivilegesGroupsResults(int resultsCount)
-    {
+    public List<PrivilegesGroupSearchResult> getAllPrivilegesGroupsResults(int resultsCount) {
         PageRequest pageRequest = PageRequestBuilder.buildPageRequest(
                 0, resultsCount, AppDefaults.PRIVILEGES_GROUP_DEFAULT_SORT, false);
         return this.privilegesGroupRepository.findAllResultsBy(pageRequest);
     }
 
-    public void deletePrivilegesGroup(Long groupId)
-    {
+    public void deletePrivilegesGroup(Long groupId) {
         findGroup(groupId);
         this.privilegesGroupRepository.deleteById(groupId);
     }
 
-    private PrivilegesGroup findGroup(Long groupId)
-    {
+    private PrivilegesGroup findGroup(Long groupId) {
         return this.privilegesGroupRepository
                 .findById(groupId)
                 .orElseThrow(() -> new NoSuchElementException("Group not found"));
     }
 
-    private void verifyUniqueName(String name)
-    {
+    private void verifyUniqueName(String name) {
         boolean exist = this.privilegesGroupRepository
                 .existsByName(name);
-        if(exist)
+        if (exist)
             throw new DuplicationException("Privileges group with same name already exists");
     }
 

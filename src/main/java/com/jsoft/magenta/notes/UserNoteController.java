@@ -17,15 +17,13 @@ import static com.jsoft.magenta.util.AppDefaults.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("${application.url}notes")
-public class UserNoteController
-{
+public class UserNoteController {
     private final UserNoteService userNoteService;
     private final String DEFAULT_NOTE_SORT = "title";
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserNote createNote(@RequestBody @Valid UserNote userNote)
-    {
+    public UserNote createNote(@RequestBody @Valid UserNote userNote) {
         return this.userNoteService.createUserNote(userNote);
     }
 
@@ -33,8 +31,7 @@ public class UserNoteController
     public UserNote updateNoteTitle(
             @PathVariable Long noteId,
             @RequestBody @ValidTitle String noteTitle
-    )
-    {
+    ) {
         return this.userNoteService.updateNoteTitle(noteId, noteTitle);
     }
 
@@ -42,8 +39,7 @@ public class UserNoteController
     public UserNote updateNoteContent(
             @PathVariable Long noteId,
             @RequestBody @ValidContent String noteContent
-    )
-    {
+    ) {
         return this.userNoteService.updateNoteContent(noteId, noteContent);
     }
 
@@ -52,14 +48,12 @@ public class UserNoteController
             @PathVariable Long noteId,
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime noteRemindTime
-    )
-    {
+    ) {
         return this.userNoteService.updateUserNoteRemindTime(noteId, noteRemindTime);
     }
 
     @PutMapping
-    public UserNote updateUserNote(@RequestBody @Valid UserNote userNote)
-    {
+    public UserNote updateUserNote(@RequestBody @Valid UserNote userNote) {
         return this.userNoteService.updateUserNote(userNote);
     }
 
@@ -69,8 +63,7 @@ public class UserNoteController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = DEFAULT_NOTE_SORT) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.userNoteService.getAllUserNotes(pageIndex, pageSize, sortBy, asc);
     }
 
@@ -82,8 +75,7 @@ public class UserNoteController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = DEFAULT_NOTE_SORT) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.userNoteService.getAllUserNotesTakenBefore(maxDate, pageIndex, pageSize, sortBy, asc);
     }
 
@@ -95,8 +87,7 @@ public class UserNoteController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = DEFAULT_NOTE_SORT) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.userNoteService.getAllUserNotesTakenAfter(minDate, pageIndex, pageSize, sortBy, asc);
     }
 
@@ -110,8 +101,7 @@ public class UserNoteController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = DEFAULT_NOTE_SORT) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.userNoteService.getAllUserNotesTakenBetween(minDate, maxDate, pageIndex, pageSize, sortBy, asc);
     }
 
@@ -123,8 +113,7 @@ public class UserNoteController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = DEFAULT_NOTE_SORT) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.userNoteService.getAllUserNotesRemindBefore(maxDate, pageIndex, pageSize, sortBy, asc);
     }
 
@@ -136,8 +125,7 @@ public class UserNoteController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = DEFAULT_NOTE_SORT) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.userNoteService.getAllUserNotesRemindAfter(minDate, pageIndex, pageSize, sortBy, asc);
     }
 
@@ -151,8 +139,7 @@ public class UserNoteController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = DEFAULT_NOTE_SORT) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.userNoteService.getAllUserNotesRemindBetween(minDate, maxDate, pageIndex, pageSize, sortBy, asc);
     }
 
@@ -163,14 +150,12 @@ public class UserNoteController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = DEFAULT_NOTE_SORT) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.userNoteService.getAllUserNotesByTitleExample(titleExample, pageIndex, pageSize, sortBy, asc);
     }
 
     @DeleteMapping("{noteId}")
-    public void deleteUserNote(@PathVariable Long noteId)
-    {
+    public void deleteUserNote(@PathVariable Long noteId) {
         this.userNoteService.deleteNote(noteId);
     }
 

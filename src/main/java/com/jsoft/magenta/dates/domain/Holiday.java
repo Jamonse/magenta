@@ -16,8 +16,7 @@ import java.time.LocalDate;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-public class Holiday
-{
+public class Holiday {
     @Id
     @NotNull
     @JsonDeserialize(using = LocalDateDeserializer.class)

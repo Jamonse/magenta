@@ -16,8 +16,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class AccountAssociation implements Serializable
-{
+public class AccountAssociation implements Serializable {
     @EmbeddedId
     private AccountAssociationId id;
 
@@ -49,16 +48,14 @@ public class AccountAssociation implements Serializable
     )
     private User user;
 
-    public AccountAssociation(User user, Account account, AccessPermission accessPermission)
-    {
+    public AccountAssociation(User user, Account account, AccessPermission accessPermission) {
         this.id = new AccountAssociationId(account.getId(), user.getId());
         this.account = account;
         this.user = user;
         this.permission = accessPermission;
     }
 
-    public AccountAssociation(Long userId, Long accountId, AccessPermission read)
-    {
+    public AccountAssociation(Long userId, Long accountId, AccessPermission read) {
         this.id = new AccountAssociationId(accountId, userId);
     }
 }

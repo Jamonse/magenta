@@ -17,8 +17,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class PrivilegesGroup
-{
+public class PrivilegesGroup {
     @Id
     @SequenceGenerator(
             name = "pg_sequence",
@@ -54,8 +53,7 @@ public class PrivilegesGroup
     @Valid
     private Set<Privilege> privileges = new HashSet<>();
 
-    public void addAll(Set<Privilege> privileges)
-    {
+    public void addAll(Set<Privilege> privileges) {
         privileges.removeIf(privilege -> privileges.contains(privilege));
         this.privileges.addAll(privileges);
     }

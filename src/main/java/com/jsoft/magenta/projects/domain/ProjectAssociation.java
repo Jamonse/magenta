@@ -17,8 +17,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class ProjectAssociation implements Serializable
-{
+public class ProjectAssociation implements Serializable {
     @EmbeddedId
     private ProjectAssociationId id;
 
@@ -50,16 +49,14 @@ public class ProjectAssociation implements Serializable
     )
     private User user;
 
-    public ProjectAssociation(User user, Project project, AccessPermission accessPermission)
-    {
-        this.id = new ProjectAssociationId( project.getId(), user.getId());
+    public ProjectAssociation(User user, Project project, AccessPermission accessPermission) {
+        this.id = new ProjectAssociationId(project.getId(), user.getId());
         this.user = user;
         this.project = project;
         this.permission = accessPermission;
     }
 
-    public ProjectAssociation(Long userId, Long projectId, AccessPermission accessPermission)
-    {
+    public ProjectAssociation(Long userId, Long projectId, AccessPermission accessPermission) {
         this.id = new ProjectAssociationId(projectId, userId);
         this.permission = accessPermission;
     }

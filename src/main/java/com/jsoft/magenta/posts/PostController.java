@@ -17,22 +17,19 @@ import static com.jsoft.magenta.util.AppDefaults.*;
 @RestController
 @RequestMapping("${application.url}posts")
 @RequiredArgsConstructor
-public class PostController
-{
+public class PostController {
     private final PostService postService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PostWritePermission
-    public Post createPost(@RequestBody @Valid Post post)
-    {
+    public Post createPost(@RequestBody @Valid Post post) {
         return this.postService.createPost(post);
     }
 
     @PutMapping
     @PostWritePermission
-    public Post updatePost(@RequestBody @Valid Post post)
-    {
+    public Post updatePost(@RequestBody @Valid Post post) {
         return this.postService.updatePost(post);
     }
 
@@ -41,8 +38,7 @@ public class PostController
     public Post updatePostTitle(
             @PathVariable Long postId,
             @RequestBody @ValidTitle String newTitle
-    )
-    {
+    ) {
         return this.postService.updatePostTitle(postId, newTitle);
     }
 
@@ -51,8 +47,7 @@ public class PostController
     public Post updatePostContent(
             @PathVariable Long postId,
             @RequestBody @ValidContent String newContent
-    )
-    {
+    ) {
         return this.postService.updatePostContent(postId, newContent);
     }
 
@@ -62,20 +57,17 @@ public class PostController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = DEFAULT_POST_SORT) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.postService.getAllPosts(pageIndex, pageSize, sortBy, asc);
     }
 
     @GetMapping("{postId}")
-    public Post getPost(@PathVariable Long postId)
-    {
+    public Post getPost(@PathVariable Long postId) {
         return this.postService.getPost(postId);
     }
 
     @DeleteMapping("{postId}")
-    public void deletePost(@PathVariable Long postId)
-    {
+    public void deletePost(@PathVariable Long postId) {
         this.postService.deletePost(postId);
     }
 

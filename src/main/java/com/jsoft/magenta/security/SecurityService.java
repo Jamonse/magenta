@@ -5,33 +5,35 @@ import com.jsoft.magenta.users.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
 
 /**
  * Evaluates and extracts user details from security context
  */
 @Slf4j
-public class UserEvaluator
+@Service
+public class SecurityService
 {
     /**
      * Returns the current logged in user id
      * @return the current logged in user id
      */
-    public static Long currentUserId()
+    public Long currentUserId()
     {
         return currentUser().getId();
     }
 
-    public static String currentUserName()
+    public String currentUserName()
     {
         return currentUser().getName();
     }
 
-    public static String currentUserEmail()
+    public String currentUserEmail()
     {
         return currentUser().getEmail();
     }
 
-    public static User currentUser()
+    public User currentUser()
     { // Get authentication from security context holder
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication != null && authentication.getPrincipal() instanceof UserPrincipal)

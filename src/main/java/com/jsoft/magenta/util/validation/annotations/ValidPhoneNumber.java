@@ -11,9 +11,10 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = {PhoneNumberValidator.class})
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidPhoneNumber
-{
+public @interface ValidPhoneNumber {
     String message() default AppConstants.PHONE_NUMBER_MESSAGE;
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

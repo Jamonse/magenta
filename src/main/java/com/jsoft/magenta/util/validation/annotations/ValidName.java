@@ -21,9 +21,10 @@ import java.lang.annotation.*;
 )
 @GroupSequence({NotBlank.class, Size.class})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidName
-{
+public @interface ValidName {
     String message() default AppConstants.NAME_DEFAULT_MESSAGE;
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

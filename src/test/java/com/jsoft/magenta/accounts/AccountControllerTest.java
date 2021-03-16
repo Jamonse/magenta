@@ -49,6 +49,7 @@ public class AccountControllerTest {
     @DisplayName("Create account and get it back with generated id")
     public void createAccount() throws Exception {
         Account account = new Account();
+        account.setName("account");
         Account returnedAccount = new Account();
         returnedAccount.setId(1L);
 
@@ -108,7 +109,7 @@ public class AccountControllerTest {
         when(accountService.createAccount(account, null, null, null)).thenReturn(account);
         when(accountService.updateAccountName(account.getId(), "new name")).thenReturn(returnedAccount);
 
-        mockMvc.perform(patch(Stringify.BASE_URL + "accounts/{accountId}", account.getId())
+        mockMvc.perform(patch(Stringify.BASE_URL + "accounts/name/{accountId}", account.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("new name"))
                 .andDo(print())
@@ -179,10 +180,14 @@ public class AccountControllerTest {
         account.setId(1L);
         Contact contact = new Contact();
         contact.setId(1L);
+        contact.setFirstName("first name");
+        contact.setLastName("last name");
+        contact.setEmail("email@email.com");
+        contact.setPhoneNumber("055-5555555");
 
         when(contactService.createContact(account.getId(), contact)).thenReturn(contact);
 
-        mockMvc.perform(post(Stringify.BASE_URL + "accounts/contacts/{accountId}", account.getId())
+        mockMvc.perform(post(Stringify.BASE_URL + "contacts/{accountId}", account.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(Stringify.asJsonString(contact)))
                 .andDo(print())
@@ -199,10 +204,14 @@ public class AccountControllerTest {
         account.setId(1L);
         Contact contact = new Contact();
         contact.setId(1L);
+        contact.setPhoneNumber("055-5555555");
+        contact.setEmail("email@email.com");
+        contact.setFirstName("first name");
+        contact.setLastName("last name");
 
         when(contactService.updateContact(contact)).thenReturn(contact);
 
-        mockMvc.perform(put(Stringify.BASE_URL + "accounts/contacts/{accountId}", account.getId())
+        mockMvc.perform(put(Stringify.BASE_URL + "contacts")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(Stringify.asJsonString(contact)))
                 .andDo(print())
@@ -216,10 +225,10 @@ public class AccountControllerTest {
     public void getAllContacts() throws Exception {
         Page<Contact> contacts = new PageImpl<>(List.of(new Contact()), PageRequest.of(0, 5), 5);
 
-        when(contactService.getAllContacts(1L, 0, 5, "firstName", false))
+        when(contactService.getAllContacts(1L, 0, 5, "name", false))
                 .thenReturn(contacts);
 
-        mockMvc.perform(get(Stringify.BASE_URL + "accounts/contacts/{accountId}", 1L)
+        mockMvc.perform(get(Stringify.BASE_URL + "contacts/{accountId}", 1L)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -227,22 +236,22 @@ public class AccountControllerTest {
                 .andExpect(jsonPath("$.totalElements").exists())
                 .andExpect(jsonPath("$.content").exists());
 
-        verify(contactService).getAllContacts(1L, 0, 5, "firstName", false);
+        verify(contactService).getAllContacts(1L, 0, 5, "name", false);
     }
 
     @Test
     @DisplayName("Delete contact")
     public void deleteContact() throws Exception
     {
-        doNothing().when(contactService).deleteContact(1L, 1L);
+        doNothing().when(contactService).deleteContact(1L);
 
-        mockMvc.perform(delete(Stringify.BASE_URL + "accounts/contacts/{contactId}", 1L)
+        mockMvc.perform(delete(Stringify.BASE_URL + "contacts/{contactId}", 1L)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").doesNotExist());
 
-        verify(contactService).deleteContact(1L, 1L);
+        verify(contactService).deleteContact(1L);
     }
 
 }

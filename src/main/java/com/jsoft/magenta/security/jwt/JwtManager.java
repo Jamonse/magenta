@@ -1,11 +1,11 @@
 package com.jsoft.magenta.security.jwt;
 
-import com.jsoft.magenta.security.service.CustomUserDetailsService;
 import com.jsoft.magenta.security.model.CustomGrantedAuthority;
 import com.jsoft.magenta.security.model.Privilege;
+import com.jsoft.magenta.security.service.CustomUserDetailsService;
 import com.jsoft.magenta.util.AppConstants;
-import io.jsonwebtoken.*;
 import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,8 +27,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class JwtManager
-{
+public class JwtManager {
     private KeyStore keyStore;
 
     @Value("${application.jwt.secret}")
@@ -44,8 +42,7 @@ public class JwtManager
     private final CustomUserDetailsService userDetailsService;
 
     @PostConstruct
-    private void init()
-    {
+    private void init() {
         try { // Load keystore from keystore file
             keyStore = KeyStore.getInstance("JKS");
             InputStream inputStream = getClass().getResourceAsStream("/magenta.jks");
@@ -55,8 +52,7 @@ public class JwtManager
         }
     }
 
-    public String createToken(String email, Set<Privilege> privileges)
-    {
+    public String createToken(String email, Set<Privilege> privileges) {
         Claims claims = Jwts.claims().setSubject(email); // Set user email as token subject
         Set<CustomGrantedAuthority> grantedAuthorities = privileges.stream() // Create authorities from privileges
                 .map(privilege -> new CustomGrantedAuthority(privilege))
@@ -75,14 +71,12 @@ public class JwtManager
                 .compact();
     }
 
-    public Authentication getAuthentication(String token)
-    {
+    public Authentication getAuthentication(String token) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(getUsername(token));
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
-    private String getUsername(String token)
-    {
+    private String getUsername(String token) {
         return Jwts.parser()
                 .setSigningKey(getPublicKey())
                 .parseClaimsJws(token)
@@ -90,8 +84,7 @@ public class JwtManager
                 .getSubject();
     }
 
-    public boolean validateToken(String token)
-    {
+    public boolean validateToken(String token) {
         try {
             Jwts.parser().setSigningKey(getPublicKey()).parseClaimsJws(token);
             return true;
@@ -104,26 +97,23 @@ public class JwtManager
         }
     }
 
-    public String getTokenPrefix()
-    {
+    public String getTokenPrefix() {
         return tokenPrefix;
     }
 
-    private PrivateKey getPrivateKey()
-    {
+    private PrivateKey getPrivateKey() {
         try {
             return (PrivateKey) keyStore.getKey(AppConstants.ALIAS, tokenSecret.toCharArray());
-        } catch(KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
+        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
             log.error("Error during pk loading");
         }
         throw new IllegalStateException("An uncaught exception was raised during keystore operation");
     }
 
-    private PublicKey getPublicKey()
-    {
+    private PublicKey getPublicKey() {
         try {
             return keyStore.getCertificate(AppConstants.ALIAS).getPublicKey();
-        } catch(KeyStoreException e) {
+        } catch (KeyStoreException e) {
             log.error("Error during public key loading");
         }
         throw new IllegalStateException("An uncaught exception was raised during keystore operation");

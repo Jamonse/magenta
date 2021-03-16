@@ -4,8 +4,8 @@ import com.jsoft.magenta.dates.HolidayService;
 import com.jsoft.magenta.events.subprojects.SubProjectRelatedEntityEvent;
 import com.jsoft.magenta.exceptions.NoSuchElementException;
 import com.jsoft.magenta.exceptions.RedundantWorkTimeException;
+import com.jsoft.magenta.security.SecurityService;
 import com.jsoft.magenta.subprojects.SubProject;
-import com.jsoft.magenta.security.UserEvaluator;
 import com.jsoft.magenta.users.User;
 import com.jsoft.magenta.worktimes.reports.*;
 import lombok.RequiredArgsConstructor;
@@ -26,12 +26,13 @@ public class WorkTimeService
     private final WorkTimeRepository workTimeRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final HolidayService holidayService;
+    private final SecurityService securityService;
 
     public WorkTime createWorkTime(Long subProjectId, WorkTime workTime)
     { // Validate work time type and values, set amount in case of date type work time
         validateAndCheckType(workTime);
         this.eventPublisher.publishEvent(new SubProjectRelatedEntityEvent(subProjectId));
-        User user = UserEvaluator.currentUser();
+        User user = securityService.currentUser();
         SubProject subProject = new SubProject(subProjectId);
         workTime.setSubProject(subProject);
         workTime.setUser(user);
@@ -96,7 +97,7 @@ public class WorkTimeService
 
     public List<WorkTime> getAllWorkTimesByDate(LocalDate localDate)
     {
-        Long userId = UserEvaluator.currentUserId();
+        Long userId = securityService.currentUserId();
         return getAllWorkTimesByUserAndDate(userId, localDate);
     }
 
@@ -180,7 +181,7 @@ public class WorkTimeService
 
     private void isSupervisorOrOwner(Long wtId)
     {
-        User user = UserEvaluator.currentUser();
+        User user = securityService.currentUser();
         Long ownerId = findOwnerUserId(wtId);
         user.isSupervisorOrOwner(ownerId);
     }

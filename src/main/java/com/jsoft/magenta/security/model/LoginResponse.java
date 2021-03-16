@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginResponse
-{
+public class LoginResponse {
     private User user;
     private String jwt;
     private String refreshToken;

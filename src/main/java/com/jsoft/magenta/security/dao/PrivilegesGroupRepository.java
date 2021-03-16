@@ -7,8 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface PrivilegesGroupRepository extends JpaRepository<PrivilegesGroup, Long>
-{
+public interface PrivilegesGroupRepository extends JpaRepository<PrivilegesGroup, Long> {
     boolean existsByName(String name);
 
     List<PrivilegesGroupSearchResult> findAllResultsBy(PageRequest pageRequest);

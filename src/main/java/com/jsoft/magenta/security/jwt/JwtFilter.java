@@ -19,19 +19,17 @@ import java.io.IOException;
 
 @Slf4j
 @RequiredArgsConstructor
-public class JwtFilter extends OncePerRequestFilter
-{
+public class JwtFilter extends OncePerRequestFilter {
     private final JwtManager jwtManager;
 
     @Override
     protected void doFilterInternal(
             HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
-            FilterChain filterChain) throws ServletException, IOException
-    {
+            FilterChain filterChain) throws ServletException, IOException {
         String authHeader = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
         // Check if there is an authorization header in the request
-        if(Strings.isNullOrEmpty(authHeader) || !authHeader.startsWith(jwtManager.getTokenPrefix()))
-        { // No Authorization header
+        if (Strings.isNullOrEmpty(authHeader) || !authHeader.startsWith(jwtManager.getTokenPrefix())) { // No
+            // Authorization header
             filterChain.doFilter(httpServletRequest, httpServletResponse);
             return;
         }
@@ -39,8 +37,8 @@ public class JwtFilter extends OncePerRequestFilter
         String token = authHeader.replace(jwtManager.getTokenPrefix(), "");
 
         try {
-            if(!Strings.isNullOrEmpty(token) && jwtManager.validateToken(token))
-            { // Token is valid - extract authentication from it
+            if (!Strings.isNullOrEmpty(token) && jwtManager.validateToken(token)) { // Token is valid - extract
+                // authentication from it
                 Authentication authentication = jwtManager.getAuthentication(token);
                 // initialize security context holder with extracted authentications
                 SecurityContext context = SecurityContextHolder.createEmptyContext();

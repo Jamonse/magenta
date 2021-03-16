@@ -4,7 +4,6 @@ import com.jsoft.magenta.users.User;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -13,18 +12,15 @@ import java.util.stream.Collectors;
 
 @Getter
 @RequiredArgsConstructor
-public class UserPrincipal implements UserDetails
-{
+public class UserPrincipal implements UserDetails {
     private final User user;
 
-    public Long getUserId()
-    {
+    public Long getUserId() {
         return user.getId();
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities()
-    {
+    public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> grantedAuthorities = user.getPrivileges().stream()
                 .map(privilege -> new CustomGrantedAuthority(privilege))
                 .collect(Collectors.toSet());

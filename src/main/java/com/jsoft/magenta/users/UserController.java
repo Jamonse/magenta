@@ -3,37 +3,35 @@ package com.jsoft.magenta.users;
 import com.jsoft.magenta.files.MagentaImage;
 import com.jsoft.magenta.security.annotations.users.UserManagePermission;
 import com.jsoft.magenta.security.annotations.users.UserWritePermission;
+import com.jsoft.magenta.util.validation.annotations.ValidImage;
 import com.jsoft.magenta.util.validation.annotations.ValidTheme;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-
 import java.util.List;
 
 import static com.jsoft.magenta.util.AppDefaults.*;
-import static com.jsoft.magenta.util.AppDefaults.ASCENDING_SORT;
 
 @Validated
 @RestController
 @RequestMapping("${application.url}users")
 @RequiredArgsConstructor
-public class UserController
-{
+public class UserController {
     private final UserService userService;
 
-    @PostMapping
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @UserWritePermission
     @ResponseStatus(HttpStatus.CREATED)
     public User createUser(
-            @RequestParam MultipartFile profileImage,
+            @RequestPart(required = false) @ValidImage MultipartFile profileImage,
             @RequestBody @Valid User user
-    )
-    {
+    ) {
         return this.userService.createUser(user, profileImage);
     }
 
@@ -42,21 +40,18 @@ public class UserController
     public User createSupervision(
             @PathVariable Long supervisorId,
             @PathVariable Long supervisedId
-    )
-    {
+    ) {
         return this.userService.createSupervision(supervisorId, supervisedId);
     }
 
     @PutMapping
     @UserWritePermission
-    public User updateUser(@RequestBody @Valid User user)
-    {
+    public User updateUser(@RequestBody @Valid User user) {
         return this.userService.updateUser(user);
     }
 
     @PatchMapping("theme")
-    public User updatePreferredTheme(@RequestBody @ValidTheme String preferredTheme)
-    {
+    public User updatePreferredTheme(@RequestBody @ValidTheme String preferredTheme) {
         ColorTheme colorTheme = ColorTheme.valueOf(preferredTheme.toUpperCase());
         return this.userService.updatePreferredTheme(colorTheme);
     }
@@ -65,22 +60,19 @@ public class UserController
     @UserWritePermission
     public MagentaImage updateUserProfileImage(
             @PathVariable Long userId,
-            @RequestParam MultipartFile profileImage
-    )
-    {
+            @RequestPart @ValidImage MultipartFile profileImage
+    ) {
         return this.userService.updateUserProfileImage(userId, profileImage);
     }
 
     @GetMapping
-    public User getDetails()
-    {
+    public User getDetails() {
         return this.userService.getDetails();
     }
 
     @GetMapping("{userId}")
     @UserManagePermission
-    public User getUser(@PathVariable Long userId)
-    {
+    public User getUser(@PathVariable Long userId) {
         return this.userService.getUser(userId);
     }
 
@@ -91,8 +83,7 @@ public class UserController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = USER_DEFAULT_SORT_NAME) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.userService.getAllUsers(pageIndex, pageSize, sortBy, asc);
     }
 
@@ -103,8 +94,7 @@ public class UserController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = USER_DEFAULT_SORT_NAME) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.userService.getAllSupervisedUsers(pageIndex, pageSize, sortBy, asc);
     }
 
@@ -116,8 +106,7 @@ public class UserController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = USER_DEFAULT_SORT_NAME) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.userService.getAllSupervisedUsersOfUser(userId, pageIndex, pageSize, sortBy, asc);
     }
 
@@ -125,8 +114,7 @@ public class UserController
     @UserManagePermission
     public List<UserSearchResult> getAllSupervisedUsersResults(
             @RequestParam(required = false, defaultValue = RESULTS_COUNT) int resultsCount
-    )
-    {
+    ) {
         return this.userService.getAllSupervisedUsersResults(resultsCount);
     }
 
@@ -135,8 +123,7 @@ public class UserController
     public List<UserSearchResult> getAllSupervisedUsersResultsOfUser(
             @PathVariable Long userId,
             @RequestParam(required = false, defaultValue = RESULTS_COUNT) int resultsCount
-    )
-    {
+    ) {
         return this.userService.getAllSupervisedUsersResultsOfUser(userId, resultsCount);
     }
 
@@ -145,8 +132,7 @@ public class UserController
     public List<UserSearchResult> getAllUsersByNameExample(
             @RequestParam String nameExample,
             @RequestParam(required = false, defaultValue = RESULTS_COUNT) int resultsCount
-    )
-    {
+    ) {
         return this.userService.getAllUsersByNameExample(nameExample, resultsCount);
     }
 
@@ -154,15 +140,13 @@ public class UserController
     @UserWritePermission
     public void removeUserProfileImage(
             @PathVariable Long userId
-    )
-    {
+    ) {
         this.userService.removeUserProfileImage(userId);
     }
 
     @DeleteMapping("{userId}")
     @UserWritePermission
-    public void deleteUser(@PathVariable Long userId)
-    {
+    public void deleteUser(@PathVariable Long userId) {
         this.userService.deleteUser(userId);
     }
 
@@ -171,8 +155,7 @@ public class UserController
     public void removeSupervision(
             @PathVariable Long supervisorId,
             @PathVariable Long supervisedId
-    )
-    {
+    ) {
         this.userService.removeSupervision(supervisorId, supervisedId);
     }
 

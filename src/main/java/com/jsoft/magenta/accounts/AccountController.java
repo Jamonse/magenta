@@ -14,7 +14,6 @@ import com.jsoft.magenta.util.validation.annotations.ValidPermission;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,20 +25,18 @@ import static com.jsoft.magenta.util.AppDefaults.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("${application.url}accounts")
-public class AccountController
-{
+public class AccountController {
     private final AccountService accountService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @AccountWritePermission
     public Account createAccount(
-            @RequestParam(required = false) MultipartFile coverImage,
-            @RequestParam(required = false) MultipartFile profileImage,
-            @RequestParam(required = false) MultipartFile logoImage,
+            @RequestPart(required = false) MultipartFile coverImage,
+            @RequestPart(required = false) MultipartFile profileImage,
+            @RequestPart(required = false) MultipartFile logoImage,
             @RequestBody @Valid Account account
-    )
-    {
+    ) {
         return this.accountService.createAccount(account, coverImage, logoImage, profileImage);
     }
 
@@ -49,8 +46,7 @@ public class AccountController
             @PathVariable Long accountId,
             @PathVariable Long userId,
             @RequestBody @ValidPermission String permission
-    )
-    {
+    ) {
         AccessPermission accessPermission = AccessPermission.valueOf(permission.toUpperCase());
         this.accountService.createAssociation(userId, accountId, accessPermission);
     }
@@ -61,8 +57,7 @@ public class AccountController
             @PathVariable Long accountId,
             @PathVariable Long userId,
             @RequestBody @ValidPermission String permission
-    )
-    {
+    ) {
         AccessPermission accessPermission = AccessPermission.valueOf(permission.toUpperCase());
         this.accountService.updateAssociation(userId, accountId, accessPermission);
     }
@@ -72,8 +67,7 @@ public class AccountController
     public Account updateAccountName(
             @PathVariable Long accountId,
             @RequestBody @ValidName String newName
-    )
-    {
+    ) {
         return this.accountService.updateAccountName(accountId, newName);
     }
 
@@ -81,9 +75,8 @@ public class AccountController
     @AccountWritePermission
     public MagentaImage updateAccountCoverImage(
             @PathVariable("{accountId}") Long accountId,
-            @RequestParam MultipartFile coverImage
-    )
-    {
+            @RequestPart MultipartFile coverImage
+    ) {
         return this.accountService.updateAccountImage(accountId, coverImage, MagentaImageType.COVER);
     }
 
@@ -91,9 +84,8 @@ public class AccountController
     @AccountWritePermission
     public MagentaImage updateAccountProfileImage(
             @PathVariable("{accountId}") Long accountId,
-            @RequestParam MultipartFile profileImage
-    )
-    {
+            @RequestPart MultipartFile profileImage
+    ) {
         return this.accountService.updateAccountImage(accountId, profileImage, MagentaImageType.PROFILE);
     }
 
@@ -101,9 +93,8 @@ public class AccountController
     @AccountWritePermission
     public MagentaImage updateAccountLogoImage(
             @PathVariable("{accountId}") Long accountId,
-            @RequestParam MultipartFile logoImage
-    )
-    {
+            @RequestPart MultipartFile logoImage
+    ) {
         return this.accountService.updateAccountImage(accountId, logoImage, MagentaImageType.LOGO);
     }
 
@@ -114,23 +105,20 @@ public class AccountController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = ACCOUNTS_DEFAULT_SORT) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.accountService.getAllAccounts(pageIndex, pageSize, sortBy, asc);
     }
 
     @GetMapping("{accountId}")
     @AccountWritePermission
-    public Account getAccountById(@PathVariable Long accountId)
-    {
+    public Account getAccountById(@PathVariable Long accountId) {
         return this.accountService.getAccountById(accountId);
     }
 
     @GetMapping("results")
     public List<AccountSearchResult> getAllAccountsResults(
             @RequestParam(required = false, defaultValue = RESULTS_COUNT) int resultsCount
-    )
-    {
+    ) {
         return this.accountService.getAllAccountsResults(resultsCount);
     }
 
@@ -138,8 +126,7 @@ public class AccountController
     public List<AccountSearchResult> getAllAccountsResultsOfUser(
             @PathVariable Long userId,
             @RequestParam(required = false, defaultValue = RESULTS_COUNT) int resultsCount
-    )
-    {
+    ) {
         return this.accountService.getAllAccountsResultsOfUser(userId, resultsCount);
     }
 
@@ -147,8 +134,7 @@ public class AccountController
     public List<AccountSearchResult> getAllAccountsByNameExample(
             @RequestParam String nameExample,
             @RequestParam(required = false, defaultValue = RESULTS_COUNT) int resultsCount
-    )
-    {
+    ) {
         return this.accountService.getAllAccountsResultsByNameExample(nameExample, resultsCount);
     }
 
@@ -159,8 +145,7 @@ public class AccountController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = ACCOUNTS_DEFAULT_SORT) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.accountService.getAccountProjects(accountId, pageIndex, pageSize, sortBy, asc);
     }
 
@@ -169,9 +154,8 @@ public class AccountController
             @PathVariable Long accountId,
             @RequestParam(required = false, defaultValue = RESULTS_COUNT) int resultsCount,
             @RequestParam(required = false) String nameExample
-    )
-    {
-        if(nameExample == null)
+    ) {
+        if (nameExample == null)
             return this.accountService.getAccountProjectResults(accountId, resultsCount);
         return this.accountService.getAccountProjectResultsByNameExample(accountId, nameExample, resultsCount);
     }
@@ -181,8 +165,7 @@ public class AccountController
     public void removeAccountCoverImage(
             @PathVariable Long accountId,
             @PathVariable Long imageId
-    )
-    {
+    ) {
         this.accountService.removeAccountImage(accountId, imageId, MagentaImageType.COVER);
     }
 
@@ -191,8 +174,7 @@ public class AccountController
     public void removeAccountProfileImage(
             @PathVariable Long accountId,
             @PathVariable Long imageId
-    )
-    {
+    ) {
         this.accountService.removeAccountImage(accountId, imageId, MagentaImageType.PROFILE);
     }
 
@@ -201,15 +183,13 @@ public class AccountController
     public void removeAccountLogoImage(
             @PathVariable Long accountId,
             @PathVariable Long imageId
-    )
-    {
+    ) {
         this.accountService.removeAccountImage(accountId, imageId, MagentaImageType.LOGO);
     }
 
     @DeleteMapping("{accountId}")
     @AccountAdminPermission
-    public void deleteAccount(@PathVariable Long accountId)
-    {
+    public void deleteAccount(@PathVariable Long accountId) {
         this.accountService.deleteAccount(accountId);
     }
 }

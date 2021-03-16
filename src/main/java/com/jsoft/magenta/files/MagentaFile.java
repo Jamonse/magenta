@@ -1,6 +1,9 @@
 package com.jsoft.magenta.files;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
@@ -9,8 +12,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public abstract class MagentaFile
-{
+public abstract class MagentaFile {
     @Id
     @SequenceGenerator(
             name = "file_sequence",

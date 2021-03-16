@@ -6,7 +6,6 @@ import org.springframework.data.repository.CrudRepository;
 import java.time.LocalDate;
 import java.util.List;
 
-public interface HolidayRepository extends CrudRepository<Holiday, LocalDate>
-{
+public interface HolidayRepository extends CrudRepository<Holiday, LocalDate> {
     List<Holiday> findAllByDateBetween(LocalDate start, LocalDate end);
 }

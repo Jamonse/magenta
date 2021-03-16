@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -39,8 +40,10 @@ public class NoteRepositoryTest
         user.setEmail("user@user.com");
         user.setPhoneNumber("050-5555555");
         user.setPassword("password");
+        user.setBirthDay(LocalDate.now().minusYears(20));
         user.setEnabled(true);
         user.setPreferredTheme(ColorTheme.LIGHT);
+        user.setCreatedAt(LocalDate.now().minusDays(20));
         userNote = new UserNote();
         userNote.setTitle("title");
         userNote.setContent("");

@@ -19,8 +19,7 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Contact
-{
+public class Contact {
     @Id
     @SequenceGenerator(
             name = "ac_sequence",

@@ -1,7 +1,5 @@
 package com.jsoft.magenta.contacts;
 
-import com.jsoft.magenta.contacts.Contact;
-import com.jsoft.magenta.contacts.ContactSearchResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,8 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface ContactRepository extends JpaRepository<Contact, Long>
-{
+public interface ContactRepository extends JpaRepository<Contact, Long> {
     boolean existsByEmailAndAccountId(String email, Long accountId);
 
     boolean existsByPhoneNumberAndAccountId(String phoneNumber, Long accountId);
@@ -24,12 +21,12 @@ public interface ContactRepository extends JpaRepository<Contact, Long>
     Page<Contact> findAllByAccountId(Long contactId, Pageable pageable);
 
     List<ContactSearchResult> findAllByAccountIdAndFirstNameContainingIgnoreCaseOrAccountIdAndLastNameContainingIgnoreCaseOrAccountIdAndEmailContainingIgnoreCase(
-            Long idFirstArg, String firstNameExample, Long idSecondArg, String lastNameExample, Long idThirdArg, String emailExample, Pageable pageable
+            Long idFirstArg, String firstNameExample, Long idSecondArg, String lastNameExample, Long idThirdArg,
+            String emailExample, Pageable pageable
     );
 
     default List<ContactSearchResult> findAllByAccountIdAndNameExample(
-            Long accountId, String example, Pageable pageable)
-    {
+            Long accountId, String example, Pageable pageable) {
         return findAllByAccountIdAndFirstNameContainingIgnoreCaseOrAccountIdAndLastNameContainingIgnoreCaseOrAccountIdAndEmailContainingIgnoreCase(
                 accountId, example, accountId, example, accountId, example, pageable
         );

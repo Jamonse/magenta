@@ -1,0 +1,6 @@
+# Datasource connection pool configuration for test purposes
+
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 2

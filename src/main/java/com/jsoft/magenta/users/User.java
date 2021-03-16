@@ -12,13 +12,12 @@ import com.jsoft.magenta.exceptions.AuthorizationException;
 import com.jsoft.magenta.files.MagentaImage;
 import com.jsoft.magenta.notes.UserNote;
 import com.jsoft.magenta.projects.domain.ProjectAssociation;
-import com.jsoft.magenta.subprojects.SubProject;
 import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.security.model.Privilege;
+import com.jsoft.magenta.subprojects.SubProject;
 import com.jsoft.magenta.util.AppConstants;
 import com.jsoft.magenta.util.validation.annotations.ValidName;
 import com.jsoft.magenta.util.validation.annotations.ValidPhoneNumber;
-import com.jsoft.magenta.util.validation.annotations.ValidTheme;
 import com.jsoft.magenta.worktimes.WorkTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -50,8 +49,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class User
-{
+public class User {
     @Id
     @SequenceGenerator(
             name = "user_sequence",
@@ -83,7 +81,7 @@ public class User
     private String phoneNumber;
 
     @Column(name = "password", nullable = false)
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    //@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @NotBlank(message = AppConstants.PASSWORD_BLANK_MESSAGE)
     private String password;
 
@@ -192,19 +190,16 @@ public class User
     @JsonIgnore
     private Set<User> supervisedUsers;
 
-    public User(Long userId)
-    {
+    public User(Long userId) {
         this.id = userId;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return firstName + " " + lastName;
     }
 
-    public boolean hasPermissionGreaterThanEqual(Privilege privilege)
-    {
-        if(Strings.isNullOrEmpty(privilege.getName()) || privilege.getLevel() == null)
+    public boolean hasPermissionGreaterThanEqual(Privilege privilege) {
+        if (Strings.isNullOrEmpty(privilege.getName()) || privilege.getLevel() == null)
             return false;
         return this.getPrivileges().stream()
                 .anyMatch(p -> p.getName().equalsIgnoreCase(privilege.getName()) &&
@@ -212,75 +207,59 @@ public class User
     }
 
     @JsonIgnore
-    public boolean isAccountAdmin()
-    {
+    public boolean isAccountAdmin() {
         return isAdminOf(AppConstants.ACCOUNT_PERMISSION);
     }
 
     @JsonIgnore
-    public boolean isUserAdmin()
-    {
+    public boolean isUserAdmin() {
         return isAdminOf(AppConstants.USER_PERMISSION);
     }
 
-    public boolean isAdminOf(String permissionName)
-    {
+    public boolean isAdminOf(String permissionName) {
         return this.getPrivileges().stream()
                 .anyMatch(p -> p.getName().equalsIgnoreCase(permissionName) &&
                         p.getLevel() == AccessPermission.ADMIN);
     }
 
     @JsonIgnore
-    public AccessPermission getAccountsPermission()
-    {
+    public AccessPermission getAccountsPermission() {
         return getPermission(AppConstants.ACCOUNT_PERMISSION);
     }
 
     @JsonIgnore
-    public AccessPermission getProjectPermission()
-    {
+    public AccessPermission getProjectPermission() {
         return getPermission(AppConstants.PROJECT_PERMISSION);
     }
 
-    public void removeAllSubProjectsByProjectId(Long projectId)
-    {
-        getSubProjects().removeIf(subProject -> subProject.getProject().getId().equals(projectId));
-    }
-
-    public boolean isSupervisorOf(User supervised)
-    {
+    public boolean isSupervisorOf(User supervised) {
         return getSupervisedUsers().contains(supervised);
     }
 
-    public boolean isSupervisorOf(Long supervisedId)
-    {
+    public boolean isSupervisorOf(Long supervisedId) {
         boolean admin = isAdminOf(AppConstants.USER_PERMISSION);
-        if(admin)
+        if (admin)
             return true;
         return getSupervisedUsers().stream()
                 .anyMatch(user -> user.getId().equals(supervisedId));
     }
 
-    public void isSupervisorOrOwner(Long ownerId)
-    {
+    public void isSupervisorOrOwner(Long ownerId) {
         boolean admin = isAdminOf(AppConstants.USER_PERMISSION);
-        if(admin)
+        if (admin)
             return;
-        if(!this.id.equals(ownerId))
-        {
+        if (!this.id.equals(ownerId)) {
             boolean isSupervisor = isSupervisorOf(ownerId);
-            if(!isSupervisor)
+            if (!isSupervisor)
                 throw new AuthorizationException("User is not authorized to perform such operation");
         }
     }
 
-    public boolean removeSubProject(SubProject subProject)
-    {
+    public boolean removeSubProject(SubProject subProject) {
         return getSubProjects().remove(subProject);
     }
 
-    private AccessPermission getPermission(String entityName)
-    {
+    private AccessPermission getPermission(String entityName) {
         AccessPermission accessPermission = getPrivileges().stream()
                 .filter(privilege -> privilege.getName().equals(entityName))
                 .map(Privilege::getLevel)

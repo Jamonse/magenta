@@ -13,9 +13,10 @@ import java.lang.annotation.*;
 @NotBlank(message = AppConstants.PERMISSION_BLANK_MESSAGE)
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidTheme
-{
+public @interface ValidTheme {
     String message() default AppConstants.THEME_NAME_MESSAGE;
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

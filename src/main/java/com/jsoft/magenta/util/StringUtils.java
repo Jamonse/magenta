@@ -5,10 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class StringUtils
-{
-    public static String asJsonString(Object obj)
-    {
+public class StringUtils {
+    public static String asJsonString(Object obj) {
         ObjectMapper mapper = new ObjectMapper();
         String jsonString = null;
         try {

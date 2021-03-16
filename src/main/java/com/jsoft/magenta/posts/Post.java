@@ -20,8 +20,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Post
-{
+public class Post {
     @Id
     @SequenceGenerator(
             name = "post_sequence",

@@ -1,21 +1,16 @@
 package com.jsoft.magenta.notes;
 
 import com.jsoft.magenta.exceptions.ReminderException;
-import com.jsoft.magenta.exceptions.TextLengthException;
-import com.jsoft.magenta.security.UserEvaluator;
+import com.jsoft.magenta.security.SecurityService;
 import com.jsoft.magenta.users.User;
 import org.junit.jupiter.api.*;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,26 +24,13 @@ public class NoteServiceTest
     @Mock
     private UserNoteRepository userNoteRepository;
 
-    private static MockedStatic<UserEvaluator> mockedStatic;
-
-    @BeforeAll
-    private static void initStaticMock()
-    {
-        mockedStatic = mockStatic(UserEvaluator.class);
-    }
+    @Mock
+    private SecurityService securityService;
 
     @BeforeEach
     private void init()
     {
         MockitoAnnotations.openMocks(this);
-    }
-
-    @AfterAll
-    private static void afterTesting()
-    {
-        mockedStatic.verify(times(1), UserEvaluator::currentUser);
-        mockedStatic.verify(times(8), UserEvaluator::currentUserId);
-        mockedStatic.close();
     }
 
     @Test
@@ -64,8 +46,7 @@ public class NoteServiceTest
         returnedNote.setId(1L);
 
         when(userNoteRepository.save(userNote)).thenReturn(returnedNote);
-        mockedStatic.when(UserEvaluator::currentUser).thenReturn(new User());
-
+        when(securityService.currentUser()).thenReturn(new User());
         UserNote note = this.userNoteService.createUserNote(userNote);
 
         Assertions.assertEquals(note.getTitle(), returnedNote.getTitle());
@@ -83,13 +64,14 @@ public class NoteServiceTest
         returnedNote.setTitle(userNote.getTitle());
         returnedNote.setRemindAt(LocalDateTime.now().plusDays(2));
 
-        when(userNoteRepository.findById(1L)).thenReturn(Optional.of(userNote));
+        when(userNoteRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(userNote));
         when(userNoteRepository.save(userNote)).thenReturn(returnedNote);
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
 
         UserNote note = this.userNoteService.updateUserNoteRemindTime(1L, LocalDateTime.now().plusDays(2));
 
         Assertions.assertEquals(note.getTitle(), returnedNote.getTitle());
+        verify(userNoteRepository).findByIdAndUserId(1L, 1L);
         verify(userNoteRepository).save(userNote);
     }
 
@@ -104,59 +86,14 @@ public class NoteServiceTest
         returnedNote.setTitle(userNote.getTitle());
         returnedNote.setRemindAt(LocalDateTime.now());
 
-        when(userNoteRepository.findById(1L)).thenReturn(Optional.of(userNote));
+        when(userNoteRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(userNote));
         when(userNoteRepository.save(userNote)).thenReturn(returnedNote);
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
 
         Assertions.assertThrows(ReminderException.class,
                 () -> this.userNoteService.updateUserNoteRemindTime(1L, LocalDateTime.now()));
 
-        verify(userNoteRepository).findById(1L);
-        verify(userNoteRepository, times(0)).save(userNote);
-    }
-
-    @Test
-    @DisplayName("Update user note title with invalid title - should throw TextLengthException")
-    public void updateUserNoteTitleWithInvalidTitle()
-    {
-        UserNote userNote = new UserNote();
-        userNote.setTitle("title");
-        userNote.setRemindAt(LocalDateTime.now().plusDays(1));
-        UserNote returnedNote = new UserNote();
-        returnedNote.setTitle("");
-        returnedNote.setRemindAt(LocalDateTime.now());
-
-        when(userNoteRepository.findById(1L)).thenReturn(Optional.of(userNote));
-        when(userNoteRepository.save(userNote)).thenReturn(returnedNote);
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
-
-        Assertions.assertThrows(TextLengthException.class,
-                () -> this.userNoteService.updateNoteTitle(1L, returnedNote.getTitle()));
-
-        verify(userNoteRepository).findById(1L);
-        verify(userNoteRepository, times(0)).save(userNote);
-    }
-
-    @Test
-    @DisplayName("Update user note content with invalid content - should throw TextLengthException")
-    public void updateUserNoteContentWithInvalidContent()
-    {
-        UserNote userNote = new UserNote();
-        userNote.setContent("content");
-        userNote.setRemindAt(LocalDateTime.now().plusDays(1));
-        UserNote returnedNote = new UserNote();
-        String newContent = Collections.nCopies(257, "s").toString();
-        returnedNote.setTitle(newContent);
-        returnedNote.setRemindAt(LocalDateTime.now());
-
-        when(userNoteRepository.findById(1L)).thenReturn(Optional.of(userNote));
-        when(userNoteRepository.save(userNote)).thenReturn(returnedNote);
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
-
-        Assertions.assertThrows(TextLengthException.class,
-                () -> this.userNoteService.updateNoteTitle(1L, returnedNote.getTitle()));
-
-        verify(userNoteRepository).findById(1L);
+        verify(userNoteRepository).findByIdAndUserId(1L, 1L);
         verify(userNoteRepository, times(0)).save(userNote);
     }
 
@@ -169,14 +106,16 @@ public class NoteServiceTest
         UserNote returnedNote = new UserNote();
         returnedNote.setTitle("new title");
 
-        when(userNoteRepository.findById(1L)).thenReturn(Optional.of(userNote));
+        when(userNoteRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(userNote));
         when(userNoteRepository.save(userNote)).thenReturn(returnedNote);
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
 
         UserNote note = this.userNoteService.updateNoteTitle(1L, "new title");
 
         Assertions.assertEquals(userNote.getTitle(), returnedNote.getTitle());
         Assertions.assertEquals(note.getTitle(), returnedNote.getTitle());
+
+        verify(userNoteRepository).findByIdAndUserId(1L, 1L);
         verify(userNoteRepository).save(userNote);
     }
 
@@ -189,9 +128,9 @@ public class NoteServiceTest
         UserNote returnedNote = new UserNote();
         returnedNote.setContent("new content");
 
-        when(userNoteRepository.findById(1L)).thenReturn(Optional.of(userNote));
+        when(userNoteRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(userNote));
         when(userNoteRepository.save(userNote)).thenReturn(returnedNote);
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
 
         UserNote note = this.userNoteService.updateNoteContent(1L, "new content");
 
@@ -214,9 +153,9 @@ public class NoteServiceTest
         returnedNote.setContent("new content");
         returnedNote.setRemindAt(LocalDateTime.now().plusDays(1));
 
-        when(userNoteRepository.findById(1L)).thenReturn(Optional.of(userNote));
+        when(userNoteRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(userNote));
         when(userNoteRepository.save(userNote)).thenReturn(returnedNote);
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
 
         UserNote note = this.userNoteService.updateUserNote(userNote);
 
@@ -237,7 +176,7 @@ public class NoteServiceTest
 
         when(userNoteRepository.findAllByUserId(1L, pageRequest))
                 .thenReturn(new PageImpl<>(List.of(userNote), pageRequest, 1));
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
 
         Page<UserNote> notesResult = this.userNoteService.getAllUserNotes(0, 5, "title", true);
 
@@ -257,7 +196,7 @@ public class NoteServiceTest
 
         when(userNoteRepository.findAllByUserIdAndTakenAtLessThanEqual(1L, maxDate, pageRequest))
                 .thenReturn(new PageImpl<>(List.of(userNote), pageRequest, 1));
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
 
         Page<UserNote> notesResult = this.userNoteService
                 .getAllUserNotesTakenBefore(maxDate, 0, 5, "title", true);
@@ -278,7 +217,7 @@ public class NoteServiceTest
 
         when(userNoteRepository.findAllByUserIdAndTakenAtGreaterThanEqual(1L, minDate, pageRequest))
                 .thenReturn(new PageImpl<>(List.of(userNote), pageRequest, 1));
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
 
         Page<UserNote> notesResult = this.userNoteService
                 .getAllUserNotesTakenAfter(minDate, 0, 5, "title", true);
@@ -300,7 +239,7 @@ public class NoteServiceTest
 
         when(userNoteRepository.findAllByUserIdAndTakenAtBetween(1L, minDate, maxDate, pageRequest))
                 .thenReturn(new PageImpl<>(List.of(userNote), pageRequest, 1));
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
 
         Page<UserNote> notesResult = this.userNoteService
                 .getAllUserNotesTakenBetween(minDate, maxDate, 0, 5, "title", true);
@@ -321,7 +260,7 @@ public class NoteServiceTest
 
         when(userNoteRepository.findAllByUserIdAndRemindAtLessThanEqual(1L, maxDate, pageRequest))
                 .thenReturn(new PageImpl<>(List.of(userNote), pageRequest, 1));
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
 
         Page<UserNote> notesResult = this.userNoteService
                 .getAllUserNotesRemindBefore(maxDate, 0, 5, "title", true);
@@ -342,7 +281,7 @@ public class NoteServiceTest
 
         when(userNoteRepository.findAllByUserIdAndRemindAtGreaterThanEqual(1L, minDate, pageRequest))
                 .thenReturn(new PageImpl<>(List.of(userNote), pageRequest, 1));
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
 
         Page<UserNote> notesResult = this.userNoteService
                 .getAllUserNotesRemindAfter(minDate, 0, 5, "title", true);
@@ -364,7 +303,7 @@ public class NoteServiceTest
 
         when(userNoteRepository.findAllByUserIdAndRemindAtBetween(1L, minDate, maxDate, pageRequest))
                 .thenReturn(new PageImpl<>(List.of(userNote), pageRequest, 1));
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
 
         Page<UserNote> notesResult = this.userNoteService
                 .getAllUserNotesRemindBetween(minDate, maxDate, 0, 5, "title", true);
@@ -405,7 +344,7 @@ public class NoteServiceTest
                         return LocalDateTime.now().plusDays(1);
                     }
                 }));
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
 
         List<UserNoteSearchResult> notesResult = this.userNoteService
                 .getAllUserNotesByTitleExample("t" ,0, 5, "title", true);
@@ -422,12 +361,12 @@ public class NoteServiceTest
         UserNote userNote = new UserNote();
         userNote.setId(1L);
 
-        when(userNoteRepository.findById(1L)).thenReturn(Optional.of(userNote));
+        when(userNoteRepository.existsById(1L)).thenReturn(true);
         doNothing().when(userNoteRepository).deleteById(1L);
 
         this.userNoteService.deleteNote(1L);
 
-        verify(userNoteRepository).deleteById(1L);
+        verify(userNoteRepository).existsById(1L);
     }
 
 }

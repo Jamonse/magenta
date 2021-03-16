@@ -4,13 +4,11 @@ import com.jsoft.magenta.accounts.domain.Account;
 import com.jsoft.magenta.contacts.Contact;
 import com.jsoft.magenta.contacts.ContactRepository;
 import com.jsoft.magenta.contacts.ContactService;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import com.jsoft.magenta.security.SecurityService;
+import com.jsoft.magenta.users.User;
+import org.junit.jupiter.api.*;
+import org.mockito.*;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -27,10 +25,16 @@ public class ContactServiceTest
     private ContactService contactService;
 
     @Mock
+    private SecurityService securityService;
+
+    @Mock
     private ContactRepository contactRepository;
 
     @Mock
     private AccountRepository accountRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @BeforeEach
     private void init()
@@ -50,7 +54,6 @@ public class ContactServiceTest
         returnedContact.setId(1L);
         returnedContact.setAccount(account);
 
-        when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
         when(contactRepository.save(contact)).thenReturn(returnedContact);
 
         Contact savedContact = this.contactService.createContact(account.getId(), contact);
@@ -58,7 +61,6 @@ public class ContactServiceTest
         Assertions.assertNotNull(savedContact.getId());
         Assertions.assertEquals(savedContact, returnedContact);
 
-        verify(accountRepository).findById(account.getId());
         verify(contactRepository).save(contact);
     }
 
@@ -76,13 +78,19 @@ public class ContactServiceTest
         contact.setPhoneNumber("contact");
         contact.setAccount(account);
 
-        when(contactRepository.findById(contact.getId())).thenReturn(Optional.of(contact));
+        when(securityService.currentUserId()).thenReturn(1L);
+        when(contactRepository.findByIdAndAccountAssociationsUserId(contact.getId(), 1L)).thenReturn(Optional.of(contact));
+        when(contactRepository.findAccountIdById(contact.getId())).thenReturn(Optional.of(account.getId()));
         when(contactRepository.save(contact)).thenReturn(contact);
 
         Contact savedContact = this.contactService.updateContact(contact);
 
         Assertions.assertNotNull(savedContact.getId());
         Assertions.assertEquals(savedContact, contact);
+
+        verify(contactRepository).findByIdAndAccountAssociationsUserId(contact.getId(), 1L);
+        verify(contactRepository).findAccountIdById(contact.getId());
+        verify(contactRepository).save(contact);
     }
 
     @Test
@@ -108,12 +116,19 @@ public class ContactServiceTest
     @DisplayName("Delete contact")
     public void deleteContact()
     {
-        when(contactRepository.findById(1L)).thenReturn(Optional.of(new Contact()));
+        Account account = new Account(1L);
+        Contact contact = new Contact();
+        contact.setAccount(account);
+        when(securityService.currentUserId()).thenReturn(1L);
+        when(contactRepository.existsById(1L)).thenReturn(true);
+        when(contactRepository.findByIdAndAccountAssociationsUserId(1L, 1L))
+                .thenReturn(Optional.of(contact));
         doNothing().when(contactRepository).deleteById(1L);
 
-        this.contactService.deleteContact(1L, 1L);
+        this.contactService.deleteContact(1L);
 
-        verify(contactRepository).deleteById(1L);
+        verify(contactRepository).findByIdAndAccountAssociationsUserId(1L, 1L);
+        verify(contactRepository).existsById(1L);
     }
 
 }

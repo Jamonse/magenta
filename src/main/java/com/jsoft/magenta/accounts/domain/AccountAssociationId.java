@@ -14,8 +14,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class AccountAssociationId implements Serializable
-{
+public class AccountAssociationId implements Serializable {
     @Column(name = "account_id")
     private Long accountId;
 

@@ -2,7 +2,7 @@ package com.jsoft.magenta.workplans;
 
 import com.jsoft.magenta.events.workplans.WorkPlanCreationEvent;
 import com.jsoft.magenta.exceptions.NoSuchElementException;
-import com.jsoft.magenta.security.UserEvaluator;
+import com.jsoft.magenta.security.SecurityService;
 import com.jsoft.magenta.users.User;
 import com.jsoft.magenta.util.PageRequestBuilder;
 import lombok.RequiredArgsConstructor;
@@ -18,21 +18,19 @@ import java.util.List;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class WorkPlanService
-{
+public class WorkPlanService {
     private final WorkPlanRepository workPlanRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final SecurityService securityService;
 
-    public WorkPlan createWorkPlan(Long userId, WorkPlan workPlan)
-    {
+    public WorkPlan createWorkPlan(Long userId, WorkPlan workPlan) {
         isSupervisor(userId);
         validateDates(workPlan);
         this.eventPublisher.publishEvent(new WorkPlanCreationEvent(userId));
         return this.workPlanRepository.save(workPlan);
     }
 
-    public WorkPlan updateWorkPlan(WorkPlan workPlan)
-    {
+    public WorkPlan updateWorkPlan(WorkPlan workPlan) {
         WorkPlan workPlanToUpdate = findWorkPlan(workPlan.getId());
         validateDates(workPlan);
         workPlanToUpdate.setTitle(workPlan.getTitle());
@@ -41,51 +39,45 @@ public class WorkPlanService
         return this.workPlanRepository.save(workPlanToUpdate);
     }
 
-    public WorkPlan updateWorkPlanStartDate(Long wpId, LocalDateTime startDate)
-    {
+    public WorkPlan updateWorkPlanStartDate(Long wpId, LocalDateTime startDate) {
         WorkPlan workPlan = findWorkPlan(wpId);
         workPlan.setStartDate(startDate);
         validateDates(workPlan);
         return this.workPlanRepository.save(workPlan);
     }
 
-    public WorkPlan updateWorkPlanEndDate(Long wpId, LocalDateTime endDate)
-    {
+    public WorkPlan updateWorkPlanEndDate(Long wpId, LocalDateTime endDate) {
         WorkPlan workPlan = findWorkPlan(wpId);
         workPlan.setEndDate(endDate);
         validateDates(workPlan);
         return this.workPlanRepository.save(workPlan);
     }
 
-    public List<WorkPlan> getAllWorkPlansByUserId(Long userId, int pageIndex, int pageSize, String sortBy, boolean asc)
-    {
+    public List<WorkPlan> getAllWorkPlansByUserId(Long userId, int pageIndex, int pageSize, String sortBy,
+                                                  boolean asc) {
         PageRequest pageRequest = PageRequestBuilder.buildPageRequest(pageIndex, pageSize, sortBy, asc);
         return this.workPlanRepository.findAllByUserId(userId, pageRequest);
     }
 
-    public void deleteWorkPlan(Long wpId)
-    {
+    public void deleteWorkPlan(Long wpId) {
         this.workPlanRepository.deleteById(wpId);
     }
 
-    private WorkPlan findWorkPlan(Long wpId)
-    {
+    private WorkPlan findWorkPlan(Long wpId) {
         return this.workPlanRepository
                 .findById(wpId)
                 .orElseThrow(() -> new NoSuchElementException("Work plan not found"));
     }
 
-    private void isSupervisor(Long userId)
-    {
-        User user = UserEvaluator.currentUser();
+    private void isSupervisor(Long userId) {
+        User user = securityService.currentUser();
         user.isSupervisorOf(userId);
     }
 
-    private void validateDates(WorkPlan workPlan)
-    {
+    private void validateDates(WorkPlan workPlan) {
         LocalDateTime start = workPlan.getStartDate();
         LocalDateTime end = workPlan.getEndDate();
-        if(start.isAfter(end))
+        if (start.isAfter(end))
             throw new DateTimeException("Start date of a work plan cannot exceed its end date");
     }
 

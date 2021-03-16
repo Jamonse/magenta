@@ -1,7 +1,7 @@
 package com.jsoft.magenta.accounts.domain;
 
-public interface AccountSearchResult
-{
+public interface AccountSearchResult {
     Long getId();
+
     String getName();
 }

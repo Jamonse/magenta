@@ -1,7 +1,10 @@
 package com.jsoft.magenta.worktimes;
 
-import com.jsoft.magenta.security.UserEvaluator;
+import com.jsoft.magenta.security.SecurityService;
+import com.jsoft.magenta.security.model.AccessPermission;
+import com.jsoft.magenta.security.model.Privilege;
 import com.jsoft.magenta.users.User;
+import com.jsoft.magenta.util.AppConstants;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
 import org.mockito.*;
@@ -11,13 +14,18 @@ import org.springframework.security.test.context.support.WithUserDetails;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class WorkTimeServiceTest
 {
     @InjectMocks
     private WorkTimeService workTimeService;
+
+    @Mock
+    private SecurityService securityService;
 
     @Mock
     private WorkTimeRepository workTimeRepository;
@@ -29,14 +37,6 @@ public class WorkTimeServiceTest
     private void init()
     {
         MockitoAnnotations.openMocks(this);
-    }
-
-    private static MockedStatic<UserEvaluator> mockedStatic;
-
-    @BeforeAll
-    private static void initStatic()
-    {
-        mockedStatic = Mockito.mockStatic(UserEvaluator.class);
     }
 
     @Nested
@@ -54,8 +54,7 @@ public class WorkTimeServiceTest
             User user = new User();
             user.setId(1L);
 
-            mockedStatic.when(UserEvaluator::currentUser)
-                    .thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
             Mockito.when(workTimeRepository.save(workTime))
                     .thenReturn(workTime);
 
@@ -162,9 +161,18 @@ public class WorkTimeServiceTest
         @DisplayName("Update work time note")
         public void updateWorkTimeNote()
         {
+            User user = new User(1L);
+            Privilege privilege = new Privilege();
+            privilege.setName(AppConstants.USER_PERMISSION);
+            privilege.setLevel(AccessPermission.ADMIN);
+            Set<Privilege> privileges = new HashSet<>();
+            privileges.add(privilege);
+            user.setPrivileges(privileges);
             WorkTime workTime = new WorkTime();
             workTime.setId(1L);
 
+            Mockito.when(securityService.currentUser()).thenReturn(user);
+            Mockito.when(workTimeRepository.findUserIdById(1L)).thenReturn(Optional.of(1L));
             Mockito.when(workTimeRepository.getOne(workTime.getId()))
                     .thenReturn(workTime);
             Mockito.when(workTimeRepository.save(workTime))
@@ -185,9 +193,18 @@ public class WorkTimeServiceTest
         @DisplayName("Update work time sub-project")
         public void updateWorkTimeSubProject()
         {
+            User user = new User(1L);
+            Privilege privilege = new Privilege();
+            privilege.setName(AppConstants.USER_PERMISSION);
+            privilege.setLevel(AccessPermission.ADMIN);
+            Set<Privilege> privileges = new HashSet<>();
+            privileges.add(privilege);
+            user.setPrivileges(privileges);
             WorkTime workTime = new WorkTime();
             workTime.setId(1L);
 
+            Mockito.when(securityService.currentUser()).thenReturn(user);
+            Mockito.when(workTimeRepository.findUserIdById(1L)).thenReturn(Optional.of(1L));
             Mockito.when(workTimeRepository.getOne(workTime.getId()))
                     .thenReturn(workTime);
             Mockito.when(workTimeRepository.save(workTime))
@@ -209,12 +226,21 @@ public class WorkTimeServiceTest
         @DisplayName("Update work time start time")
         public void updateWorkTimeStartTime()
         {
+            User user = new User(1L);
+            Privilege privilege = new Privilege();
+            privilege.setName(AppConstants.USER_PERMISSION);
+            privilege.setLevel(AccessPermission.ADMIN);
+            Set<Privilege> privileges = new HashSet<>();
+            privileges.add(privilege);
+            user.setPrivileges(privileges);
             WorkTime workTime = new WorkTime();
             workTime.setId(1L);
             workTime.setStartTime(LocalTime.now());
             workTime.setEndTime(LocalTime.now());
             LocalTime newStartTime = LocalTime.of(10, 0);
 
+            Mockito.when(securityService.currentUser()).thenReturn(user);
+            Mockito.when(workTimeRepository.findUserIdById(1L)).thenReturn(Optional.of(1L));
             Mockito.when(workTimeRepository.findById(workTime.getId()))
                     .thenReturn(Optional.of(workTime));
             Mockito.when(workTimeRepository.save(workTime))
@@ -239,12 +265,21 @@ public class WorkTimeServiceTest
         @DisplayName("Update work time start time that is after end time - should throw exception")
         public void updateWorkTimeStartTimeThatIsAfterEndTime()
         {
+            User user = new User(1L);
+            Privilege privilege = new Privilege();
+            privilege.setName(AppConstants.USER_PERMISSION);
+            privilege.setLevel(AccessPermission.ADMIN);
+            Set<Privilege> privileges = new HashSet<>();
+            privileges.add(privilege);
+            user.setPrivileges(privileges);
             WorkTime workTime = new WorkTime();
             workTime.setId(1L);
             workTime.setStartTime(LocalTime.now());
             workTime.setEndTime(LocalTime.now());
             LocalTime newStartTime = LocalTime.now().plusMinutes(30);
 
+            Mockito.when(securityService.currentUser()).thenReturn(user);
+            Mockito.when(workTimeRepository.findUserIdById(1L)).thenReturn(Optional.of(1L));
             Mockito.when(workTimeRepository.findById(workTime.getId()))
                     .thenReturn(Optional.of(workTime));
             Mockito.when(workTimeRepository.save(workTime))
@@ -262,12 +297,22 @@ public class WorkTimeServiceTest
         @DisplayName("Update work time end time")
         public void updateWorkTimeEndTime()
         {
+            User user = new User(1L);
+            Privilege privilege = new Privilege();
+            privilege.setName(AppConstants.USER_PERMISSION);
+            privilege.setLevel(AccessPermission.ADMIN);
+            Set<Privilege> privileges = new HashSet<>();
+            privileges.add(privilege);
+            user.setPrivileges(privileges);
             WorkTime workTime = new WorkTime();
             workTime.setId(1L);
             workTime.setStartTime(LocalTime.now());
-            workTime.setEndTime(LocalTime.now());
-            LocalTime newEndTime = LocalTime.of(14, 0);
+            workTime.setEndTime(LocalTime.now().plusMinutes(5));
+            LocalTime newEndTime = workTime.getEndTime().plusMinutes(5);
 
+            Mockito.when(securityService.currentUser()).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
+            Mockito.when(workTimeRepository.findUserIdById(1L)).thenReturn(Optional.of(1L));
             Mockito.when(workTimeRepository.findById(workTime.getId()))
                     .thenReturn(Optional.of(workTime));
             Mockito.when(workTimeRepository.save(workTime))
@@ -288,12 +333,22 @@ public class WorkTimeServiceTest
         @DisplayName("Update work time end time with end time before start time - should throw exception")
         public void updateWorkTimeEndTimeThatIsBeforeStartTime()
         {
+            User user = new User(1L);
+            Privilege privilege = new Privilege();
+            privilege.setName(AppConstants.USER_PERMISSION);
+            privilege.setLevel(AccessPermission.ADMIN);
+            Set<Privilege> privileges = new HashSet<>();
+            privileges.add(privilege);
+            user.setPrivileges(privileges);
             WorkTime workTime = new WorkTime();
             workTime.setId(1L);
             workTime.setStartTime(LocalTime.now());
             workTime.setEndTime(LocalTime.now());
             LocalTime newEndTime = LocalTime.of(10, 0);
 
+            Mockito.when(securityService.currentUser()).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
+            Mockito.when(workTimeRepository.findUserIdById(1L)).thenReturn(Optional.of(1L));
             Mockito.when(workTimeRepository.findById(workTime.getId()))
                     .thenReturn(Optional.of(workTime));
             Mockito.when(workTimeRepository.save(workTime))
@@ -312,10 +367,20 @@ public class WorkTimeServiceTest
         @DisplayName("Update work time amount")
         public void updateWorkTimeAmount()
         {
+            User user = new User(1L);
+            Privilege privilege = new Privilege();
+            privilege.setName(AppConstants.USER_PERMISSION);
+            privilege.setLevel(AccessPermission.ADMIN);
+            Set<Privilege> privileges = new HashSet<>();
+            privileges.add(privilege);
+            user.setPrivileges(privileges);
             WorkTime workTime = new WorkTime();
             workTime.setId(1L);
             workTime.setAmount(10D);
 
+            Mockito.when(securityService.currentUser()).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
+            Mockito.when(workTimeRepository.findUserIdById(1L)).thenReturn(Optional.of(1L));
             Mockito.when(workTimeRepository.findById(workTime.getId()))
                     .thenReturn(Optional.of(workTime));
             Mockito.when(workTimeRepository.save(workTime))
@@ -347,8 +412,7 @@ public class WorkTimeServiceTest
 
             Mockito.when(workTimeRepository.findAllByUserIdAndDate(user.getId(), localDate))
                     .thenReturn(List.of());
-            mockedStatic.when(UserEvaluator::currentUserId)
-                    .thenReturn(1L);
+            Mockito.when(securityService.currentUserId()).thenReturn(1L);
 
             workTimeService.getAllWorkTimesByDate(localDate);
 
@@ -380,6 +444,16 @@ public class WorkTimeServiceTest
         @DisplayName("Delete work time note")
         public void updateWorkTimeNote()
         {
+            User user = new User();
+            user.setId(1L);
+            Privilege privilege = new Privilege();
+            privilege.setName(AppConstants.USER_PERMISSION);
+            privilege.setLevel(AccessPermission.ADMIN);
+            user.setPrivileges(Set.of(privilege));
+
+            Mockito.when(securityService.currentUser()).thenReturn(user);
+            Mockito.when(securityService.currentUser()).thenReturn(user);
+            Mockito.when(workTimeRepository.findUserIdById(1L)).thenReturn(Optional.of(1L));
             Mockito.when(workTimeRepository.existsById(1L)).thenReturn(true);
             Mockito.doNothing().when(workTimeRepository).deleteById(1L);
 

@@ -8,12 +8,10 @@ import org.thymeleaf.context.Context;
 
 @Service
 @RequiredArgsConstructor
-public class MailBuilder
-{
+public class MailBuilder {
     private final TemplateEngine templateEngine;
 
-    public String buildWeeklyMail(WeeklyHoursReport weeklyHoursReport)
-    {
+    public String buildWeeklyMail(WeeklyHoursReport weeklyHoursReport) {
         Context context = new Context();
         context.setVariable("name", weeklyHoursReport.getUserName());
         context.setVariable("hoursDetails", weeklyHoursReport.getHoursDetails());

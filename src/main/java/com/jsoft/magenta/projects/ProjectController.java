@@ -3,8 +3,6 @@ package com.jsoft.magenta.projects;
 import com.jsoft.magenta.projects.domain.Project;
 import com.jsoft.magenta.projects.domain.ProjectSearchResult;
 import com.jsoft.magenta.security.annotations.projects.ProjectWritePermission;
-import com.jsoft.magenta.security.annotations.users.SupervisorOrOwner;
-import com.jsoft.magenta.security.annotations.users.UserManagePermission;
 import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.subprojects.SubProject;
 import com.jsoft.magenta.subprojects.SubProjectSearchResult;
@@ -17,7 +15,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-
 import java.util.List;
 
 import static com.jsoft.magenta.util.AppDefaults.*;
@@ -26,8 +23,7 @@ import static com.jsoft.magenta.util.AppDefaults.*;
 @RestController
 @RequestMapping("${application.url}projects")
 @RequiredArgsConstructor
-public class ProjectController
-{
+public class ProjectController {
     private final ProjectService projectService;
 
     @PostMapping("{accountId}")
@@ -36,8 +32,7 @@ public class ProjectController
     public Project createProject(
             @PathVariable Long accountId,
             @RequestBody @Valid Project project
-    )
-    {
+    ) {
         return this.projectService.createProject(accountId, project);
     }
 
@@ -48,16 +43,14 @@ public class ProjectController
             @PathVariable Long projectId,
             @PathVariable Long userId,
             @RequestBody @ValidPermission String permission
-    )
-    {
+    ) {
         AccessPermission accessPermission = AccessPermission.valueOf(permission.toUpperCase());
         this.projectService.createAssociation(userId, projectId, accessPermission);
     }
 
     @PutMapping
     @ProjectWritePermission
-    public Project updateProject(@RequestBody @Valid Project project)
-    {
+    public Project updateProject(@RequestBody @Valid Project project) {
         return this.projectService.updateProject(project);
     }
 
@@ -66,8 +59,7 @@ public class ProjectController
     public Project updateProjectName(
             @PathVariable Long projectId,
             @RequestBody @ValidName String newName
-    )
-    {
+    ) {
         return this.projectService.updateProjectName(projectId, newName);
     }
 
@@ -77,8 +69,7 @@ public class ProjectController
             @PathVariable Long projectId,
             @PathVariable Long userId,
             @RequestBody @ValidPermission String permission
-    )
-    {
+    ) {
         AccessPermission accessPermission = AccessPermission.valueOf(permission.toUpperCase());
         this.projectService.updateAssociation(userId, projectId, accessPermission);
     }
@@ -89,8 +80,7 @@ public class ProjectController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = PROJECTS_DEFAULT_SORT) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.projectService.getAllProjects(pageIndex, pageSize, sortBy, asc);
     }
 
@@ -98,8 +88,7 @@ public class ProjectController
     public List<ProjectSearchResult> getAllProjectsResultsByNameExample(
             @RequestParam String nameExample,
             @RequestParam(required = false, defaultValue = RESULTS_COUNT) int resultsCount
-    )
-    {
+    ) {
         return this.projectService.getAllProjectsResultsByNameExample(nameExample, resultsCount);
     }
 
@@ -110,8 +99,7 @@ public class ProjectController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = PROJECTS_DEFAULT_SORT) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.projectService.getAllProjectSubProjects(projectId, pageIndex, pageSize, sortBy, asc);
     }
 
@@ -120,9 +108,8 @@ public class ProjectController
             @PathVariable Long projectId,
             @RequestParam(required = false, defaultValue = RESULTS_COUNT) int resultsCount,
             @RequestParam(required = false) String nameExample
-    )
-    {
-        if(nameExample == null)
+    ) {
+        if (nameExample == null)
             return this.projectService.getProjectSubProjectResults(projectId, resultsCount);
         return this.projectService.getProjectSubProjectResultsByNameExample(projectId, nameExample, resultsCount);
     }
@@ -132,22 +119,19 @@ public class ProjectController
     public void removeAssociation(
             @PathVariable Long projectId,
             @PathVariable Long userId
-    )
-    {
+    ) {
         this.projectService.removeAssociation(userId, projectId);
     }
 
     @DeleteMapping("{projectId}/association")
     @ProjectWritePermission
-    public void removeAllAssociations(@PathVariable Long projectId)
-    {
+    public void removeAllAssociations(@PathVariable Long projectId) {
         this.projectService.removeAllAssociations(projectId);
     }
 
     @DeleteMapping("{projectId}")
     @ProjectWritePermission
-    public void deleteProject(@PathVariable Long projectId)
-    {
+    public void deleteProject(@PathVariable Long projectId) {
         this.projectService.deleteProject(projectId);
     }
 

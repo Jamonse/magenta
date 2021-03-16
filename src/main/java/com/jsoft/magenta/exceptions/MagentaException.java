@@ -8,8 +8,7 @@ import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
-public class MagentaException
-{
+public class MagentaException {
     private String message;
     private HttpStatus status;
     private LocalDateTime timeStamp;

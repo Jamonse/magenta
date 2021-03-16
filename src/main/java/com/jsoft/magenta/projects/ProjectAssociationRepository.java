@@ -7,8 +7,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;
 
-public interface ProjectAssociationRepository extends CrudRepository<ProjectAssociation, ProjectAssociationId>
-{
+public interface ProjectAssociationRepository extends CrudRepository<ProjectAssociation, ProjectAssociationId> {
     boolean existsByUserIdAndProjectId(Long userId, Long projectId);
 
     boolean existsByUserIdAndProjectAccountIdGreaterThanEqual(Long associatedUserId, Long accountId);

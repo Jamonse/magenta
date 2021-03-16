@@ -22,8 +22,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class UserNote
-{
+public class UserNote {
     @Id
     @SequenceGenerator(
             name = "un_sequence",

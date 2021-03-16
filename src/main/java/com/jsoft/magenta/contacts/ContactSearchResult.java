@@ -1,9 +1,11 @@
 package com.jsoft.magenta.contacts;
 
-public interface ContactSearchResult
-{
+public interface ContactSearchResult {
     Long getId();
+
     String getFirstName();
+
     String getLastName();
+
     String getEmail();
 }

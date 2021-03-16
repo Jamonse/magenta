@@ -1,9 +1,6 @@
 package com.jsoft.magenta.security.jwt;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jsoft.magenta.exceptions.InvalidCredentialsException;
 import com.jsoft.magenta.exceptions.MagentaException;
 import com.jsoft.magenta.security.model.CustomGrantedAuthority;
 import com.jsoft.magenta.security.model.LoginResponse;
@@ -22,11 +19,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -36,16 +31,14 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
-public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter
-{
+public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
     private final JwtManager jwtManager;
 
     @Override
     public Authentication attemptAuthentication(
-            HttpServletRequest request, HttpServletResponse response) throws AuthenticationException
-    {
+            HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try { // Attempt authentication by reading username and password from request
             UsernamePasswordRequest usernamePasswordRequest =
                     new ObjectMapper().readValue(request.getInputStream(), UsernamePasswordRequest.class);
@@ -69,16 +62,16 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
     @Override
     protected void successfulAuthentication(
             HttpServletRequest request, HttpServletResponse response,
-            FilterChain chain, Authentication authResult)
-    {
-       Set<Privilege> privileges = authResult.getAuthorities().stream() // Extract privileges from authentication result
-               .filter(grantedAuthority -> grantedAuthority instanceof CustomGrantedAuthority)
-               .map(grantedAuthority -> ((CustomGrantedAuthority) grantedAuthority).getPrivilege())
-               .collect(Collectors.toSet());
+            FilterChain chain, Authentication authResult) {
+        Set<Privilege> privileges = authResult.getAuthorities().stream() // Extract privileges from authentication
+                // result
+                .filter(grantedAuthority -> grantedAuthority instanceof CustomGrantedAuthority)
+                .map(grantedAuthority -> ((CustomGrantedAuthority) grantedAuthority).getPrivilege())
+                .collect(Collectors.toSet());
         // Gets user data from auth result
         Object principal = authResult.getPrincipal();
         UserPrincipal userPrincipal = null;
-        if(principal instanceof UserPrincipal)
+        if (principal instanceof UserPrincipal)
             userPrincipal = (UserPrincipal) principal;
         User user = userPrincipal.getUser();
         String userName = authResult.getName();
@@ -99,8 +92,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
     @Override
     protected void unsuccessfulAuthentication(
             HttpServletRequest request, HttpServletResponse response,
-            AuthenticationException failed)
-    {
+            AuthenticationException failed) {
         MagentaException magentaException = new MagentaException(
                 AppConstants.INVALID_CREDENTIALS, HttpStatus.FORBIDDEN, LocalDateTime.now());
         String responseBody = StringUtils.asJsonString(magentaException);
@@ -112,8 +104,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         }
     }
 
-    private void handleIoException()
-    {
+    private void handleIoException() {
         log.error("Error during response writing operation");
         throw new IllegalStateException("Error during response writing operation");
     }

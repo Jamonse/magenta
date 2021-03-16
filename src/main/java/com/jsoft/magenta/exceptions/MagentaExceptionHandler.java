@@ -16,61 +16,52 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
-public class MagentaExceptionHandler
-{
+public class MagentaExceptionHandler {
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<Object> handleElementNotFoundException(NoSuchElementException e)
-    {
+    public ResponseEntity<Object> handleElementNotFoundException(NoSuchElementException e) {
         return handleException(e, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<Object> handleInvalidCredentialsException(InvalidCredentialsException e)
-    {
+    public ResponseEntity<Object> handleInvalidCredentialsException(InvalidCredentialsException e) {
         return handleException(e, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(DuplicationException.class)
-    public ResponseEntity<Object> handleDuplicationException(DuplicationException e)
-    {
+    public ResponseEntity<Object> handleDuplicationException(DuplicationException e) {
         return handleException(e, HttpStatus.NOT_ACCEPTABLE);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException e)
-    {
+    public ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException e) {
         return handleValidationException(e);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleMethodArgumentValidationException(MethodArgumentNotValidException e)
-    {
+    public ResponseEntity<Object> handleMethodArgumentValidationException(MethodArgumentNotValidException e) {
         return handleValidationException(e);
     }
 
     @ExceptionHandler(AuthorizationException.class)
-    public ResponseEntity<Object> handleAuthorizationException(AuthorizationException e)
-    {
+    public ResponseEntity<Object> handleAuthorizationException(AuthorizationException e) {
         return handleException(e, HttpStatus.UNAUTHORIZED);
     }
 
-    private ResponseEntity<Object> handleException(Exception e, HttpStatus httpStatus)
-    {
+    private ResponseEntity<Object> handleException(Exception e, HttpStatus httpStatus) {
         MagentaException magentaException = new MagentaException(e.getMessage(), httpStatus, LocalDateTime.now());
         return ResponseEntity.status(httpStatus).body(magentaException);
     }
 
-    private ResponseEntity<Object> handleValidationException(Exception e)
-    {
+    private ResponseEntity<Object> handleValidationException(Exception e) {
         List<String> errors; // Validation errors list
         Map<String, Object> responseBody = new HashMap<>(); // Create response body
         // Determine validation exception type
-        if(e instanceof MethodArgumentNotValidException)
+        if (e instanceof MethodArgumentNotValidException)
             errors = ((MethodArgumentNotValidException) e).getBindingResult().getFieldErrors()
                     .stream()
                     .map(DefaultMessageSourceResolvable::getDefaultMessage)
                     .collect(Collectors.toList());
-        else if(e instanceof ConstraintViolationException)
+        else if (e instanceof ConstraintViolationException)
             errors = ((ConstraintViolationException) e).getConstraintViolations()
                     .stream()
                     .map(ConstraintViolation::getMessage)

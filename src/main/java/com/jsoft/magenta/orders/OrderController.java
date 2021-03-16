@@ -21,8 +21,7 @@ import static com.jsoft.magenta.util.AppDefaults.*;
 @RequestMapping("${application.url}orders")
 @ProjectManagePermission
 @RequiredArgsConstructor
-public class OrderController
-{
+public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("{projectId}")
@@ -30,16 +29,14 @@ public class OrderController
     public Order createOrder(
             @PathVariable Long projectId,
             @RequestBody @Valid Order order
-    )
-    {
+    ) {
         return this.orderService.createOrder(projectId, order);
     }
 
     @PutMapping
     public Order updateOrder(
             @RequestBody @Valid Order order
-    )
-    {
+    ) {
         return this.orderService.updateOrder(order);
     }
 
@@ -47,8 +44,7 @@ public class OrderController
     public Order updateOrderTitle(
             @PathVariable Long orderId,
             @RequestBody @ValidTitle String newTitle
-    )
-    {
+    ) {
         return orderService.updateOrderTitle(orderId, newTitle);
     }
 
@@ -56,8 +52,7 @@ public class OrderController
     public Order updateOrderDescription(
             @PathVariable Long orderId,
             @RequestBody @ValidContent String newDescription
-    )
-    {
+    ) {
         return orderService.updateOrderDescription(orderId, newDescription);
     }
 
@@ -65,8 +60,7 @@ public class OrderController
     public Order updateOrderAmount(
             @PathVariable Long orderId,
             @RequestBody @PositiveNumber @NotNull Double newAmount
-    )
-    {
+    ) {
         return this.orderService.updateOrderAmount(orderId, newAmount);
     }
 
@@ -77,20 +71,17 @@ public class OrderController
             @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = DEFAULT_ORDER_SORT) String sortBy,
             @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    )
-    {
+    ) {
         return this.orderService.getAllOrders(projectId, pageIndex, pageSize, sortBy, asc);
     }
 
     @GetMapping("{orderId}")
-    public Order getOrder(@PathVariable Long orderId)
-    {
+    public Order getOrder(@PathVariable Long orderId) {
         return this.orderService.getOrder(orderId);
     }
 
     @DeleteMapping("{orderId}")
-    public void deleteOrder(@PathVariable Long orderId)
-    {
+    public void deleteOrder(@PathVariable Long orderId) {
         this.orderService.deleteOrder(orderId);
     }
 }

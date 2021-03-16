@@ -4,7 +4,7 @@ import com.jsoft.magenta.accounts.domain.Account;
 import com.jsoft.magenta.accounts.domain.AccountAssociation;
 import com.jsoft.magenta.events.accounts.AccountAssociationUpdateEvent;
 import com.jsoft.magenta.exceptions.DuplicationException;
-import com.jsoft.magenta.security.UserEvaluator;
+import com.jsoft.magenta.security.SecurityService;
 import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.security.model.Privilege;
 import com.jsoft.magenta.users.User;
@@ -32,6 +32,9 @@ public class AccountServiceTest
     private AccountService accountService;
 
     @Mock
+    private SecurityService securityService;
+
+    @Mock
     private AccountRepository accountRepository;
 
     @Mock
@@ -42,14 +45,6 @@ public class AccountServiceTest
 
     @Mock
     private ApplicationEventPublisher eventPublisher;
-
-    private static MockedStatic<UserEvaluator> mockedStatic;
-
-    @BeforeAll
-    public static void initStatic()
-    {
-        mockedStatic = Mockito.mockStatic(UserEvaluator.class);
-    }
 
     @BeforeEach
     public void init()
@@ -63,10 +58,12 @@ public class AccountServiceTest
     {
         Account account1 = new Account();
         account1.setName("name");
+        Account savedAccount = new Account();
+        savedAccount.setName("Name");
 
         when(accountRepository.save(account1)).thenReturn(account1);
 
-        Account savedAccount = this.accountService.createAccount(account1, null, null, null);
+        this.accountService.createAccount(account1, null, null, null);
         Assertions.assertEquals(savedAccount.getName(), "Name");
     }
 
@@ -82,25 +79,17 @@ public class AccountServiceTest
         privilege.setName(AppConstants.ACCOUNT_PERMISSION);
         privilege.setLevel(AccessPermission.ADMIN);
         user.setPrivileges(Set.of(privilege));
-        AccountAssociation accountAssociation = new AccountAssociation();
-        accountAssociation.setAccount(account);
-        accountAssociation.setUser(user);
-        accountAssociation.setPermission(AccessPermission.MANAGE);
+        AccountAssociation accountAssociation = new AccountAssociation(user, account, AccessPermission.MANAGE);
 
-        mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
-        Mockito.when(accountAssociationRepository.findByUserIdAndAccountId(user.getId(), account.getId()))
-                .thenReturn(Optional.empty());
+        Mockito.when(securityService.currentUser()).thenReturn(user);
+        Mockito.when(accountAssociationRepository.existsByUserIdAndAccountId(user.getId(), account.getId())).thenReturn(false);
         Mockito.when(accountAssociationRepository.save(accountAssociation))
                 .thenReturn(accountAssociation);
-        Mockito.when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        Mockito.when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
 
         accountService.createAssociation(user.getId(), account.getId(), AccessPermission.MANAGE);
 
-        Mockito.verify(accountAssociationRepository).findByUserIdAndAccountId(user.getId(), account.getId());
+        Mockito.verify(accountAssociationRepository).existsByUserIdAndAccountId(user.getId(), account.getId());
         Mockito.verify(accountAssociationRepository).save(accountAssociation);
-        Mockito.verify(userRepository).findById(user.getId());
-        Mockito.verify(accountRepository).findById(account.getId());
     }
 
     @Test
@@ -115,12 +104,10 @@ public class AccountServiceTest
         privilege.setName(AppConstants.ACCOUNT_PERMISSION);
         privilege.setLevel(AccessPermission.ADMIN);
         user.setPrivileges(Set.of(privilege));
-        AccountAssociation accountAssociation = new AccountAssociation();
-        accountAssociation.setAccount(account);
-        accountAssociation.setUser(user);
-        accountAssociation.setPermission(AccessPermission.MANAGE);
+        AccountAssociation accountAssociation = new AccountAssociation(user, account, AccessPermission.MANAGE);
+        user.setAccounts(Set.of(accountAssociation));
 
-        mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+        when(securityService.currentUser()).thenReturn(user);
         Mockito.when(accountAssociationRepository.findByUserIdAndAccountId(user.getId(), account.getId()))
                 .thenReturn(Optional.of(accountAssociation));
         Mockito.when(accountAssociationRepository.save(accountAssociation))
@@ -141,7 +128,7 @@ public class AccountServiceTest
         Account account1 = new Account();
         account1.setName("name");
 
-        when(accountRepository.findByName("name")).thenReturn(Optional.of(account1));
+        when(accountRepository.existsByName("name")).thenReturn(true);
 
         Assertions.assertThrows(DuplicationException.class, () -> this.accountService.createAccount(account1, null, null, null));
     }
@@ -150,38 +137,37 @@ public class AccountServiceTest
     @DisplayName("Update account name")
     public void updateAccount()
     {
-        Account account1 = new Account();
-        account1.setId(1L);
-        account1.setName("name");
+        Account account = new Account();
+        account.setId(1L);
+        account.setName("name");
 
-        when(accountRepository.findByName("new name")).thenReturn(Optional.empty());
-        when(accountRepository.findById(1L)).thenReturn(Optional.of(account1));
-        when(accountRepository.save(account1)).thenReturn(account1);
+        when(accountRepository.existsByName("new name")).thenReturn(false);
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.save(account)).thenReturn(account);
 
-        this.accountService.createAccount(account1, null, null, null);
+        Account updatedAccount = this.accountService.updateAccountName(account.getId(), "new name");
 
-        account1.setName("new name");
-        Account updatedAccount = this.accountService.updateAccountName(account1.getId(), account1.getName());
-
-        Assertions.assertEquals(updatedAccount.getName(), account1.getName());
-        verify(accountRepository).findByName("name");
+        Assertions.assertEquals(updatedAccount.getName(), account.getName());
+        verify(accountRepository).existsByName("new name");
     }
 
     @Test
     @DisplayName("Update account name to existing name")
     public void updateAccountWithExistingName()
     {
-        Account account1 = new Account();
-        account1.setId(1L);
-        account1.setName("name");
+        Account account = new Account();
+        account.setId(1L);
+        account.setName("name");
 
-        when(accountRepository.findById(1L)).thenReturn(Optional.of(account1));
-        when(accountRepository.findByName("name")).thenReturn(Optional.of(account1));
+        String newName = "new name";
+
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.existsByName(newName)).thenReturn(true);
 
         Assertions.assertThrows(DuplicationException.class,
-                () -> this.accountService.updateAccountName(account1.getId(), account1.getName()));
+                () -> this.accountService.updateAccountName(account.getId(), newName));
 
-        verify(accountRepository).findByName("name");
+        verify(accountRepository).existsByName(newName);
     }
 
     @Test
@@ -191,7 +177,14 @@ public class AccountServiceTest
         int pageIndex = 0, pageSize = 5;
         Sort sort = Sort.by("name").ascending();
         PageRequest pageRequest = PageRequest.of(pageIndex, pageSize, sort);
+        User user = new User();
+        user.setId(1L);
+        Privilege privilege = new Privilege();
+        privilege.setName(AppConstants.ACCOUNT_PERMISSION);
+        privilege.setLevel(AccessPermission.ADMIN);
+        user.setPrivileges(Set.of(privilege));
 
+        when(securityService.currentUser()).thenReturn(user);
         when(this.accountRepository.findAll(pageRequest))
                 .thenReturn(new PageImpl<>(Arrays.asList(new Account(), new Account()), pageRequest, 2));
 
@@ -213,9 +206,9 @@ public class AccountServiceTest
         User user = new User();
         user.setPrivileges(Set.of(privilege));
 
+        Mockito.when(securityService.currentUser()).thenReturn(user);
         Mockito.when(accountRepository.findAllResultsBy(pageRequest))
                 .thenReturn(List.of());
-        mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
 
         accountService.getAllAccountsResults(5);
 
@@ -230,17 +223,17 @@ public class AccountServiceTest
         PageRequest pageRequest = PageRequest.of(0, 5, sort);
         Privilege privilege = new Privilege();
         privilege.setLevel(AccessPermission.ADMIN);
-        privilege.setName(AppConstants.USER_PERMISSION);
+        privilege.setName(AppConstants.ACCOUNT_PERMISSION);
         User user = new User();
         user.setPrivileges(Set.of(privilege));
 
-        Mockito.when(accountRepository.findAllResultsBy(pageRequest))
+        Mockito.when(accountRepository.findAllResultsByAssociationsUserId(1L, pageRequest))
                 .thenReturn(List.of());
-        mockedStatic.when(UserEvaluator::currentUser).thenReturn(user);
+        when(securityService.currentUser()).thenReturn(user);
 
         accountService.getAllAccountsResultsOfUser(1L, 5);
 
-        Mockito.verify(accountRepository).findAllResultsBy(pageRequest);
+        Mockito.verify(accountRepository).findAllResultsByAssociationsUserId(1L, pageRequest);
     }
 
     @Test

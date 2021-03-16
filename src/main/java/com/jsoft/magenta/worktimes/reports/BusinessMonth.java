@@ -13,37 +13,31 @@ import java.util.Set;
 
 @Getter
 @AllArgsConstructor
-public final class BusinessMonth
-{
-    private Year year;
-    private Month month;
+public final class BusinessMonth {
+    private final Year year;
+    private final Month month;
 
-    public BusinessMonth(YearMonth yearMonth)
-    {
+    public BusinessMonth(YearMonth yearMonth) {
         this.year = Year.of(yearMonth.getYear());
         this.month = yearMonth.getMonth();
     }
 
-    public int getYearValue()
-    {
+    public int getYearValue() {
         return this.year.getValue();
     }
 
-    public int getMonthValue()
-    {
+    public int getMonthValue() {
         return this.month.getValue();
     }
 
-    public int getTotalBusinessHours()
-    {
+    public int getTotalBusinessHours() {
         Set<LocalDate> monthDates = getMonthDates();
         int totalHours = 0;
-        for(LocalDate localDate : monthDates)
-        {
-            if(localDate.getDayOfWeek() == AppConstants.FIRST_WD_DAY ||
+        for (LocalDate localDate : monthDates) {
+            if (localDate.getDayOfWeek() == AppConstants.FIRST_WD_DAY ||
                     localDate.getDayOfWeek() == AppConstants.SECOND_WD_DAY)
                 continue;
-            else if(localDate.getDayOfWeek() == AppConstants.SHORT_DAY)
+            else if (localDate.getDayOfWeek() == AppConstants.SHORT_DAY)
                 totalHours += AppConstants.SHORT_BUSINESS_DAY_HOURS;
             else
                 totalHours += AppConstants.BUSINESS_DAY_HOURS;
@@ -51,38 +45,33 @@ public final class BusinessMonth
         return totalHours;
     }
 
-    public LocalDate getFirstDate()
-    {
+    public LocalDate getFirstDate() {
         return LocalDate.of(getYearValue(), getMonthValue(), 1);
     }
 
-    public LocalDate getLastDate()
-    {
+    public LocalDate getLastDate() {
         int year = getYearValue();
         int month = getMonthValue();
         YearMonth yearMonth = YearMonth.of(year, month);
         return LocalDate.of(year, month, yearMonth.lengthOfMonth());
     }
 
-    public int getMonthLength()
-    {
+    public int getMonthLength() {
         return getYearMonth().lengthOfMonth();
     }
 
-    public Set<LocalDate> getMonthDates()
-    {
+    public Set<LocalDate> getMonthDates() {
         int year = getYearValue();
         int month = getMonthValue();
         YearMonth yearMonth = YearMonth.of(year, month);
         int monthLength = yearMonth.lengthOfMonth();
         Set<LocalDate> monthDates = new HashSet();
-        for(int i = 1; i <= monthLength; i++)
+        for (int i = 1; i <= monthLength; i++)
             monthDates.add(LocalDate.of(year, month, i));
         return monthDates;
     }
 
-    private YearMonth getYearMonth()
-    {
+    private YearMonth getYearMonth() {
         return YearMonth.of(getYearValue(), getMonthValue());
     }
 }

@@ -17,9 +17,10 @@ import java.lang.annotation.*;
 @Size(max = AppDefaults.MAX_CONTENT_SIZE, message = AppConstants.CONTENT_LENGTH_MESSAGE)
 @GroupSequence({NotNull.class, Size.class})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidContent
-{
+public @interface ValidContent {
     String message() default AppConstants.CONTENT_LENGTH_MESSAGE;
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

@@ -17,8 +17,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Privilege
-{
+public class Privilege {
     @Id
     @SequenceGenerator(
             name = "privilege_sequence",

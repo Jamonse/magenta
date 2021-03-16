@@ -19,11 +19,9 @@ import java.util.List;
 
 @Configuration
 @EnableSwagger2
-public class SwaggerConfiguration
-{
+public class SwaggerConfiguration {
     @Bean
-    public Docket apiDocumentation()
-    {
+    public Docket apiDocumentation() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
                 .apis(RequestHandlerSelectors.any())
@@ -34,8 +32,7 @@ public class SwaggerConfiguration
                 .securitySchemes(Arrays.asList(apiKey()));
     }
 
-    private ApiInfo apiInfo()
-    {
+    private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 .title("Magenta")
                 .description("Magenta project management application api")
@@ -44,18 +41,15 @@ public class SwaggerConfiguration
 
     }
 
-    private ApiKey apiKey()
-    {
+    private ApiKey apiKey() {
         return new ApiKey("JWT", "AUTHORIZATION", "header");
     }
 
-    private SecurityContext securityContext()
-    {
+    private SecurityContext securityContext() {
         return SecurityContext.builder().securityReferences(defaultAuth()).build();
     }
 
-    private List<SecurityReference> defaultAuth()
-    {
+    private List<SecurityReference> defaultAuth() {
         AuthorizationScope authorizationScope = new AuthorizationScope("global", "accessEverything");
         AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
         authorizationScopes[0] = authorizationScope;

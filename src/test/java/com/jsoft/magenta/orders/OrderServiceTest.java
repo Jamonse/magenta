@@ -4,12 +4,10 @@ import com.jsoft.magenta.orders.domain.Order;
 import com.jsoft.magenta.orders.domain.OrderSearchResult;
 import com.jsoft.magenta.projects.domain.Project;
 import com.jsoft.magenta.projects.ProjectRepository;
-import com.jsoft.magenta.security.UserEvaluator;
+import com.jsoft.magenta.security.SecurityService;
 import org.junit.jupiter.api.*;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -26,18 +24,13 @@ public class OrderServiceTest
     private OrderService orderService;
 
     @Mock
+    private SecurityService securityService;
+
+    @Mock
     private OrderRepository orderRepository;
 
     @Mock
-    private ProjectRepository projectRepository;
-
-    private static MockedStatic<UserEvaluator> mockedStatic;
-
-    @BeforeAll
-    private static void initStaticMock()
-    {
-        mockedStatic = mockStatic(UserEvaluator.class);
-    }
+    private ApplicationEventPublisher eventPublisher;
 
     @BeforeEach
     private void init()
@@ -56,9 +49,7 @@ public class OrderServiceTest
         returnedOrder.setId(1L);
 
         when(orderRepository.save(order)).thenReturn(returnedOrder);
-        when(projectRepository.findByIdAndAssociationsUserId(1L, 1L))
-                .thenReturn(Optional.of(new Project()));
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
         
         this.orderService.createOrder(1L, order);
 
@@ -75,18 +66,18 @@ public class OrderServiceTest
         order.setTitle("order");
         order.setId(1L);
         Order returnedOrder = new Order();
-        returnedOrder.setTitle("order");
+        returnedOrder.setTitle("title");
         returnedOrder.setId(1L);
 
         when(orderRepository.save(order)).thenReturn(returnedOrder);
         when(orderRepository.findByIdAndProjectAssociationsUserId(1L, 1L))
                 .thenReturn(Optional.of(new Order()));
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
+        when(orderRepository.findProjectIdById(1L)).thenReturn(Optional.of(1L));
 
-        Order updatedOrder = this.orderService.updateOrder(order);
+        this.orderService.updateOrder(order);
 
-        Assertions.assertEquals(updatedOrder, returnedOrder);
-        Assertions.assertNotNull(updatedOrder.getId());
+        Assertions.assertNotEquals(order.getTitle(), returnedOrder.getTitle());
     }
 
     @Test
@@ -103,7 +94,8 @@ public class OrderServiceTest
         when(orderRepository.save(order)).thenReturn(returnedOrder);
         when(orderRepository.findByIdAndProjectAssociationsUserId(1L, 1L))
                 .thenReturn(Optional.of(order));
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
+        when(orderRepository.findProjectIdById(1L)).thenReturn(Optional.of(1L));
 
         Order updatedOrder = this.orderService.updateOrderTitle(1L, "new title");
 
@@ -127,7 +119,8 @@ public class OrderServiceTest
         when(orderRepository.save(order)).thenReturn(returnedOrder);
         when(orderRepository.findByIdAndProjectAssociationsUserId(1L, 1L))
                 .thenReturn(Optional.of(order));
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
+        when(orderRepository.findProjectIdById(1L)).thenReturn(Optional.of(1L));
 
         Order updatedOrder = this.orderService.updateOrderDescription(1L, "new description");
 
@@ -153,7 +146,8 @@ public class OrderServiceTest
         when(orderRepository.save(order)).thenReturn(returnedOrder);
         when(orderRepository.findByIdAndProjectAssociationsUserId(1L, 1L))
                 .thenReturn(Optional.of(order));
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
+        when(orderRepository.findProjectIdById(1L)).thenReturn(Optional.of(1L));
 
         Order updatedOrder = this.orderService.updateOrderAmount(1L, 10);
 
@@ -175,17 +169,15 @@ public class OrderServiceTest
         Sort sort = Sort.by("title").ascending();
         PageRequest pageRequest = PageRequest.of(0, 1, sort);
 
-        when(projectRepository.findByIdAndAssociationsUserId(1L, 1L)).thenReturn(Optional.of(new Project()));
         when(orderRepository.findAllByProjectId(1L, pageRequest))
                 .thenReturn(new PageImpl<>(orders, pageRequest, 1));
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
 
         Page<Order> orderPage = this.orderService.getAllOrders(1L, 0, 1, "title", true);
 
         Assertions.assertFalse(orderPage.isEmpty());
         Assertions.assertEquals(orderPage.getContent().size(), 1);
 
-        verify(projectRepository).findByIdAndAssociationsUserId(1L, 1L);
         verify(orderRepository).findAllByProjectId(1L, pageRequest);
     }
 
@@ -201,7 +193,8 @@ public class OrderServiceTest
 
         when(orderRepository.findByIdAndProjectAssociationsUserId(1L, 1L))
                 .thenReturn(Optional.of(order));
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
+        when(orderRepository.findProjectIdById(1L)).thenReturn(Optional.of(1L));
 
         Order o = this.orderService.getOrder(1L);
 
@@ -231,10 +224,9 @@ public class OrderServiceTest
         Sort sort = Sort.by("title").ascending();
         PageRequest pageRequest = PageRequest.of(0, 1, sort);
 
-        when(projectRepository.findByIdAndAssociationsUserId(1L, 1L)).thenReturn(Optional.of(new Project()));
         when(orderRepository.findAllByProjectIdAndTitleContainingIgnoreCase(1L, "t", pageRequest))
                 .thenReturn(orders);
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
 
         List<OrderSearchResult> orderSearchResults = this.orderService
                 .getOrdersResults(1L, "t", 1);
@@ -242,7 +234,6 @@ public class OrderServiceTest
         Assertions.assertFalse(orderSearchResults.isEmpty());
         Assertions.assertEquals(orderSearchResults.size(), 1);
 
-        verify(projectRepository).findByIdAndAssociationsUserId(1L, 1L);
         verify(orderRepository).findAllByProjectIdAndTitleContainingIgnoreCase(1L, "t", pageRequest);
     }
 
@@ -256,15 +247,15 @@ public class OrderServiceTest
         order.setAmount(10);
         order.setId(1L);
 
-        when(orderRepository.findByIdAndProjectAssociationsUserId(1L, 1L))
-                .thenReturn(Optional.of(order));
+        when(orderRepository.findProjectIdById(1L)).thenReturn(Optional.of(1L));
+        when(orderRepository.existsById(1L)).thenReturn(true);
         doNothing().when(orderRepository).deleteById(1L);
-        mockedStatic.when(UserEvaluator::currentUserId).thenReturn(1L);
+        when(securityService.currentUserId()).thenReturn(1L);
 
         this.orderService.deleteOrder(1L);
 
-        verify(orderRepository).findByIdAndProjectAssociationsUserId(1L, 1L);
         verify(orderRepository).deleteById(1L);
+        verify(orderRepository).existsById(1L);
     }
 
 

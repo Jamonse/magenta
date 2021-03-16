@@ -8,12 +8,10 @@ import javax.validation.ConstraintValidatorContext;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PhoneNumberValidator implements ConstraintValidator<ValidPhoneNumber, String>
-{
+public class PhoneNumberValidator implements ConstraintValidator<ValidPhoneNumber, String> {
     @Override
-    public boolean isValid(String phoneNumber, ConstraintValidatorContext constraintValidatorContext)
-    {
-        if(Strings.isNullOrEmpty(phoneNumber))
+    public boolean isValid(String phoneNumber, ConstraintValidatorContext constraintValidatorContext) {
+        if (Strings.isNullOrEmpty(phoneNumber))
             return false;
         final String phoneNumberPattern = "\\d{10}|(?:\\d{3}-)\\d{7}|(?:\\d{4}-)\\d{6}|(?:\\d{3}-){2}\\d{4}";
         Pattern pattern = Pattern.compile(phoneNumberPattern);

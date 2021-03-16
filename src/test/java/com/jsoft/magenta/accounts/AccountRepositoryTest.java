@@ -4,11 +4,13 @@ import com.jsoft.magenta.accounts.domain.Account;
 import com.jsoft.magenta.accounts.domain.AccountAssociation;
 import com.jsoft.magenta.accounts.domain.AccountSearchResult;
 import com.jsoft.magenta.exceptions.NoSuchElementException;
+import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.users.User;
 import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +24,7 @@ import java.util.Set;
 
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class AccountRepositoryTest
 {
     @Autowired
@@ -60,6 +63,8 @@ public class AccountRepositoryTest
     @DisplayName("Get first page of five accounts sorted by name ascending")
     public void crateAccountsDuplication()
     {
+        this.accountRepository.deleteAll();
+
         Account ac1 = new Account();
         ac1.setName("account a");
         ac1.setCreatedAt(LocalDate.now());
@@ -85,15 +90,15 @@ public class AccountRepositoryTest
     {
         Account ac = new Account();
         ac.setName("name");
+        ac.setId(151L);
         ac.setCreatedAt(LocalDate.now());
         User user = new User();
-        user.setId(1L);
+        user.setId(179L);
         user.setFirstName("first name");
         user.setLastName("last name");
         user.setEmail("email");
         user.setPassword("password");
-        AccountAssociation accountAssociation = new AccountAssociation();
-        accountAssociation.setUser(user);
+        AccountAssociation accountAssociation = new AccountAssociation(user, ac, AccessPermission.ADMIN);
         Set<AccountAssociation> associations = Sets.newHashSet();
         associations.add(accountAssociation);
         ac.setAssociations(associations);

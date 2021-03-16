@@ -6,7 +6,6 @@ import com.jsoft.magenta.security.model.Privilege;
 import com.jsoft.magenta.users.ColorTheme;
 import com.jsoft.magenta.users.User;
 import com.jsoft.magenta.users.UserRepository;
-import com.jsoft.magenta.worktimes.WorkTimeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ApplicationContextEvent;
@@ -20,19 +19,16 @@ import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
-public class UserSetupLoader implements ApplicationListener<ApplicationContextEvent>
-{
+public class UserSetupLoader implements ApplicationListener<ApplicationContextEvent> {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final PrivilegeRepository privilegeRepository;
 
     @Override
     @Transactional
-    public void onApplicationEvent(ApplicationContextEvent applicationContextEvent)
-    {
+    public void onApplicationEvent(ApplicationContextEvent applicationContextEvent) {
         User admin = this.userRepository.findByEmail("admin@admin.com").orElse(null);
-        if(admin == null)
-        {
+        if (admin == null) {
             Privilege privilege = new Privilege();
             privilege.setName("account");
             privilege.setLevel(AccessPermission.ADMIN);
@@ -53,7 +49,8 @@ public class UserSetupLoader implements ApplicationListener<ApplicationContextEv
             String password = passwordEncoder.encode("password");
             User user = new User(1L, "admin", "admin", "admin@admin.com", "055-5555555",
                     password, null, true, ColorTheme.LIGHT, LocalDate.now(), LocalDate.now(),
-                    new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), privileges, new HashSet<>());
+                    new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), privileges,
+                    new HashSet<>());
 
             userRepository.save(user);
         }

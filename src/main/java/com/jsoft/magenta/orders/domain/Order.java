@@ -24,8 +24,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Order
-{
+public class Order {
     @Id
     @SequenceGenerator(
             name = "order_sequence",

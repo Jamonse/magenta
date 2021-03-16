@@ -1,13 +1,10 @@
 package com.jsoft.magenta.posts;
 
 
-import com.jsoft.magenta.security.UserEvaluator;
+import com.jsoft.magenta.security.SecurityService;
 import com.jsoft.magenta.util.WordFormatter;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -17,8 +14,8 @@ import org.springframework.data.domain.Sort;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class PostServiceTest
 {
@@ -26,15 +23,10 @@ public class PostServiceTest
     private PostService postService;
 
     @Mock
+    private SecurityService securityService;
+
+    @Mock
     private PostRepository postRepository;
-
-    private static MockedStatic<UserEvaluator> mockedStatic;
-
-    @BeforeAll
-    private static void initStaticMock()
-    {
-        mockedStatic = mockStatic(UserEvaluator.class);
-    }
 
     @BeforeEach
     private void init()
@@ -56,7 +48,7 @@ public class PostServiceTest
         post.setContent("content");
         post.setImage("image");
 
-        mockedStatic.when(UserEvaluator::currentUserName).thenReturn("name");
+        when(securityService.currentUserName()).thenReturn("name");
         Mockito.when(postRepository.save(post)).thenReturn(returnedPost);
 
         this.postService.createPost(post);
@@ -184,11 +176,11 @@ public class PostServiceTest
     public void deletePost()
     {
         Mockito.doNothing().when(postRepository).deleteById(1L);
+        Mockito.when(postRepository.existsById(1L)).thenReturn(true);
 
-        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
         this.postService.deletePost(1L);
 
         verify(postRepository).deleteById(1L);
-        verify(postRepository).findById(1L);
+        verify(postRepository).existsById(1L);
     }
 }

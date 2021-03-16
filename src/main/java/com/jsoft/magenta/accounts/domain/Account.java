@@ -30,8 +30,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Account
-{
+public class Account {
     @Id
     @SequenceGenerator(
             name = "account_sequence",
@@ -100,8 +99,7 @@ public class Account
     @JsonIgnore
     private Set<AccountAssociation> associations;
 
-    public Account(Long accountId)
-    {
+    public Account(Long accountId) {
         this.id = accountId;
     }
 }
