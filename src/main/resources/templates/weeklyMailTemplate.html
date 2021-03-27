@@ -1,48 +1,48 @@
 <!DOCTYPE html>
 <html
-        lang="en"
-        xmlns="http://www.w3.org/1999/xhtml"
-        xmlns:th="http://www.thymeleaf.org">
+    lang="en"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
+  <meta charset="UTF-8">
 </head>
 <body>
-    <h2>Hello
-        <span th:text="${name}"></span>
-        , we have a weekly hours report email for you:
-    </h2>
-    <thead>
-        <tr>
-            <th> Account </th>
-            <th> Project </th>
-            <th> Hours </th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr th:if="${hoursDetails.empty}">
-            <td colspan="2"> No hours report is available for previous week </td>
-        </tr>
-        <tr th:each="hoursDetail, itemStat: *{hoursDetails}">
-            <td th:text="*{hoursDetails[__${itemStat.index}__].account}"></td>
-            <td th:text="*{hoursDetails[__${itemStat.index}__].project}"></td>
-            <td th:text="*{hoursDetails[__${itemStat.index}__].hours}"></td>
-        </tr>
-    </tbody>
-    <ul>
-        <li>Total hours for previous week: <b th:text="${weekHours}"></b></li>
-        <li>Total hours worked previous week: <b th:text="${totalHours}"></b></li>
-    </ul>
-    <p th:if="${hoursStatus.name() == 'MISSING'}">
+<h2>Hello
+  <span th:text="${name}"></span>
+  , we have a weekly hours report email for you:
+</h2>
+<thead>
+<tr>
+  <th> Account</th>
+  <th> Project</th>
+  <th> Hours</th>
+</tr>
+</thead>
+<tbody>
+<tr th:if="${hoursDetails.empty}">
+  <td colspan="2"> No hours report is available for previous week</td>
+</tr>
+<tr th:each="hoursDetail, itemStat: *{hoursDetails}">
+  <td th:text="*{hoursDetails[__${itemStat.index}__].account}"></td>
+  <td th:text="*{hoursDetails[__${itemStat.index}__].project}"></td>
+  <td th:text="*{hoursDetails[__${itemStat.index}__].hours}"></td>
+</tr>
+</tbody>
+<ul>
+  <li>Total hours for previous week: <b th:text="${weekHours}"></b></li>
+  <li>Total hours worked previous week: <b th:text="${totalHours}"></b></li>
+</ul>
+<p th:if="${hoursStatus.name() == 'MISSING'}">
         <span> A total of
             <b th:text="${weekHours - totalHours}"></b>
             were missing for previous week.
         </span>
-    </p>
-    <p th:if="${hoursStatus.name() == 'EXTRA'}">
+</p>
+<p th:if="${hoursStatus.name() == 'EXTRA'}">
         <span> A total of
             <b th:text="${totalHours - weekHours}"></b>
             were worked extra for previous week.
         </span>
-    </p>
+</p>
 </body>
 </html>

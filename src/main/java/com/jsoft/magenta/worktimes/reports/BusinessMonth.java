@@ -1,77 +1,79 @@
 package com.jsoft.magenta.worktimes.reports;
 
 import com.jsoft.magenta.util.AppConstants;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.Year;
 import java.time.YearMonth;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
 public final class BusinessMonth {
-    private final Year year;
-    private final Month month;
 
-    public BusinessMonth(YearMonth yearMonth) {
-        this.year = Year.of(yearMonth.getYear());
-        this.month = yearMonth.getMonth();
-    }
+  private final Year year;
+  private final Month month;
 
-    public int getYearValue() {
-        return this.year.getValue();
-    }
+  public BusinessMonth(YearMonth yearMonth) {
+    this.year = Year.of(yearMonth.getYear());
+    this.month = yearMonth.getMonth();
+  }
 
-    public int getMonthValue() {
-        return this.month.getValue();
-    }
+  public int getYearValue() {
+    return this.year.getValue();
+  }
 
-    public int getTotalBusinessHours() {
-        Set<LocalDate> monthDates = getMonthDates();
-        int totalHours = 0;
-        for (LocalDate localDate : monthDates) {
-            if (localDate.getDayOfWeek() == AppConstants.FIRST_WD_DAY ||
-                    localDate.getDayOfWeek() == AppConstants.SECOND_WD_DAY)
-                continue;
-            else if (localDate.getDayOfWeek() == AppConstants.SHORT_DAY)
-                totalHours += AppConstants.SHORT_BUSINESS_DAY_HOURS;
-            else
-                totalHours += AppConstants.BUSINESS_DAY_HOURS;
-        }
-        return totalHours;
-    }
+  public int getMonthValue() {
+    return this.month.getValue();
+  }
 
-    public LocalDate getFirstDate() {
-        return LocalDate.of(getYearValue(), getMonthValue(), 1);
+  public int getTotalBusinessHours() {
+    Set<LocalDate> monthDates = getMonthDates();
+    int totalHours = 0;
+    for (LocalDate localDate : monthDates) {
+      if (localDate.getDayOfWeek() == AppConstants.FIRST_WD_DAY ||
+          localDate.getDayOfWeek() == AppConstants.SECOND_WD_DAY) {
+        continue;
+      } else if (localDate.getDayOfWeek() == AppConstants.SHORT_DAY) {
+        totalHours += AppConstants.SHORT_BUSINESS_DAY_HOURS;
+      } else {
+        totalHours += AppConstants.BUSINESS_DAY_HOURS;
+      }
     }
+    return totalHours;
+  }
 
-    public LocalDate getLastDate() {
-        int year = getYearValue();
-        int month = getMonthValue();
-        YearMonth yearMonth = YearMonth.of(year, month);
-        return LocalDate.of(year, month, yearMonth.lengthOfMonth());
-    }
+  public LocalDate getFirstDate() {
+    return LocalDate.of(getYearValue(), getMonthValue(), 1);
+  }
 
-    public int getMonthLength() {
-        return getYearMonth().lengthOfMonth();
-    }
+  public LocalDate getLastDate() {
+    int year = getYearValue();
+    int month = getMonthValue();
+    YearMonth yearMonth = YearMonth.of(year, month);
+    return LocalDate.of(year, month, yearMonth.lengthOfMonth());
+  }
 
-    public Set<LocalDate> getMonthDates() {
-        int year = getYearValue();
-        int month = getMonthValue();
-        YearMonth yearMonth = YearMonth.of(year, month);
-        int monthLength = yearMonth.lengthOfMonth();
-        Set<LocalDate> monthDates = new HashSet();
-        for (int i = 1; i <= monthLength; i++)
-            monthDates.add(LocalDate.of(year, month, i));
-        return monthDates;
-    }
+  public int getMonthLength() {
+    return getYearMonth().lengthOfMonth();
+  }
 
-    private YearMonth getYearMonth() {
-        return YearMonth.of(getYearValue(), getMonthValue());
+  public Set<LocalDate> getMonthDates() {
+    int year = getYearValue();
+    int month = getMonthValue();
+    YearMonth yearMonth = YearMonth.of(year, month);
+    int monthLength = yearMonth.lengthOfMonth();
+    Set<LocalDate> monthDates = new HashSet();
+    for (int i = 1; i <= monthLength; i++) {
+      monthDates.add(LocalDate.of(year, month, i));
     }
+    return monthDates;
+  }
+
+  private YearMonth getYearMonth() {
+    return YearMonth.of(getYearValue(), getMonthValue());
+  }
 }

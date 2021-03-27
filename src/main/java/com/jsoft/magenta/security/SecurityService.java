@@ -12,43 +12,41 @@ import org.springframework.stereotype.Service;
  */
 @Slf4j
 @Service
-public class SecurityService
-{
-    /**
-     * Returns the current logged in user id
-     * @return the current logged in user id
-     */
-    public Long currentUserId()
-    {
-        return currentUser().getId();
-    }
+public class SecurityService {
 
-    public String currentUserName()
-    {
-        return currentUser().getName();
-    }
+  /**
+   * Returns the current logged in user id
+   *
+   * @return the current logged in user id
+   */
+  public Long currentUserId() {
+    return currentUser().getId();
+  }
 
-    public String currentUserEmail()
-    {
-        return currentUser().getEmail();
-    }
+  public String currentUserName() {
+    return currentUser().getName();
+  }
 
-    public User currentUser()
-    { // Get authentication from security context holder
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication != null && authentication.getPrincipal() instanceof UserPrincipal)
-        { // Valid authentication and principal type
-            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-            User currentUser = userPrincipal.getUser(); // Extract the user id from the principal
-            if(currentUser == null) // User without id initialized
-                throw new IllegalStateException("Uninitialized user in authentication");
-            return currentUser;
-        } // Unsupported user principal in authentication or an empty authentication
-        log.error(
-                "Extraction of user from an unsupported user principal type in authentication" +
-                        " or an empty authentication was received from security context holder");
-        throw new IllegalStateException("Unsupported user principal type or an empty authentication");
-    }
+  public String currentUserEmail() {
+    return currentUser().getEmail();
+  }
 
+  public User currentUser() { // Get authentication from security context holder
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication != null && authentication
+        .getPrincipal() instanceof UserPrincipal) { // Valid authentication and principal type
+      UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+      User currentUser = userPrincipal.getUser(); // Extract the user id from the principal
+      if (currentUser == null) // User without id initialized
+      {
+        throw new IllegalStateException("Uninitialized user in authentication");
+      }
+      return currentUser;
+    } // Unsupported user principal in authentication or an empty authentication
+    log.error(
+        "Extraction of user from an unsupported user principal type in authentication" +
+            " or an empty authentication was received from security context holder");
+    throw new IllegalStateException("Unsupported user principal type or an empty authentication");
+  }
 
 }

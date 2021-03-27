@@ -9,8 +9,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class OrderRepositoryTest
-{
-    @Autowired
-    private OrderRepository orderRepository;
+public class OrderRepositoryTest {
+
+  @Autowired
+  private OrderRepository orderRepository;
 }

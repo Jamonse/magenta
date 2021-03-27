@@ -7,8 +7,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class SubProjectRepositoryTest
-{
-    @Autowired
-    private SubProjectRepository subProjectRepository;
+public class SubProjectRepositoryTest {
+
+  @Autowired
+  private SubProjectRepository subProjectRepository;
 }

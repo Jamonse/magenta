@@ -1,19 +1,19 @@
 package com.jsoft.magenta.subprojects;
 
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
-
 public interface SubProjectRepository extends JpaRepository<SubProject, Long> {
-    boolean existsByUsersId(Long userId);
 
-    boolean existsByProjectIdAndName(Long projectId, String subProjectName);
+  boolean existsByUsersId(Long userId);
 
-    Optional<Long> findProjectIdById(Long subProjectId);
+  boolean existsByProjectIdAndName(Long projectId, String subProjectName);
 
-    Optional<SubProject> findFirstByUsersId(Long userId);
+  Optional<Long> findProjectIdById(Long subProjectId);
 
-    Optional<SubProject> findByProjectIdAndName(Long projectId, String subProjectName);
+  Optional<SubProject> findFirstByUsersId(Long userId);
 
-    Optional<SubProject> findByIdAndUsersId(Long subProjectId, Long userId);
+  Optional<SubProject> findByProjectIdAndName(Long projectId, String subProjectName);
+
+  Optional<SubProject> findByIdAndUsersId(Long subProjectId, Long userId);
 }

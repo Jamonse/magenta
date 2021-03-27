@@ -1,24 +1,22 @@
 package com.jsoft.magenta.security.dao;
 
 import com.jsoft.magenta.security.model.RefreshToken;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, String> {
-    @Modifying
-    @Transactional
-    void deleteByToken(String refreshToken);
 
-    @Modifying
-    @Transactional
-    @Query("delete from RefreshToken token where token.expiresAt < CURRENT_TIMESTAMP")
-    void removeExpiredTokens();
+  @Modifying
+  @Transactional
+  void deleteByToken(String refreshToken);
 
-    boolean existsByToken(String refreshToken);
+  @Modifying
+  @Transactional
+  @Query("delete from RefreshToken token where token.expiresAt < CURRENT_TIMESTAMP")
+  void removeExpiredTokens();
 
-    Optional<RefreshToken> findByToken(String token);
+  boolean existsByToken(String refreshToken);
 }

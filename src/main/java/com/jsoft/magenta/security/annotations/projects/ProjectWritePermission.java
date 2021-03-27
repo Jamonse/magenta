@@ -1,13 +1,11 @@
 package com.jsoft.magenta.security.annotations.projects;
 
-import org.springframework.security.access.prepost.PreAuthorize;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Retention(RetentionPolicy.RUNTIME)
 @PreAuthorize("hasPermission('project', 'write')")
-public @interface ProjectWritePermission
-{
+public @interface ProjectWritePermission {
 
 }

@@ -3,5 +3,6 @@ package com.jsoft.magenta.files;
 import org.springframework.data.repository.CrudRepository;
 
 public interface MagentaImageRepository extends CrudRepository<MagentaImage, Long> {
-    boolean existsByIdAndImageType(Long imageId, MagentaImageType imageType);
+
+  boolean existsByIdAndImageType(Long imageId, MagentaImageType imageType);
 }

@@ -11,15 +11,23 @@ import com.jsoft.magenta.subprojects.SubProject;
 import com.jsoft.magenta.users.User;
 import com.jsoft.magenta.util.validation.annotations.ValidContent;
 import com.jsoft.magenta.util.validation.annotations.ValidHoursAmount;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.time.LocalTime;
 
 @Data
 @Entity
@@ -27,59 +35,59 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class WorkTime
-{
-    @Id
-    @SequenceGenerator(
-            name = "wt_sequence",
-            sequenceName = "wt_sequence"
-    )
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "wt_sequence"
-    )
-    @Column(name = "wt_id", updatable = false)
-    private Long id;
+public class WorkTime {
 
-    @Column(name = "wt_date", nullable = false, updatable = false)
-    @NotNull(message = "Work time date must not be null")
-    @JsonDeserialize(using = LocalDateDeserializer.class)
-    @JsonSerialize(using = LocalDateSerializer.class)
-    private LocalDate date;
+  @Id
+  @SequenceGenerator(
+      name = "wt_sequence",
+      sequenceName = "wt_sequence"
+  )
+  @GeneratedValue(
+      strategy = GenerationType.SEQUENCE,
+      generator = "wt_sequence"
+  )
+  @Column(name = "wt_id", updatable = false)
+  private Long id;
 
-    @Column(name = "start_time")
-    @JsonDeserialize(using = LocalTimeDeserializer.class)
-    @JsonSerialize(using = LocalTimeSerializer.class)
-    private LocalTime startTime;
+  @Column(name = "wt_date", nullable = false, updatable = false)
+  @NotNull(message = "Work time date must not be null")
+  @JsonDeserialize(using = LocalDateDeserializer.class)
+  @JsonSerialize(using = LocalDateSerializer.class)
+  private LocalDate date;
 
-    @Column(name = "end_time")
-    @JsonDeserialize(using = LocalTimeDeserializer.class)
-    @JsonSerialize(using = LocalTimeSerializer.class)
-    private LocalTime endTime;
+  @Column(name = "start_time")
+  @JsonDeserialize(using = LocalTimeDeserializer.class)
+  @JsonSerialize(using = LocalTimeSerializer.class)
+  private LocalTime startTime;
 
-    @ManyToOne
-    @JoinColumn(
-            name = "user_id",
-            nullable = false,
-            foreignKey = @ForeignKey(name = "FK_wts_user")
-    )
-    @JsonIgnore
-    private User user;
+  @Column(name = "end_time")
+  @JsonDeserialize(using = LocalTimeDeserializer.class)
+  @JsonSerialize(using = LocalTimeSerializer.class)
+  private LocalTime endTime;
 
-    @ManyToOne
-    @JoinColumn(
-            name = "sp_id",
-            nullable = false,
-            foreignKey = @ForeignKey(name = "FK_wts_sp")
-    )
-    @JsonIgnore
-    private SubProject subProject;
+  @ManyToOne
+  @JoinColumn(
+      name = "user_id",
+      nullable = false,
+      foreignKey = @ForeignKey(name = "FK_wts_user")
+  )
+  @JsonIgnore
+  private User user;
 
-    @Column(name = "wt_amount", nullable = false, precision = 2)
-    @ValidHoursAmount
-    private Double amount;
+  @ManyToOne
+  @JoinColumn(
+      name = "sp_id",
+      nullable = false,
+      foreignKey = @ForeignKey(name = "FK_wts_sp")
+  )
+  @JsonIgnore
+  private SubProject subProject;
 
-    @Column(name = "wt_note", nullable = false)
-    @ValidContent
-    private String note = "";
+  @Column(name = "wt_amount", nullable = false, precision = 2)
+  @ValidHoursAmount
+  private Double amount;
+
+  @Column(name = "wt_note", nullable = false)
+  @ValidContent
+  private String note = "";
 }

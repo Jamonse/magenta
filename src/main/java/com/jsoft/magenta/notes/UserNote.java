@@ -8,13 +8,21 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.jsoft.magenta.users.User;
 import com.jsoft.magenta.util.validation.annotations.ValidContent;
 import com.jsoft.magenta.util.validation.annotations.ValidTitle;
+import java.time.LocalDateTime;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import javax.persistence.*;
-import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -23,41 +31,42 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class UserNote {
-    @Id
-    @SequenceGenerator(
-            name = "un_sequence",
-            sequenceName = "un_sequence"
-    )
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "un_sequence"
-    )
-    @Column(name = "note_id")
-    private Long id;
 
-    @ManyToOne
-    @JoinColumn(
-            name = "user_id",
-            foreignKey = @ForeignKey(name = "FK_notes_user")
-    )
-    @JsonIgnore
-    private User user;
+  @Id
+  @SequenceGenerator(
+      name = "un_sequence",
+      sequenceName = "un_sequence"
+  )
+  @GeneratedValue(
+      strategy = GenerationType.SEQUENCE,
+      generator = "un_sequence"
+  )
+  @Column(name = "note_id")
+  private Long id;
 
-    @Column(name = "title", length = 50, nullable = false)
-    @ValidTitle
-    private String title;
+  @ManyToOne
+  @JoinColumn(
+      name = "user_id",
+      foreignKey = @ForeignKey(name = "FK_notes_user")
+  )
+  @JsonIgnore
+  private User user;
 
-    @Column(name = "content", nullable = false)
-    @ValidContent
-    private String content;
+  @Column(name = "title", length = 50, nullable = false)
+  @ValidTitle
+  private String title;
 
-    @Column(name = "taken_at", nullable = false, updatable = false)
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    private LocalDateTime takenAt;
+  @Column(name = "content", nullable = false)
+  @ValidContent
+  private String content;
 
-    @Column(name = "remind_at")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    private LocalDateTime remindAt;
+  @Column(name = "taken_at", nullable = false, updatable = false)
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  private LocalDateTime takenAt;
+
+  @Column(name = "remind_at")
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  private LocalDateTime remindAt;
 }

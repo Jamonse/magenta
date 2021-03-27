@@ -1,11 +1,12 @@
 package com.jsoft.magenta.users;
 
 public interface UserSearchResult {
-    Long getId();
 
-    String getFirstName();
+  Long getId();
 
-    String getLastName();
+  String getFirstName();
 
-    String getEmail();
+  String getLastName();
+
+  String getEmail();
 }

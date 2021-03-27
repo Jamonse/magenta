@@ -5,44 +5,45 @@ spring:
     active: dev
 
 ---
-  # Datasource
+# Datasource
 
 spring:
   jpa:
     database: POSTGRESQL
+    show_sql: true
     hibernate:
       ddl-auto: update
       dialect: org.hibernate.dialect.PostgreSQL9Dialect
-      show_sql: true
+
   datasource:
     url: jdbc:postgresql://localhost:5432/magentadb
     username: postgres
     password: adminqwer
 
 ---
-  # Schema
+# Schema
 spring:
-    properties:
-      javax:
-        persistence:
-          schema-generation:
-            scripts:
-              action: drop-and-create
-              create-target: create.sql
-              drop-target: drop.sql
-              create-source: metadata
-              drop-source: metadata
+  properties:
+    javax:
+      persistence:
+        schema-generation:
+          scripts:
+            action: drop-and-create
+            create-target: create.sql
+            drop-target: drop.sql
+            create-source: metadata
+            drop-source: metadata
 ---
-  # Mail
+# Mail
 spring:
-    mail:
-      host: smtp.mailtrap.io
-      port: 2525
-      ssl: no
-      tls: yes
-      username: 2e2b32449f4ee8
-      password: d15660ae3fb297
-      protocol: smtp
+  mail:
+    host: smtp.mailtrap.io
+    port: 2525
+    ssl: no
+    tls: yes
+    username: 2e2b32449f4ee8
+    password: d15660ae3fb297
+    protocol: smtp
 
   # Web
 
@@ -50,25 +51,27 @@ application:
   url: magenta/v1/
 
 ---
-  # Schedule
+# Schedule
 
 application:
   schedule:
     token-job: 0 0 0 * * ?
 
 ---
-  # Security
+# Security
 
 application:
   jwt:
     tokenPrefix: Bearer
     secret: Jjenta
     expiration-length: 15
+  refresh:
+    expiration-length: 2
   cors:
     allowed-origin: http://localhost:4200
 
 ---
-  # Mail
+# Mail
 
 application:
   mail:
@@ -76,7 +79,7 @@ application:
     weekly-mail: 0 0 0 ? * SUN
 
 ---
-  # Images
+# Images
 
 application:
   image:

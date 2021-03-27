@@ -1,186 +1,205 @@
 package com.jsoft.magenta.posts;
 
 
+import static org.mockito.Mockito.verify;
+
+import com.jsoft.magenta.events.posts.PostReactiveEvent;
+import com.jsoft.magenta.events.reactive.ReactiveEventType;
 import com.jsoft.magenta.security.SecurityService;
 import com.jsoft.magenta.util.WordFormatter;
+import java.util.List;
+import java.util.Optional;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.*;
-import org.mockito.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
-import java.util.List;
-import java.util.Optional;
+public class PostServiceTest {
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+  @InjectMocks
+  private PostService postService;
 
-public class PostServiceTest
-{
-    @InjectMocks
-    private PostService postService;
+  @Mock
+  private SecurityService securityService;
 
-    @Mock
-    private SecurityService securityService;
+  @Mock
+  private PostRepository postRepository;
 
-    @Mock
-    private PostRepository postRepository;
+  @Mock
+  private PostsDelegationService delegationService;
 
-    @BeforeEach
-    private void init()
-    {
-        MockitoAnnotations.openMocks(this);
-    }
+  @BeforeEach
+  private void init() {
+    MockitoAnnotations.openMocks(this);
+  }
 
-    @Test
-    @DisplayName("Create post")
-    public void createPost()
-    {
-        Post post = new Post();
-        post.setTitle("title");
-        post.setContent("content");
-        post.setImage("image");
-        Post returnedPost = new Post();
-        returnedPost.setId(1L);
-        post.setTitle("title");
-        post.setContent("content");
-        post.setImage("image");
+  @Test
+  @DisplayName("Create post")
+  public void createPost() {
+    Post post = new Post();
+    post.setTitle("title");
+    post.setContent("content");
+    post.setImage("image");
+    Post returnedPost = new Post();
+    returnedPost.setId(1L);
+    post.setTitle("title");
+    post.setContent("content");
+    post.setImage("image");
 
-        when(securityService.currentUserName()).thenReturn("name");
-        Mockito.when(postRepository.save(post)).thenReturn(returnedPost);
+    PostReactiveEvent postReactiveEvent = new PostReactiveEvent(post, ReactiveEventType.CREATE);
 
-        this.postService.createPost(post);
+    Mockito.when(securityService.currentUserName()).thenReturn("name");
+    Mockito.when(postRepository.save(post)).thenReturn(returnedPost);
+    Mockito.doNothing().when(delegationService).sendEvent(postReactiveEvent);
 
-        Assertions.assertThat(returnedPost)
-                .extracting("id")
-                .isNotNull();
-        Assertions.assertThat(post)
-                .extracting("createdAt")
-                .isNotNull();
-        Assertions.assertThat(post)
-                .extracting("createdBy")
-                .isNotNull()
-                .isEqualTo("name");
+    this.postService.createPost(post);
 
-        verify(postRepository).save(post);
-    }
+    Assertions.assertThat(returnedPost)
+        .extracting("id")
+        .isNotNull();
+    Assertions.assertThat(post)
+        .extracting("createdAt")
+        .isNotNull();
+    Assertions.assertThat(post)
+        .extracting("createdBy")
+        .isNotNull()
+        .isEqualTo("name");
 
-    @Test
-    @DisplayName("Update post")
-    public void updatePost()
-    {
-        Post post = new Post();
-        post.setId(1L);
-        post.setTitle("title");
-        post.setContent("content");
-        post.setImage("image");
-        Post returnedPost = new Post();
-        returnedPost.setId(1L);
-        returnedPost.setTitle("Title");
-        returnedPost.setContent("content");
-        returnedPost.setImage("image");
+    Mockito.verify(postRepository).save(post);
+    Mockito.verify(delegationService).sendEvent(Mockito.any(PostReactiveEvent.class));
+  }
 
-        Mockito.when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
-        Mockito.when(postRepository.save(post)).thenReturn(returnedPost);
+  @Test
+  @DisplayName("Update post")
+  public void updatePost() {
+    Post post = new Post();
+    post.setId(1L);
+    post.setTitle("title");
+    post.setContent("content");
+    post.setImage("image");
+    Post returnedPost = new Post();
+    returnedPost.setId(1L);
+    returnedPost.setTitle("Title");
+    returnedPost.setContent("content");
+    returnedPost.setImage("image");
 
-        Post savedPost = this.postService.updatePost(post);
+    PostReactiveEvent postReactiveEvent = new PostReactiveEvent(post, ReactiveEventType.UPDATE);
+    Mockito.when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+    Mockito.when(postRepository.save(post)).thenReturn(returnedPost);
+    Mockito.doNothing().when(delegationService).sendEvent(postReactiveEvent);
 
-        Assertions.assertThat(post).usingRecursiveComparison().isEqualTo(savedPost);
+    Post savedPost = this.postService.updatePost(post);
 
-        verify(postRepository).save(post);
-    }
+    Assertions.assertThat(post).usingRecursiveComparison().isEqualTo(savedPost);
 
-    @Test
-    @DisplayName("Update post title")
-    public void updatePostTitle()
-    {
-        Post post = new Post();
-        post.setId(1L);
-        post.setTitle("title");
-        post.setContent("content");
-        post.setImage("image");
-        String newTitle = "new title";
+    verify(postRepository).save(post);
+  }
 
-        Mockito.when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
-        Mockito.when(postRepository.save(post)).thenReturn(post);
+  @Test
+  @DisplayName("Update post title")
+  public void updatePostTitle() {
+    Post post = new Post();
+    post.setId(1L);
+    post.setTitle("title");
+    post.setContent("content");
+    post.setImage("image");
+    String newTitle = "new title";
 
-        Post savedPost = this.postService.updatePostTitle(post.getId(), newTitle);
+    PostReactiveEvent postReactiveEvent = new PostReactiveEvent(post, ReactiveEventType.UPDATE);
 
-        Assertions.assertThat(savedPost).extracting("title").isEqualTo(WordFormatter.capitalizeFormat(newTitle));
+    Mockito.when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+    Mockito.when(postRepository.save(post)).thenReturn(post);
+    Mockito.doNothing().when(delegationService).sendEvent(postReactiveEvent);
 
-        verify(postRepository).save(post);
-    }
+    Post savedPost = this.postService.updatePostTitle(post.getId(), newTitle);
 
-    @Test
-    @DisplayName("Update post content")
-    public void updatePostContent()
-    {
-        Post post = new Post();
-        post.setId(1L);
-        post.setTitle("title");
-        post.setContent("content");
-        post.setImage("image");
-        String newContent = "new content";
+    Assertions.assertThat(savedPost).extracting("title")
+        .isEqualTo(WordFormatter.capitalizeFormat(newTitle));
 
-        Mockito.when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
-        Mockito.when(postRepository.save(post)).thenReturn(post);
+    verify(postRepository).save(post);
+  }
 
-        Post savedPost = this.postService.updatePostContent(post.getId(), newContent);
+  @Test
+  @DisplayName("Update post content")
+  public void updatePostContent() {
+    Post post = new Post();
+    post.setId(1L);
+    post.setTitle("title");
+    post.setContent("content");
+    post.setImage("image");
+    String newContent = "new content";
 
-        Assertions.assertThat(savedPost).extracting("content").isEqualTo(post.getContent());
+    PostReactiveEvent postReactiveEvent = new PostReactiveEvent(post, ReactiveEventType.UPDATE);
 
-        verify(postRepository).save(post);
-    }
+    Mockito.when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+    Mockito.when(postRepository.save(post)).thenReturn(post);
+    Mockito.doNothing().when(delegationService).sendEvent(postReactiveEvent);
 
-    @Test
-    @DisplayName("Get all posts")
-    public void getAllPosts()
-    {
-        Sort sort = Sort.by("title").ascending();
-        PageRequest pageRequest = PageRequest.of(0, 5, sort);
-        List<Post> postsList = List.of(new Post(), new Post());
-        Page<Post> posts = new PageImpl<>(postsList, pageRequest, 2);
+    Post savedPost = this.postService.updatePostContent(post.getId(), newContent);
 
-        Mockito.when(postRepository.findAll(pageRequest)).thenReturn(posts);
+    Assertions.assertThat(savedPost).extracting("content").isEqualTo(post.getContent());
 
-        Page<Post> results = this.postService.getAllPosts(0, 5, "title", true);
+    verify(postRepository).save(post);
+  }
 
-        Assertions.assertThat(results)
-                .isNotEmpty()
-                .hasSameSizeAs(posts)
-                .containsAll(postsList);
+  @Test
+  @DisplayName("Get all posts")
+  public void getAllPosts() {
+    Sort sort = Sort.by("title").ascending();
+    PageRequest pageRequest = PageRequest.of(0, 5, sort);
+    List<Post> postsList = List.of(new Post(), new Post());
+    Page<Post> posts = new PageImpl<>(postsList, pageRequest, 2);
 
-        verify(postRepository).findAll(pageRequest);
-    }
+    Mockito.when(postRepository.findAll(pageRequest)).thenReturn(posts);
 
-    @Test
-    @DisplayName("Get post")
-    public void getPost()
-    {
-        Post post = new Post();
-        post.setId(1L);
+    Page<Post> results = this.postService.getAllPosts(0, 5, "title", true);
 
-        Mockito.when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+    Assertions.assertThat(results)
+        .isNotEmpty()
+        .hasSameSizeAs(posts)
+        .containsAll(postsList);
 
-        Post result = this.postService.getPost(post.getId());
+    verify(postRepository).findAll(pageRequest);
+  }
 
-        Assertions.assertThat(result).isEqualTo(post);
+  @Test
+  @DisplayName("Get post")
+  public void getPost() {
+    Post post = new Post();
+    post.setId(1L);
 
-        verify(postRepository).findById(post.getId());
-    }
+    Mockito.when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
 
-    @Test
-    @DisplayName("Delete post")
-    public void deletePost()
-    {
-        Mockito.doNothing().when(postRepository).deleteById(1L);
-        Mockito.when(postRepository.existsById(1L)).thenReturn(true);
+    Post result = this.postService.getPost(post.getId());
 
-        this.postService.deletePost(1L);
+    Assertions.assertThat(result).isEqualTo(post);
 
-        verify(postRepository).deleteById(1L);
-        verify(postRepository).existsById(1L);
-    }
+    verify(postRepository).findById(post.getId());
+  }
+
+  @Test
+  @DisplayName("Delete post")
+  public void deletePost() {
+
+    Post post = new Post();
+    post.setId(1L);
+
+    PostReactiveEvent postReactiveEvent = new PostReactiveEvent(post, ReactiveEventType.DELETE);
+    Mockito.doNothing().when(delegationService).sendEvent(postReactiveEvent);
+    Mockito.doNothing().when(postRepository).deleteById(1L);
+    Mockito.when(postRepository.existsById(1L)).thenReturn(true);
+
+    this.postService.deletePost(1L);
+
+    verify(postRepository).deleteById(1L);
+    verify(postRepository).existsById(1L);
+  }
 }

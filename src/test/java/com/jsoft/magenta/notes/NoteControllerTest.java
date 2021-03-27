@@ -1,6 +1,21 @@
 package com.jsoft.magenta.notes;
 
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.jsoft.magenta.util.Stringify;
+import java.time.LocalDateTime;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,403 +31,382 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.time.LocalDateTime;
-import java.util.List;
-
 @SpringBootTest
 @WithUserDetails("admin@admin.com")
 @AutoConfigureMockMvc
-public class NoteControllerTest
-{
-    @Autowired
-    private MockMvc mockMvc;
+public class NoteControllerTest {
 
-    @Autowired
-    private UserNoteController userNoteController;
+  @Autowired
+  private MockMvc mockMvc;
 
-    @MockBean
-    private UserNoteService userNoteService;
+  @Autowired
+  private UserNoteController userNoteController;
 
-    @BeforeEach
-    public void init()
-    {
-        MockitoAnnotations.openMocks(this);
-    }
+  @MockBean
+  private UserNoteService userNoteService;
 
-    @Test
-    @DisplayName("Create user note")
-    public void createNote() throws Exception
-    {
-        UserNote userNote = new UserNote();
-        userNote.setTitle("title");
-        userNote.setContent("content");
-        userNote.setTakenAt(LocalDateTime.now());
-        UserNote returnedNote = new UserNote();
-        returnedNote.setId(1L);
-        returnedNote.setTitle("title");
-        returnedNote.setContent("content");
-        returnedNote.setTakenAt(LocalDateTime.now());
+  @BeforeEach
+  public void init() {
+    MockitoAnnotations.openMocks(this);
+  }
 
-        when(userNoteService.createUserNote(userNote)).thenReturn(returnedNote);
+  @Test
+  @DisplayName("Create user note")
+  public void createNote() throws Exception {
+    UserNote userNote = new UserNote();
+    userNote.setTitle("title");
+    userNote.setContent("content");
+    userNote.setTakenAt(LocalDateTime.now());
+    UserNote returnedNote = new UserNote();
+    returnedNote.setId(1L);
+    returnedNote.setTitle("title");
+    returnedNote.setContent("content");
+    returnedNote.setTakenAt(LocalDateTime.now());
 
-        mockMvc.perform(post(Stringify.BASE_URL + "notes")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(Stringify.asJsonString(userNote)))
-                .andDo(print())
-                .andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").isNotEmpty());
+    when(userNoteService.createUserNote(userNote)).thenReturn(returnedNote);
 
-        verify(userNoteService).createUserNote(userNote);
-    }
+    mockMvc.perform(post(Stringify.BASE_URL + "notes")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(Stringify.asJsonString(userNote)))
+        .andDo(print())
+        .andExpect(status().isCreated())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.id").isNotEmpty());
 
-    @Test
-    @DisplayName("Update note title")
-    public void updateNoteTitle() throws Exception
-    {
-        UserNote userNote = new UserNote();
-        userNote.setId(1L);
-        userNote.setTitle("title");
-        userNote.setContent("content");
-        userNote.setTakenAt(LocalDateTime.now());
-        UserNote returnedNote = new UserNote();
-        returnedNote.setId(1L);
-        returnedNote.setTitle("new title");
-        returnedNote.setContent("content");
-        returnedNote.setTakenAt(userNote.getTakenAt());
+    verify(userNoteService).createUserNote(userNote);
+  }
 
-        when(userNoteService.updateNoteTitle(userNote.getId(), "new title")).thenReturn(returnedNote);
+  @Test
+  @DisplayName("Update note title")
+  public void updateNoteTitle() throws Exception {
+    UserNote userNote = new UserNote();
+    userNote.setId(1L);
+    userNote.setTitle("title");
+    userNote.setContent("content");
+    userNote.setTakenAt(LocalDateTime.now());
+    UserNote returnedNote = new UserNote();
+    returnedNote.setId(1L);
+    returnedNote.setTitle("new title");
+    returnedNote.setContent("content");
+    returnedNote.setTakenAt(userNote.getTakenAt());
 
-        mockMvc.perform(patch(Stringify.BASE_URL + "notes/title/{noteId}", userNote.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("new title"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.title").value("new title"));
+    when(userNoteService.updateNoteTitle(userNote.getId(), "new title")).thenReturn(returnedNote);
 
-        verify(userNoteService).updateNoteTitle(userNote.getId(), "new title");
-    }
+    mockMvc.perform(patch(Stringify.BASE_URL + "notes/title/{noteId}", userNote.getId())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("new title"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.title").value("new title"));
 
-    @Test
-    @DisplayName("Update note content")
-    public void updateNoteContent() throws Exception
-    {
-        UserNote userNote = new UserNote();
-        userNote.setId(1L);
-        userNote.setTitle("title");
-        userNote.setContent("content");
-        userNote.setTakenAt(LocalDateTime.now());
-        UserNote returnedNote = new UserNote();
-        returnedNote.setId(1L);
-        returnedNote.setTitle("title");
-        returnedNote.setContent("new content");
-        returnedNote.setTakenAt(userNote.getTakenAt());
+    verify(userNoteService).updateNoteTitle(userNote.getId(), "new title");
+  }
 
-        when(userNoteService.updateNoteContent(userNote.getId(), "new content")).thenReturn(returnedNote);
+  @Test
+  @DisplayName("Update note content")
+  public void updateNoteContent() throws Exception {
+    UserNote userNote = new UserNote();
+    userNote.setId(1L);
+    userNote.setTitle("title");
+    userNote.setContent("content");
+    userNote.setTakenAt(LocalDateTime.now());
+    UserNote returnedNote = new UserNote();
+    returnedNote.setId(1L);
+    returnedNote.setTitle("title");
+    returnedNote.setContent("new content");
+    returnedNote.setTakenAt(userNote.getTakenAt());
 
-        mockMvc.perform(patch(Stringify.BASE_URL + "notes/content/{noteId}", userNote.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("new content"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.content").value("new content"));
+    when(userNoteService.updateNoteContent(userNote.getId(), "new content"))
+        .thenReturn(returnedNote);
 
-        verify(userNoteService).updateNoteContent(userNote.getId(), "new content");
-    }
+    mockMvc.perform(patch(Stringify.BASE_URL + "notes/content/{noteId}", userNote.getId())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("new content"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.content").value("new content"));
 
-    @Test
-    @DisplayName("Update note remind at")
-    public void updateNoteRemindAt() throws Exception
-    {
-        UserNote userNote = new UserNote();
-        userNote.setId(1L);
-        userNote.setTitle("title");
-        userNote.setContent("content");
-        userNote.setTakenAt(LocalDateTime.now());
-        UserNote returnedNote = new UserNote();
-        returnedNote.setId(1L);
-        returnedNote.setTitle("title");
-        returnedNote.setContent("content");
-        returnedNote.setTakenAt(userNote.getTakenAt());
-        LocalDateTime remindAt = LocalDateTime.now().plusDays(1);
-        returnedNote.setRemindAt(remindAt);
+    verify(userNoteService).updateNoteContent(userNote.getId(), "new content");
+  }
 
-        when(userNoteService.updateUserNoteRemindTime(userNote.getId(), remindAt)).thenReturn(returnedNote);
+  @Test
+  @DisplayName("Update note remind at")
+  public void updateNoteRemindAt() throws Exception {
+    UserNote userNote = new UserNote();
+    userNote.setId(1L);
+    userNote.setTitle("title");
+    userNote.setContent("content");
+    userNote.setTakenAt(LocalDateTime.now());
+    UserNote returnedNote = new UserNote();
+    returnedNote.setId(1L);
+    returnedNote.setTitle("title");
+    returnedNote.setContent("content");
+    returnedNote.setTakenAt(userNote.getTakenAt());
+    LocalDateTime remindAt = LocalDateTime.now().plusDays(1);
+    returnedNote.setRemindAt(remindAt);
 
-        mockMvc.perform(patch(Stringify.BASE_URL + "notes/reminder/{noteId}", userNote.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .queryParam("noteRemindTime", remindAt.toString()))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.remindAt").isNotEmpty());
+    when(userNoteService.updateUserNoteRemindTime(userNote.getId(), remindAt))
+        .thenReturn(returnedNote);
 
-        verify(userNoteService).updateUserNoteRemindTime(userNote.getId(), remindAt);
-    }
+    mockMvc.perform(patch(Stringify.BASE_URL + "notes/reminder/{noteId}", userNote.getId())
+        .contentType(MediaType.APPLICATION_JSON)
+        .queryParam("noteRemindTime", remindAt.toString()))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.remindAt").isNotEmpty());
 
-    @Test
-    @DisplayName("Update user note")
-    public void updateNote() throws Exception
-    {
-        UserNote userNote = new UserNote();
-        userNote.setId(1L);
-        userNote.setTitle("title");
-        userNote.setContent("content");
-        userNote.setTakenAt(LocalDateTime.now());
-        UserNote returnedNote = new UserNote();
-        returnedNote.setId(1L);
-        returnedNote.setTitle("new title");
-        returnedNote.setContent("new content");
-        returnedNote.setTakenAt(userNote.getTakenAt());
-        LocalDateTime remindAt = LocalDateTime.now().plusDays(1);
-        returnedNote.setRemindAt(remindAt);
+    verify(userNoteService).updateUserNoteRemindTime(userNote.getId(), remindAt);
+  }
 
-        when(userNoteService.updateUserNote(userNote)).thenReturn(returnedNote);
+  @Test
+  @DisplayName("Update user note")
+  public void updateNote() throws Exception {
+    UserNote userNote = new UserNote();
+    userNote.setId(1L);
+    userNote.setTitle("title");
+    userNote.setContent("content");
+    userNote.setTakenAt(LocalDateTime.now());
+    UserNote returnedNote = new UserNote();
+    returnedNote.setId(1L);
+    returnedNote.setTitle("new title");
+    returnedNote.setContent("new content");
+    returnedNote.setTakenAt(userNote.getTakenAt());
+    LocalDateTime remindAt = LocalDateTime.now().plusDays(1);
+    returnedNote.setRemindAt(remindAt);
 
-        mockMvc.perform(put(Stringify.BASE_URL + "notes")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(Stringify.asJsonString(userNote)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.title").value("new title"))
-                .andExpect(jsonPath("$.content").value("new content"))
-                .andExpect(jsonPath("$.remindAt").isNotEmpty());
+    when(userNoteService.updateUserNote(userNote)).thenReturn(returnedNote);
 
-        verify(userNoteService).updateUserNote(userNote);
-    }
+    mockMvc.perform(put(Stringify.BASE_URL + "notes")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(Stringify.asJsonString(userNote)))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.title").value("new title"))
+        .andExpect(jsonPath("$.content").value("new content"))
+        .andExpect(jsonPath("$.remindAt").isNotEmpty());
 
-    @Test
-    @DisplayName("Get all user notes")
-    public void getAllNotes() throws Exception
-    {
-        Sort sort = Sort.by("title").ascending();
-        PageRequest pageRequest = PageRequest.of(0, 5, sort);
+    verify(userNoteService).updateUserNote(userNote);
+  }
 
-        when(userNoteService.getAllUserNotes(0, 5, "title", true))
-                .thenReturn(new PageImpl<>(List.of(new UserNote()), pageRequest, 1));
+  @Test
+  @DisplayName("Get all user notes")
+  public void getAllNotes() throws Exception {
+    Sort sort = Sort.by("title").ascending();
+    PageRequest pageRequest = PageRequest.of(0, 5, sort);
 
-        mockMvc.perform(get(Stringify.BASE_URL + "notes")
-                .contentType(MediaType.APPLICATION_JSON)
-                .queryParam("pageIndex", "0")
-                .queryParam("pageSize", "5")
-                .queryParam("sortBy", "title")
-                .queryParam("asc", "true"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.totalElements").value(1));
-    }
+    when(userNoteService.getAllUserNotes(0, 5, "title", true))
+        .thenReturn(new PageImpl<>(List.of(new UserNote()), pageRequest, 1));
 
-    @Test
-    @DisplayName("Get all user notes taken before")
-    public void getAllNotesTakenBefore() throws Exception
-    {
-        Sort sort = Sort.by("title").ascending();
-        PageRequest pageRequest = PageRequest.of(0, 5, sort);
-        LocalDateTime takenAt = LocalDateTime.now().minusDays(1);
+    mockMvc.perform(get(Stringify.BASE_URL + "notes")
+        .contentType(MediaType.APPLICATION_JSON)
+        .queryParam("pageIndex", "0")
+        .queryParam("pageSize", "5")
+        .queryParam("sortBy", "title")
+        .queryParam("asc", "true"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.totalElements").value(1));
+  }
 
-        when(userNoteService.getAllUserNotesTakenBefore(takenAt, 0, 5, "title", true))
-                .thenReturn(new PageImpl<>(List.of(new UserNote()), pageRequest, 1));
+  @Test
+  @DisplayName("Get all user notes taken before")
+  public void getAllNotesTakenBefore() throws Exception {
+    Sort sort = Sort.by("title").ascending();
+    PageRequest pageRequest = PageRequest.of(0, 5, sort);
+    LocalDateTime takenAt = LocalDateTime.now().minusDays(1);
 
-        mockMvc.perform(get(Stringify.BASE_URL + "notes/taken/before")
-                .contentType(MediaType.APPLICATION_JSON)
-                .queryParam("maxDate", takenAt.toString())
-                .queryParam("pageIndex", "0")
-                .queryParam("pageSize", "5")
-                .queryParam("sortBy", "title")
-                .queryParam("asc", "true"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.totalElements").value(1));
-    }
+    when(userNoteService.getAllUserNotesTakenBefore(takenAt, 0, 5, "title", true))
+        .thenReturn(new PageImpl<>(List.of(new UserNote()), pageRequest, 1));
 
-    @Test
-    @DisplayName("Get all user notes taken after")
-    public void getAllNotesTakenAfter() throws Exception
-    {
-        Sort sort = Sort.by("title").ascending();
-        PageRequest pageRequest = PageRequest.of(0, 5, sort);
-        LocalDateTime takenAt = LocalDateTime.now().minusDays(1);
+    mockMvc.perform(get(Stringify.BASE_URL + "notes/taken/before")
+        .contentType(MediaType.APPLICATION_JSON)
+        .queryParam("maxDate", takenAt.toString())
+        .queryParam("pageIndex", "0")
+        .queryParam("pageSize", "5")
+        .queryParam("sortBy", "title")
+        .queryParam("asc", "true"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.totalElements").value(1));
+  }
 
-        when(userNoteService.getAllUserNotesTakenAfter(takenAt, 0, 5, "title", true))
-                .thenReturn(new PageImpl<>(List.of(new UserNote()), pageRequest, 1));
+  @Test
+  @DisplayName("Get all user notes taken after")
+  public void getAllNotesTakenAfter() throws Exception {
+    Sort sort = Sort.by("title").ascending();
+    PageRequest pageRequest = PageRequest.of(0, 5, sort);
+    LocalDateTime takenAt = LocalDateTime.now().minusDays(1);
 
-        mockMvc.perform(get(Stringify.BASE_URL + "notes/taken/after")
-                .contentType(MediaType.APPLICATION_JSON)
-                .queryParam("minDate", takenAt.toString())
-                .queryParam("pageIndex", "0")
-                .queryParam("pageSize", "5")
-                .queryParam("sortBy", "title")
-                .queryParam("asc", "true"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.totalElements").value(1));
-    }
+    when(userNoteService.getAllUserNotesTakenAfter(takenAt, 0, 5, "title", true))
+        .thenReturn(new PageImpl<>(List.of(new UserNote()), pageRequest, 1));
 
-    @Test
-    @DisplayName("Get all user notes taken between")
-    public void getAllNotesTakenBetween() throws Exception
-    {
-        Sort sort = Sort.by("title").ascending();
-        PageRequest pageRequest = PageRequest.of(0, 5, sort);
-        LocalDateTime startDate = LocalDateTime.now().minusDays(1);
-        LocalDateTime endDate = LocalDateTime.now().minusDays(5);
+    mockMvc.perform(get(Stringify.BASE_URL + "notes/taken/after")
+        .contentType(MediaType.APPLICATION_JSON)
+        .queryParam("minDate", takenAt.toString())
+        .queryParam("pageIndex", "0")
+        .queryParam("pageSize", "5")
+        .queryParam("sortBy", "title")
+        .queryParam("asc", "true"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.totalElements").value(1));
+  }
 
-        when(userNoteService.getAllUserNotesTakenBetween(startDate, endDate, 0, 5, "title", true))
-                .thenReturn(new PageImpl<>(List.of(new UserNote()), pageRequest, 1));
+  @Test
+  @DisplayName("Get all user notes taken between")
+  public void getAllNotesTakenBetween() throws Exception {
+    Sort sort = Sort.by("title").ascending();
+    PageRequest pageRequest = PageRequest.of(0, 5, sort);
+    LocalDateTime startDate = LocalDateTime.now().minusDays(1);
+    LocalDateTime endDate = LocalDateTime.now().minusDays(5);
 
-        mockMvc.perform(get(Stringify.BASE_URL + "notes/taken/between")
-                .contentType(MediaType.APPLICATION_JSON)
-                .queryParam("minDate", startDate.toString())
-                .queryParam("maxDate", endDate.toString())
-                .queryParam("pageIndex", "0")
-                .queryParam("pageSize", "5")
-                .queryParam("sortBy", "title")
-                .queryParam("asc", "true"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.totalElements").value(1));
-    }
+    when(userNoteService.getAllUserNotesTakenBetween(startDate, endDate, 0, 5, "title", true))
+        .thenReturn(new PageImpl<>(List.of(new UserNote()), pageRequest, 1));
 
-    @Test
-    @DisplayName("Get all user notes with reminder before")
-    public void getAllNotesRemindAtBefore() throws Exception
-    {
-        Sort sort = Sort.by("title").ascending();
-        PageRequest pageRequest = PageRequest.of(0, 5, sort);
-        LocalDateTime takenAt = LocalDateTime.now().minusDays(1);
+    mockMvc.perform(get(Stringify.BASE_URL + "notes/taken/between")
+        .contentType(MediaType.APPLICATION_JSON)
+        .queryParam("minDate", startDate.toString())
+        .queryParam("maxDate", endDate.toString())
+        .queryParam("pageIndex", "0")
+        .queryParam("pageSize", "5")
+        .queryParam("sortBy", "title")
+        .queryParam("asc", "true"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.totalElements").value(1));
+  }
 
-        when(userNoteService.getAllUserNotesRemindBefore(takenAt, 0, 5, "title", true))
-                .thenReturn(new PageImpl<>(List.of(new UserNote()), pageRequest, 1));
+  @Test
+  @DisplayName("Get all user notes with reminder before")
+  public void getAllNotesRemindAtBefore() throws Exception {
+    Sort sort = Sort.by("title").ascending();
+    PageRequest pageRequest = PageRequest.of(0, 5, sort);
+    LocalDateTime takenAt = LocalDateTime.now().minusDays(1);
 
-        mockMvc.perform(get(Stringify.BASE_URL + "notes/reminder/before")
-                .contentType(MediaType.APPLICATION_JSON)
-                .queryParam("maxDate", takenAt.toString())
-                .queryParam("pageIndex", "0")
-                .queryParam("pageSize", "5")
-                .queryParam("sortBy", "title")
-                .queryParam("asc", "true"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.totalElements").value(1));
-    }
+    when(userNoteService.getAllUserNotesRemindBefore(takenAt, 0, 5, "title", true))
+        .thenReturn(new PageImpl<>(List.of(new UserNote()), pageRequest, 1));
 
-    @Test
-    @DisplayName("Get all user notes with reminder after")
-    public void getAllNotesRemindAtAfter() throws Exception
-    {
-        Sort sort = Sort.by("title").ascending();
-        PageRequest pageRequest = PageRequest.of(0, 5, sort);
-        LocalDateTime takenAt = LocalDateTime.now().minusDays(1);
+    mockMvc.perform(get(Stringify.BASE_URL + "notes/reminder/before")
+        .contentType(MediaType.APPLICATION_JSON)
+        .queryParam("maxDate", takenAt.toString())
+        .queryParam("pageIndex", "0")
+        .queryParam("pageSize", "5")
+        .queryParam("sortBy", "title")
+        .queryParam("asc", "true"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.totalElements").value(1));
+  }
 
-        when(userNoteService.getAllUserNotesRemindAfter(takenAt, 0, 5, "title", true))
-                .thenReturn(new PageImpl<>(List.of(new UserNote()), pageRequest, 1));
+  @Test
+  @DisplayName("Get all user notes with reminder after")
+  public void getAllNotesRemindAtAfter() throws Exception {
+    Sort sort = Sort.by("title").ascending();
+    PageRequest pageRequest = PageRequest.of(0, 5, sort);
+    LocalDateTime takenAt = LocalDateTime.now().minusDays(1);
 
-        mockMvc.perform(get(Stringify.BASE_URL + "notes/reminder/after")
-                .contentType(MediaType.APPLICATION_JSON)
-                .queryParam("minDate", takenAt.toString())
-                .queryParam("pageIndex", "0")
-                .queryParam("pageSize", "5")
-                .queryParam("sortBy", "title")
-                .queryParam("asc", "true"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.totalElements").value(1));
-    }
+    when(userNoteService.getAllUserNotesRemindAfter(takenAt, 0, 5, "title", true))
+        .thenReturn(new PageImpl<>(List.of(new UserNote()), pageRequest, 1));
 
-    @Test
-    @DisplayName("Get all user notes with reminder between")
-    public void getAllNotesRemindAtBetween() throws Exception
-    {
-        Sort sort = Sort.by("title").ascending();
-        PageRequest pageRequest = PageRequest.of(0, 5, sort);
-        LocalDateTime startDate = LocalDateTime.now().minusDays(1);
-        LocalDateTime endDate = LocalDateTime.now().minusDays(5);
+    mockMvc.perform(get(Stringify.BASE_URL + "notes/reminder/after")
+        .contentType(MediaType.APPLICATION_JSON)
+        .queryParam("minDate", takenAt.toString())
+        .queryParam("pageIndex", "0")
+        .queryParam("pageSize", "5")
+        .queryParam("sortBy", "title")
+        .queryParam("asc", "true"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.totalElements").value(1));
+  }
 
-        when(userNoteService.getAllUserNotesRemindBetween(startDate, endDate, 0, 5, "title", true))
-                .thenReturn(new PageImpl<>(List.of(new UserNote()), pageRequest, 1));
+  @Test
+  @DisplayName("Get all user notes with reminder between")
+  public void getAllNotesRemindAtBetween() throws Exception {
+    Sort sort = Sort.by("title").ascending();
+    PageRequest pageRequest = PageRequest.of(0, 5, sort);
+    LocalDateTime startDate = LocalDateTime.now().minusDays(1);
+    LocalDateTime endDate = LocalDateTime.now().minusDays(5);
 
-        mockMvc.perform(get(Stringify.BASE_URL + "notes/reminder/between")
-                .contentType(MediaType.APPLICATION_JSON)
-                .queryParam("minDate", startDate.toString())
-                .queryParam("maxDate", endDate.toString())
-                .queryParam("pageIndex", "0")
-                .queryParam("pageSize", "5")
-                .queryParam("sortBy", "title")
-                .queryParam("asc", "true"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.totalElements").value(1));
-    }
+    when(userNoteService.getAllUserNotesRemindBetween(startDate, endDate, 0, 5, "title", true))
+        .thenReturn(new PageImpl<>(List.of(new UserNote()), pageRequest, 1));
 
-    @Test
-    @DisplayName("Get all notes by title example")
-    public void getAllUserNotesByTitleExample() throws Exception
-    {
-        Sort sort = Sort.by("title").ascending();
-        PageRequest pageRequest = PageRequest.of(0, 5, sort);
-        UserNoteSearchResult userNoteSearchResult = new UserNoteSearchResult() {
-            @Override
-            public Long getId() {
-                return 1L;
-            }
+    mockMvc.perform(get(Stringify.BASE_URL + "notes/reminder/between")
+        .contentType(MediaType.APPLICATION_JSON)
+        .queryParam("minDate", startDate.toString())
+        .queryParam("maxDate", endDate.toString())
+        .queryParam("pageIndex", "0")
+        .queryParam("pageSize", "5")
+        .queryParam("sortBy", "title")
+        .queryParam("asc", "true"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.totalElements").value(1));
+  }
 
-            @Override
-            public String getTitle() {
-                return "title";
-            }
+  @Test
+  @DisplayName("Get all notes by title example")
+  public void getAllUserNotesByTitleExample() throws Exception {
+    Sort sort = Sort.by("title").ascending();
+    PageRequest pageRequest = PageRequest.of(0, 5, sort);
+    UserNoteSearchResult userNoteSearchResult = new UserNoteSearchResult() {
+      @Override
+      public Long getId() {
+        return 1L;
+      }
 
-            @Override
-            public LocalDateTime getTakenAt() {
-                return LocalDateTime.now().minusDays(1);
-            }
+      @Override
+      public String getTitle() {
+        return "title";
+      }
 
-            @Override
-            public LocalDateTime getRemindAt() {
-                return LocalDateTime.now().plusDays(1);
-            }
-        };
+      @Override
+      public LocalDateTime getTakenAt() {
+        return LocalDateTime.now().minusDays(1);
+      }
 
-        when(userNoteService.getAllUserNotesByTitleExample("t", 0, 5, "title", true))
-                .thenReturn(List.of(userNoteSearchResult));
+      @Override
+      public LocalDateTime getRemindAt() {
+        return LocalDateTime.now().plusDays(1);
+      }
+    };
 
-        mockMvc.perform(get(Stringify.BASE_URL + "notes/by/title")
-                .contentType(MediaType.APPLICATION_JSON)
-                .queryParam("titleExample", "t")
-                .queryParam("pageIndex", "0")
-                .queryParam("pageSize", "5")
-                .queryParam("sortBy", "title")
-                .queryParam("asc", "true"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].title").value("title"));
-    }
+    when(userNoteService.getAllUserNotesByTitleExample("t", 0, 5, "title", true))
+        .thenReturn(List.of(userNoteSearchResult));
 
-    @Test
-    @DisplayName("Delete note")
-    public void deleteNote() throws Exception
-    {
-        doNothing().when(userNoteService).deleteNote(1L);
+    mockMvc.perform(get(Stringify.BASE_URL + "notes/by/title")
+        .contentType(MediaType.APPLICATION_JSON)
+        .queryParam("titleExample", "t")
+        .queryParam("pageIndex", "0")
+        .queryParam("pageSize", "5")
+        .queryParam("sortBy", "title")
+        .queryParam("asc", "true"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$[0].title").value("title"));
+  }
 
-        mockMvc.perform(delete(Stringify.BASE_URL + "notes/{noteId}", 1L)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk());
-    }
+  @Test
+  @DisplayName("Delete note")
+  public void deleteNote() throws Exception {
+    doNothing().when(userNoteService).deleteNote(1L);
+
+    mockMvc.perform(delete(Stringify.BASE_URL + "notes/{noteId}", 1L)
+        .contentType(MediaType.APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isOk());
+  }
 
 }

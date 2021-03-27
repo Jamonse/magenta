@@ -1,32 +1,28 @@
 package com.jsoft.magenta.security;
 
 import com.jsoft.magenta.security.dao.RefreshTokenRepository;
+import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-
 @Service
 @RequiredArgsConstructor
-public class RefreshTokenCleaner
-{
-    private final RefreshTokenRepository refreshTokenRepository;
+public class RefreshTokenCleaner {
 
-    @PostConstruct
-    public void performOnConstruct()
-    {
-        performDailyTokenCleanJob();
-    }
+  private final RefreshTokenRepository refreshTokenRepository;
 
-    @Scheduled(cron = "${application.schedule.token-job}")
-    public void performScheduled()
-    {
-        performDailyTokenCleanJob();
-    }
+  @PostConstruct
+  public void performOnConstruct() {
+    performDailyTokenCleanJob();
+  }
 
-    private void performDailyTokenCleanJob()
-    {
-        this.refreshTokenRepository.removeExpiredTokens();
-    }
+  @Scheduled(cron = "${application.schedule.token-job}")
+  public void performScheduled() {
+    performDailyTokenCleanJob();
+  }
+
+  private void performDailyTokenCleanJob() {
+    this.refreshTokenRepository.removeExpiredTokens();
+  }
 }

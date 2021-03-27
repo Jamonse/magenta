@@ -2,19 +2,19 @@ package com.jsoft.magenta.worktimes;
 
 import com.jsoft.magenta.users.User;
 import com.jsoft.magenta.worktimes.reports.WorkTimeReportResult;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface WorkTimeRepository extends JpaRepository<WorkTime, Long>
-{
-    Optional<Long> findUserIdById(Long wtId);
+public interface WorkTimeRepository extends JpaRepository<WorkTime, Long> {
 
-    List<WorkTime> findAllByUserIdAndDate(Long userId, LocalDate date);
+  Optional<Long> findUserIdById(Long wtId);
 
-    List<WorkTimeReportResult> findAllByUserIdAndDateBetween(Long userId, LocalDate startDate, LocalDate endDate);
+  List<WorkTime> findAllByUserIdAndDate(Long userId, LocalDate date);
 
-    Optional<User> getUserByUserId(Long userId);
+  List<WorkTimeReportResult> findAllByUserIdAndDateBetween(Long userId, LocalDate startDate,
+      LocalDate endDate);
+
+  Optional<User> getUserByUserId(Long userId);
 }

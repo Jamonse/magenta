@@ -3,11 +3,12 @@ package com.jsoft.magenta.notes;
 import java.time.LocalDateTime;
 
 public interface UserNoteSearchResult {
-    Long getId();
 
-    String getTitle();
+  Long getId();
 
-    LocalDateTime getTakenAt();
+  String getTitle();
 
-    LocalDateTime getRemindAt();
+  LocalDateTime getTakenAt();
+
+  LocalDateTime getRemindAt();
 }

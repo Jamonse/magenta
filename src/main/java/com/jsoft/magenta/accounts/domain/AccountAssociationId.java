@@ -1,13 +1,12 @@
 package com.jsoft.magenta.accounts.domain;
 
+import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import java.io.Serializable;
 
 @Data
 @Embeddable
@@ -15,9 +14,10 @@ import java.io.Serializable;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class AccountAssociationId implements Serializable {
-    @Column(name = "account_id")
-    private Long accountId;
 
-    @Column(name = "user_id")
-    private Long userId;
+  @Column(name = "account_id")
+  private Long accountId;
+
+  @Column(name = "user_id")
+  private Long userId;
 }

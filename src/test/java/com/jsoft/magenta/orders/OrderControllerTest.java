@@ -1,8 +1,18 @@
 package com.jsoft.magenta.orders;
 
-import com.jsoft.magenta.notes.UserNote;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.jsoft.magenta.orders.domain.Order;
 import com.jsoft.magenta.util.Stringify;
+import java.time.LocalDate;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,291 +32,268 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.time.LocalDate;
-import java.util.List;
-
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 @SpringBootTest
 @WithUserDetails("admin@admin.com")
 @AutoConfigureMockMvc
-public class OrderControllerTest
-{
-    @MockBean
-    private OrderService orderService;
+public class OrderControllerTest {
 
-    @Autowired
-    private OrderController orderController;
+  @MockBean
+  private OrderService orderService;
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired
+  private OrderController orderController;
 
-    @BeforeEach
-    public void init()
-    {
-        MockitoAnnotations.openMocks(this);
-    }
+  @Autowired
+  private MockMvc mockMvc;
 
-    @Test
-    @DisplayName("Create order")
-    public void createOrder() throws Exception
-    {
-        Order order = new Order();
-        order.setTitle("title");
-        order.setDescription("description");
-        order.setAmount(10);
-        Order returned = new Order();
-        returned.setId(1L);
-        returned.setTitle("title");
-        returned.setDescription("description");
-        returned.setAmount(10);
-        returned.setCreatedAt(LocalDate.now());
+  @BeforeEach
+  public void init() {
+    MockitoAnnotations.openMocks(this);
+  }
 
-        Mockito.when(orderService.createOrder(1L, order)).thenReturn(returned);
+  @Test
+  @DisplayName("Create order")
+  public void createOrder() throws Exception {
+    Order order = new Order();
+    order.setTitle("title");
+    order.setDescription("description");
+    order.setAmount(10);
+    Order returned = new Order();
+    returned.setId(1L);
+    returned.setTitle("title");
+    returned.setDescription("description");
+    returned.setAmount(10);
+    returned.setCreatedAt(LocalDate.now());
 
-        mockMvc.perform(MockMvcRequestBuilders.post(Stringify.BASE_URL + "orders/{projectId}", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(Stringify.asJsonString(order)))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNotEmpty())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.title").value(returned.getTitle()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.createdAt").isNotEmpty());
-    }
+    Mockito.when(orderService.createOrder(1L, order)).thenReturn(returned);
 
-    @Test
-    @DisplayName("Create order without title - should throw exception")
-    public void createOrderWithoutTitle() throws Exception
-    {
-        Order order = new Order();
-        order.setDescription("description");
-        order.setAmount(10);
-        Order returned = new Order();
-        returned.setId(1L);
-        returned.setDescription("description");
-        returned.setAmount(10);
-        returned.setCreatedAt(LocalDate.now());
+    mockMvc.perform(MockMvcRequestBuilders.post(Stringify.BASE_URL + "orders/{projectId}", 1L)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(Stringify.asJsonString(order)))
+        .andDo(MockMvcResultHandlers.print())
+        .andExpect(MockMvcResultMatchers.status().isCreated())
+        .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNotEmpty())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.title").value(returned.getTitle()))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.createdAt").isNotEmpty());
+  }
 
-        Mockito.when(orderService.createOrder(1L, order)).thenReturn(returned);
+  @Test
+  @DisplayName("Create order without title - should throw exception")
+  public void createOrderWithoutTitle() throws Exception {
+    Order order = new Order();
+    order.setDescription("description");
+    order.setAmount(10);
+    Order returned = new Order();
+    returned.setId(1L);
+    returned.setDescription("description");
+    returned.setAmount(10);
+    returned.setCreatedAt(LocalDate.now());
 
-        mockMvc.perform(MockMvcRequestBuilders.post(Stringify.BASE_URL + "orders/{projectId}", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(Stringify.asJsonString(order)))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
-    }
+    Mockito.when(orderService.createOrder(1L, order)).thenReturn(returned);
 
-    @Test
-    @DisplayName("Create order with invalid title - should throw exception")
-    public void createOrderWithInvalidTitle() throws Exception
-    {
-        Order order = new Order();
-        order.setTitle("t");
-        order.setDescription("description");
-        order.setAmount(10);
-        Order returned = new Order();
-        returned.setId(1L);
-        returned.setTitle("t");
-        returned.setDescription("description");
-        returned.setAmount(10);
-        returned.setCreatedAt(LocalDate.now());
+    mockMvc.perform(MockMvcRequestBuilders.post(Stringify.BASE_URL + "orders/{projectId}", 1L)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(Stringify.asJsonString(order)))
+        .andDo(MockMvcResultHandlers.print())
+        .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+  }
 
-        Mockito.when(orderService.createOrder(1L, order)).thenReturn(returned);
+  @Test
+  @DisplayName("Create order with invalid title - should throw exception")
+  public void createOrderWithInvalidTitle() throws Exception {
+    Order order = new Order();
+    order.setTitle("t");
+    order.setDescription("description");
+    order.setAmount(10);
+    Order returned = new Order();
+    returned.setId(1L);
+    returned.setTitle("t");
+    returned.setDescription("description");
+    returned.setAmount(10);
+    returned.setCreatedAt(LocalDate.now());
 
-        mockMvc.perform(MockMvcRequestBuilders.post(Stringify.BASE_URL + "orders/{projectId}", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(Stringify.asJsonString(order)))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
-    }
+    Mockito.when(orderService.createOrder(1L, order)).thenReturn(returned);
 
-    @Test
-    @DisplayName("Create order with invalid amount - should throw exception")
-    public void createOrderWithInvalidAmount() throws Exception
-    {
-        Order order = new Order();
-        order.setTitle("title");
-        order.setDescription("description");
-        order.setAmount(-1);
-        Order returned = new Order();
-        returned.setDescription("description");
-        returned.setAmount(-1);
-        returned.setCreatedAt(LocalDate.now());
+    mockMvc.perform(MockMvcRequestBuilders.post(Stringify.BASE_URL + "orders/{projectId}", 1L)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(Stringify.asJsonString(order)))
+        .andDo(MockMvcResultHandlers.print())
+        .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+  }
 
-        Mockito.when(orderService.createOrder(1L, order)).thenReturn(returned);
+  @Test
+  @DisplayName("Create order with invalid amount - should throw exception")
+  public void createOrderWithInvalidAmount() throws Exception {
+    Order order = new Order();
+    order.setTitle("title");
+    order.setDescription("description");
+    order.setAmount(-1);
+    Order returned = new Order();
+    returned.setDescription("description");
+    returned.setAmount(-1);
+    returned.setCreatedAt(LocalDate.now());
 
-        mockMvc.perform(MockMvcRequestBuilders.post(Stringify.BASE_URL + "orders/{projectId}", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(Stringify.asJsonString(order)))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().is4xxClientError())
-                .andExpect(MockMvcResultMatchers
-                        .jsonPath("$.message")
-                        .value("Error/s during parameters validation")
-                );
-    }
+    Mockito.when(orderService.createOrder(1L, order)).thenReturn(returned);
 
-    @Test
-    @DisplayName("Update order")
-    public void updateOrder() throws Exception
-    {
-        Order order = new Order();
-        order.setId(1L);
-        order.setTitle("title");
-        order.setCreatedAt(LocalDate.now());
-        order.setAmount(10);
-        order.setDescription("description");
+    mockMvc.perform(MockMvcRequestBuilders.post(Stringify.BASE_URL + "orders/{projectId}", 1L)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(Stringify.asJsonString(order)))
+        .andDo(MockMvcResultHandlers.print())
+        .andExpect(MockMvcResultMatchers.status().is4xxClientError())
+        .andExpect(MockMvcResultMatchers
+            .jsonPath("$.message")
+            .value("Error/s during parameters validation")
+        );
+  }
 
-        Mockito.when(orderService.updateOrder(order)).thenReturn(order);
+  @Test
+  @DisplayName("Update order")
+  public void updateOrder() throws Exception {
+    Order order = new Order();
+    order.setId(1L);
+    order.setTitle("title");
+    order.setCreatedAt(LocalDate.now());
+    order.setAmount(10);
+    order.setDescription("description");
 
-        mockMvc.perform(MockMvcRequestBuilders.put(Stringify.BASE_URL + "orders")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(Stringify.asJsonString(order)))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.title").value(order.getTitle()));
-    }
+    Mockito.when(orderService.updateOrder(order)).thenReturn(order);
 
-    @Test
-    @DisplayName("Update order title")
-    public void updateOrderTitle() throws Exception
-    {
-        Order order = new Order();
-        order.setId(1L);
-        order.setTitle("new title");
-        String orderTitle = "new title";
+    mockMvc.perform(MockMvcRequestBuilders.put(Stringify.BASE_URL + "orders")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(Stringify.asJsonString(order)))
+        .andDo(MockMvcResultHandlers.print())
+        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.title").value(order.getTitle()));
+  }
 
-        Mockito.when(orderService.updateOrderTitle(1L, "new title")).thenReturn(order);
+  @Test
+  @DisplayName("Update order title")
+  public void updateOrderTitle() throws Exception {
+    Order order = new Order();
+    order.setId(1L);
+    order.setTitle("new title");
+    String orderTitle = "new title";
 
-        mockMvc.perform(MockMvcRequestBuilders.patch(Stringify.BASE_URL + "orders/title/{orderId}", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(orderTitle))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.title").value("new title"));
-    }
+    Mockito.when(orderService.updateOrderTitle(1L, "new title")).thenReturn(order);
 
-    @Test
-    @DisplayName("Update order title with invalid title - should throw exception")
-    public void updateOrderInvalidTitle() throws Exception
-    {
-        mockMvc.perform(MockMvcRequestBuilders.patch(Stringify.BASE_URL + "orders/title/{orderId}", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(""))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
-    }
+    mockMvc.perform(MockMvcRequestBuilders.patch(Stringify.BASE_URL + "orders/title/{orderId}", 1L)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(orderTitle))
+        .andDo(MockMvcResultHandlers.print())
+        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.title").value("new title"));
+  }
 
-    @Test
-    @DisplayName("Update order description")
-    public void updateOrderDescription() throws Exception
-    {
-        Order order = new Order();
-        order.setId(1L);
-        order.setDescription("new description");
-        String orderDescription = "new description";
+  @Test
+  @DisplayName("Update order title with invalid title - should throw exception")
+  public void updateOrderInvalidTitle() throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.patch(Stringify.BASE_URL + "orders/title/{orderId}", 1L)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(""))
+        .andDo(MockMvcResultHandlers.print())
+        .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+  }
 
-        Mockito.when(orderService.updateOrderDescription(1L, "new description")).thenReturn(order);
+  @Test
+  @DisplayName("Update order description")
+  public void updateOrderDescription() throws Exception {
+    Order order = new Order();
+    order.setId(1L);
+    order.setDescription("new description");
+    String orderDescription = "new description";
 
-        mockMvc.perform(MockMvcRequestBuilders.patch(Stringify.BASE_URL + "orders/description/{orderId}", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(orderDescription))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.description").value("new description"));
-    }
+    Mockito.when(orderService.updateOrderDescription(1L, "new description")).thenReturn(order);
 
-    @Test
-    @DisplayName("Update order amount")
-    public void updateOrderAmount() throws Exception
-    {
-        Order order = new Order();
-        order.setId(1L);
-        order.setAmount(10);
+    mockMvc.perform(
+        MockMvcRequestBuilders.patch(Stringify.BASE_URL + "orders/description/{orderId}", 1L)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(orderDescription))
+        .andDo(MockMvcResultHandlers.print())
+        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.description").value("new description"));
+  }
 
-        Mockito.when(orderService.updateOrderAmount(1L, 10))
-                .thenReturn(order);
+  @Test
+  @DisplayName("Update order amount")
+  public void updateOrderAmount() throws Exception {
+    Order order = new Order();
+    order.setId(1L);
+    order.setAmount(10);
 
-        mockMvc.perform(MockMvcRequestBuilders.patch(Stringify.BASE_URL + "orders/amount/{orderId}", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("10"))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.amount").value("10.0"));
-    }
+    Mockito.when(orderService.updateOrderAmount(1L, 10))
+        .thenReturn(order);
 
-    @Test
-    @DisplayName("Update order amount with negative number - should throw exception")
-    public void updateOrderAmountWithNegativeNumber() throws Exception
-    {
-        mockMvc.perform(MockMvcRequestBuilders.patch(Stringify.BASE_URL + "orders/amount/{orderId}", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("-1"))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
-    }
+    mockMvc.perform(MockMvcRequestBuilders.patch(Stringify.BASE_URL + "orders/amount/{orderId}", 1L)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("10"))
+        .andDo(MockMvcResultHandlers.print())
+        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.amount").value("10.0"));
+  }
 
-    @Test
-    @DisplayName("Get all orders")
-    public void getAllOrders() throws Exception
-    {
+  @Test
+  @DisplayName("Update order amount with negative number - should throw exception")
+  public void updateOrderAmountWithNegativeNumber() throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.patch(Stringify.BASE_URL + "orders/amount/{orderId}", 1L)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("-1"))
+        .andDo(MockMvcResultHandlers.print())
+        .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+  }
 
-        Sort sort = Sort.by("title").ascending();
-        PageRequest pageRequest = PageRequest.of(0, 5, sort);
+  @Test
+  @DisplayName("Get all orders")
+  public void getAllOrders() throws Exception {
 
-        when(orderService.getAllOrders(1L, 0, 5, "title", true))
-                .thenReturn(new PageImpl<>(List.of(new Order()), pageRequest, 1));
+    Sort sort = Sort.by("title").ascending();
+    PageRequest pageRequest = PageRequest.of(0, 5, sort);
 
-        mockMvc.perform(get(Stringify.BASE_URL + "orders/project/{orderId}", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .queryParam("pageIndex", "0")
-                .queryParam("pageSize", "5")
-                .queryParam("sortBy", "title")
-                .queryParam("asc", "true"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.totalElements").value(1));
-    }
+    when(orderService.getAllOrders(1L, 0, 5, "title", true))
+        .thenReturn(new PageImpl<>(List.of(new Order()), pageRequest, 1));
 
-    @Test
-    @DisplayName("Get order")
-    public void getOrder() throws Exception
-    {
-        Order order = new Order();
-        order.setId(1L);
-        order.setTitle("title");
+    mockMvc.perform(get(Stringify.BASE_URL + "orders/project/{orderId}", 1L)
+        .contentType(MediaType.APPLICATION_JSON)
+        .queryParam("pageIndex", "0")
+        .queryParam("pageSize", "5")
+        .queryParam("sortBy", "title")
+        .queryParam("asc", "true"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.totalElements").value(1));
+  }
 
-        when(orderService.getOrder(order.getId())).thenReturn(order);
+  @Test
+  @DisplayName("Get order")
+  public void getOrder() throws Exception {
+    Order order = new Order();
+    order.setId(1L);
+    order.setTitle("title");
 
-        mockMvc.perform(get(Stringify.BASE_URL + "orders/{orderId}", order.getId())
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(Stringify.asJsonString(order)));
-    }
+    when(orderService.getOrder(order.getId())).thenReturn(order);
 
-    @Test
-    @DisplayName("Delete order")
-    public void deleteOrder() throws Exception
-    {
-        doNothing().when(orderService).deleteOrder(1L);
+    mockMvc.perform(get(Stringify.BASE_URL + "orders/{orderId}", order.getId())
+        .contentType(MediaType.APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(content().json(Stringify.asJsonString(order)));
+  }
 
-        mockMvc.perform(delete(Stringify.BASE_URL + "orders/{orderId}", 1L)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk());
-    }
+  @Test
+  @DisplayName("Delete order")
+  public void deleteOrder() throws Exception {
+    doNothing().when(orderService).deleteOrder(1L);
+
+    mockMvc.perform(delete(Stringify.BASE_URL + "orders/{orderId}", 1L)
+        .contentType(MediaType.APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isOk());
+  }
 
 }

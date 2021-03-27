@@ -19,253 +19,274 @@ import com.jsoft.magenta.util.AppConstants;
 import com.jsoft.magenta.util.validation.annotations.ValidName;
 import com.jsoft.magenta.util.validation.annotations.ValidPhoneNumber;
 import com.jsoft.magenta.worktimes.WorkTime;
+import java.time.LocalDate;
+import java.util.Set;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.util.Set;
-
 @Data
 @Entity
 @Table(
-        name = "users",
-        uniqueConstraints = { // User email and phone number are unique constrains
-                @UniqueConstraint(
-                        name = "user_email_unique",
-                        columnNames = "email"
-                ),
-                @UniqueConstraint(
-                        name = "user_pn_unique",
-                        columnNames = "phone_number"
-                )
-        }
+    name = "users",
+    uniqueConstraints = { // User email and phone number are unique constrains
+        @UniqueConstraint(
+            name = "user_email_unique",
+            columnNames = "email"
+        ),
+        @UniqueConstraint(
+            name = "user_pn_unique",
+            columnNames = "phone_number"
+        )
+    }
 )
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class User {
-    @Id
-    @SequenceGenerator(
-            name = "user_sequence",
-            sequenceName = "user_sequence",
-            initialValue = 150,
-            allocationSize = 2
-    )
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "user_sequence"
-    )
-    @Column(name = "user_id", updatable = false)
-    private Long id;
 
-    @Column(name = "first_name", length = 50, nullable = false)
-    @ValidName
-    private String firstName;
+  @Id
+  @SequenceGenerator(
+      name = "user_sequence",
+      sequenceName = "user_sequence",
+      initialValue = 150,
+      allocationSize = 2
+  )
+  @GeneratedValue(
+      strategy = GenerationType.SEQUENCE,
+      generator = "user_sequence"
+  )
+  @Column(name = "user_id", updatable = false)
+  private Long id;
 
-    @Column(name = "last_name", length = 50, nullable = false)
-    @ValidName
-    private String lastName;
+  @Column(name = "first_name", length = 50, nullable = false)
+  @ValidName
+  private String firstName;
 
-    @Column(name = "email", length = 50, nullable = false)
-    @Email(message = AppConstants.EMAIL_INVALID_MESSAGE)
-    private String email;
+  @Column(name = "last_name", length = 50, nullable = false)
+  @ValidName
+  private String lastName;
 
-    @Column(name = "phone_number", length = 20, nullable = false)
-    @ValidPhoneNumber
-    private String phoneNumber;
+  @Column(name = "email", length = 50, nullable = false)
+  @Email(message = AppConstants.EMAIL_INVALID_MESSAGE)
+  private String email;
 
-    @Column(name = "password", nullable = false)
-    //@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @NotBlank(message = AppConstants.PASSWORD_BLANK_MESSAGE)
-    private String password;
+  @Column(name = "phone_number", length = 20, nullable = false)
+  @ValidPhoneNumber
+  private String phoneNumber;
 
-    @JoinColumn(
-            name = "profile_image",
-            foreignKey = @ForeignKey(name = "FK_pimg_user")
-    )
-    @ManyToOne
-    @JsonIgnore
-    private MagentaImage profileImage;
+  @Column(name = "password", nullable = false)
+  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+  @NotBlank(message = AppConstants.PASSWORD_BLANK_MESSAGE)
+  private String password;
 
-    @Column(name = "is_enabled")
-    private boolean enabled;
+  @JoinColumn(
+      name = "profile_image",
+      foreignKey = @ForeignKey(name = "FK_pimg_user")
+  )
+  @ManyToOne
+  @JsonIgnore
+  private MagentaImage profileImage;
 
-    @Column(name = "pref_theme", length = 50, nullable = false)
-    @Enumerated(EnumType.STRING)
-    @NotNull
-    private ColorTheme preferredTheme;
+  @Column(name = "is_enabled")
+  private boolean enabled;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    @JsonDeserialize(using = LocalDateDeserializer.class)
-    @JsonSerialize(using = LocalDateSerializer.class)
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private LocalDate createdAt;
+  @Column(name = "pref_theme", length = 50, nullable = false)
+  @Enumerated(EnumType.STRING)
+  @NotNull
+  private ColorTheme preferredTheme;
 
-    @Column(name = "birth_day", nullable = false)
-    @JsonDeserialize(using = LocalDateDeserializer.class)
-    @JsonSerialize(using = LocalDateSerializer.class)
-    @NotNull
-    private LocalDate birthDay;
+  @Column(name = "created_at", nullable = false, updatable = false)
+  @JsonDeserialize(using = LocalDateDeserializer.class)
+  @JsonSerialize(using = LocalDateSerializer.class)
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  private LocalDate createdAt;
 
-    @OneToMany(
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
-            fetch = FetchType.LAZY
-    )
-    @JoinColumn(name = "user_id")
-    @JsonIgnore
-    private Set<AccountAssociation> accounts;
+  @Column(name = "birth_day", nullable = false)
+  @JsonDeserialize(using = LocalDateDeserializer.class)
+  @JsonSerialize(using = LocalDateSerializer.class)
+  @NotNull
+  private LocalDate birthDay;
 
-    @OneToMany(
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
-            fetch = FetchType.LAZY
-    )
-    @JoinColumn(name = "user_id")
-    @JsonIgnore
-    private Set<ProjectAssociation> projects;
+  @OneToMany(
+      cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+      fetch = FetchType.LAZY
+  )
+  @JoinColumn(name = "user_id")
+  @JsonIgnore
+  private Set<AccountAssociation> accounts;
 
-    @OneToMany(
-            cascade = CascadeType.PERSIST,
-            fetch = FetchType.LAZY
-    )
-    @JoinColumn(name = "user_id")
-    @JsonIgnore
-    private Set<WorkTime> workTimes;
+  @OneToMany(
+      cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+      fetch = FetchType.LAZY
+  )
+  @JoinColumn(name = "user_id")
+  @JsonIgnore
+  private Set<ProjectAssociation> projects;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
-    @JoinColumn(name = "user_id")
-    @JsonIgnore
-    private Set<UserNote> notes;
+  @OneToMany(
+      cascade = CascadeType.PERSIST,
+      fetch = FetchType.LAZY
+  )
+  @JoinColumn(name = "user_id")
+  @JsonIgnore
+  private Set<WorkTime> workTimes;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "users_sps",
-            joinColumns = @JoinColumn(
-                    name = "user_id",
-                    referencedColumnName = "user_id",
-                    foreignKey = @ForeignKey(name = "FK_user_id")),
-            inverseJoinColumns = @JoinColumn(
-                    name = "sp_id",
-                    referencedColumnName = "sp_id",
-                    foreignKey = @ForeignKey(name = "FK_sp_id"))
-    )
-    @JsonIgnore
-    private Set<SubProject> subProjects;
+  @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+  @JoinColumn(name = "user_id")
+  @JsonIgnore
+  private Set<UserNote> notes;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "users_privileges",
-            joinColumns = @JoinColumn(
-                    name = "user_id",
-                    referencedColumnName = "user_id",
-                    foreignKey = @ForeignKey(name = "FK_user_id")
-            ),
-            inverseJoinColumns = @JoinColumn(
-                    name = "privilege_id",
-                    referencedColumnName = "privilege_id",
-                    foreignKey = @ForeignKey(name = "FK_privilege_id")
-            )
-    )
-    private Set<Privilege> privileges;
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JoinTable(
+      name = "users_sps",
+      joinColumns = @JoinColumn(
+          name = "user_id",
+          referencedColumnName = "user_id",
+          foreignKey = @ForeignKey(name = "FK_user_id")),
+      inverseJoinColumns = @JoinColumn(
+          name = "sp_id",
+          referencedColumnName = "sp_id",
+          foreignKey = @ForeignKey(name = "FK_sp_id"))
+  )
+  @JsonIgnore
+  private Set<SubProject> subProjects;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "supervised_users",
-            joinColumns = @JoinColumn(
-                    name = "supervisor_id",
-                    referencedColumnName = "user_id",
-                    foreignKey = @ForeignKey(name = "FK_supervisor_id")
-            ),
-            inverseJoinColumns = @JoinColumn(
-                    name = "supervised_id",
-                    referencedColumnName = "user_id",
-                    foreignKey = @ForeignKey(name = "FK_supervised_id")
-            )
-    )
-    @JsonIgnore
-    private Set<User> supervisedUsers;
+  @ManyToMany(fetch = FetchType.EAGER)
+  @JoinTable(
+      name = "users_privileges",
+      joinColumns = @JoinColumn(
+          name = "user_id",
+          referencedColumnName = "user_id",
+          foreignKey = @ForeignKey(name = "FK_user_id")
+      ),
+      inverseJoinColumns = @JoinColumn(
+          name = "privilege_id",
+          referencedColumnName = "privilege_id",
+          foreignKey = @ForeignKey(name = "FK_privilege_id")
+      )
+  )
+  private Set<Privilege> privileges;
 
-    public User(Long userId) {
-        this.id = userId;
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JoinTable(
+      name = "supervised_users",
+      joinColumns = @JoinColumn(
+          name = "supervisor_id",
+          referencedColumnName = "user_id",
+          foreignKey = @ForeignKey(name = "FK_supervisor_id")
+      ),
+      inverseJoinColumns = @JoinColumn(
+          name = "supervised_id",
+          referencedColumnName = "user_id",
+          foreignKey = @ForeignKey(name = "FK_supervised_id")
+      )
+  )
+  @JsonIgnore
+  private Set<User> supervisedUsers;
+
+  public User(Long userId) {
+    this.id = userId;
+  }
+
+  public String getName() {
+    return firstName + " " + lastName;
+  }
+
+  public boolean hasPermissionGreaterThanEqual(Privilege privilege) {
+    if (Strings.isNullOrEmpty(privilege.getName()) || privilege.getLevel() == null) {
+      return false;
     }
+    return this.getPrivileges().stream()
+        .anyMatch(p -> p.getName().equalsIgnoreCase(privilege.getName()) &&
+            p.getLevel().getPermissionLevel() >= privilege.getLevel().getPermissionLevel());
+  }
 
-    public String getName() {
-        return firstName + " " + lastName;
-    }
+  @JsonIgnore
+  public boolean isAccountAdmin() {
+    return isAdminOf(AppConstants.ACCOUNT_PERMISSION);
+  }
 
-    public boolean hasPermissionGreaterThanEqual(Privilege privilege) {
-        if (Strings.isNullOrEmpty(privilege.getName()) || privilege.getLevel() == null)
-            return false;
-        return this.getPrivileges().stream()
-                .anyMatch(p -> p.getName().equalsIgnoreCase(privilege.getName()) &&
-                        p.getLevel().getPermissionLevel() >= privilege.getLevel().getPermissionLevel());
-    }
+  @JsonIgnore
+  public boolean isUserAdmin() {
+    return isAdminOf(AppConstants.USER_PERMISSION);
+  }
 
-    @JsonIgnore
-    public boolean isAccountAdmin() {
-        return isAdminOf(AppConstants.ACCOUNT_PERMISSION);
-    }
+  public boolean isAdminOf(String permissionName) {
+    return this.getPrivileges().stream()
+        .anyMatch(p -> p.getName().equalsIgnoreCase(permissionName) &&
+            p.getLevel() == AccessPermission.ADMIN);
+  }
 
-    @JsonIgnore
-    public boolean isUserAdmin() {
-        return isAdminOf(AppConstants.USER_PERMISSION);
-    }
+  @JsonIgnore
+  public AccessPermission getAccountsPermission() {
+    return getPermission(AppConstants.ACCOUNT_PERMISSION);
+  }
 
-    public boolean isAdminOf(String permissionName) {
-        return this.getPrivileges().stream()
-                .anyMatch(p -> p.getName().equalsIgnoreCase(permissionName) &&
-                        p.getLevel() == AccessPermission.ADMIN);
-    }
+  @JsonIgnore
+  public AccessPermission getProjectPermission() {
+    return getPermission(AppConstants.PROJECT_PERMISSION);
+  }
 
-    @JsonIgnore
-    public AccessPermission getAccountsPermission() {
-        return getPermission(AppConstants.ACCOUNT_PERMISSION);
-    }
+  public boolean isSupervisorOf(User supervised) {
+    return getSupervisedUsers().contains(supervised);
+  }
 
-    @JsonIgnore
-    public AccessPermission getProjectPermission() {
-        return getPermission(AppConstants.PROJECT_PERMISSION);
+  public boolean isSupervisorOf(Long supervisedId) {
+    boolean admin = isAdminOf(AppConstants.USER_PERMISSION);
+    if (admin) {
+      return true;
     }
+    return getSupervisedUsers().stream()
+        .anyMatch(user -> user.getId().equals(supervisedId));
+  }
 
-    public boolean isSupervisorOf(User supervised) {
-        return getSupervisedUsers().contains(supervised);
+  public void isSupervisorOrOwner(Long ownerId) {
+    boolean admin = isAdminOf(AppConstants.USER_PERMISSION);
+    if (admin) {
+      return;
     }
+    if (!this.id.equals(ownerId)) {
+      boolean isSupervisor = isSupervisorOf(ownerId);
+      if (!isSupervisor) {
+        throw new AuthorizationException("User is not authorized to perform such operation");
+      }
+    }
+  }
 
-    public boolean isSupervisorOf(Long supervisedId) {
-        boolean admin = isAdminOf(AppConstants.USER_PERMISSION);
-        if (admin)
-            return true;
-        return getSupervisedUsers().stream()
-                .anyMatch(user -> user.getId().equals(supervisedId));
-    }
+  public boolean removeSubProject(SubProject subProject) {
+    return getSubProjects().remove(subProject);
+  }
 
-    public void isSupervisorOrOwner(Long ownerId) {
-        boolean admin = isAdminOf(AppConstants.USER_PERMISSION);
-        if (admin)
-            return;
-        if (!this.id.equals(ownerId)) {
-            boolean isSupervisor = isSupervisorOf(ownerId);
-            if (!isSupervisor)
-                throw new AuthorizationException("User is not authorized to perform such operation");
-        }
-    }
-
-    public boolean removeSubProject(SubProject subProject) {
-        return getSubProjects().remove(subProject);
-    }
-
-    private AccessPermission getPermission(String entityName) {
-        AccessPermission accessPermission = getPrivileges().stream()
-                .filter(privilege -> privilege.getName().equals(entityName))
-                .map(Privilege::getLevel)
-                .findFirst()
-                .orElse(AccessPermission.READ);
-        return accessPermission;
-    }
+  private AccessPermission getPermission(String entityName) {
+    AccessPermission accessPermission = getPrivileges().stream()
+        .filter(privilege -> privilege.getName().equals(entityName))
+        .map(Privilege::getLevel)
+        .findFirst()
+        .orElse(AccessPermission.READ);
+    return accessPermission;
+  }
 
 }

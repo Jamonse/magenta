@@ -8,7 +8,8 @@ import lombok.EqualsAndHashCode;
 @AllArgsConstructor
 @EqualsAndHashCode(of = {"account", "project"})
 public class HoursDetail {
-    private String account;
-    private String project;
-    private double hours;
+
+  private String account;
+  private String project;
+  private double hours;
 }

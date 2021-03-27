@@ -5,15 +5,25 @@ import com.jsoft.magenta.accounts.domain.Account;
 import com.jsoft.magenta.orders.domain.Order;
 import com.jsoft.magenta.subprojects.SubProject;
 import com.jsoft.magenta.util.validation.annotations.ValidName;
+import java.time.LocalDate;
+import java.util.Set;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import javax.persistence.*;
-import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.Set;
 
 @Data
 @Entity
@@ -22,65 +32,66 @@ import java.util.Set;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class Project {
-    @Id
-    @SequenceGenerator(
-            name = "project_sequence",
-            sequenceName = "project_sequence",
-            allocationSize = 100,
-            initialValue = 2
-    )
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "project_sequence"
-    )
-    @Column(name = "project_id", updatable = false)
-    private Long id;
 
-    @Column(name = "project_name", length = 50, nullable = false)
-    @ValidName
-    private String name;
+  @Id
+  @SequenceGenerator(
+      name = "project_sequence",
+      sequenceName = "project_sequence",
+      allocationSize = 100,
+      initialValue = 2
+  )
+  @GeneratedValue(
+      strategy = GenerationType.SEQUENCE,
+      generator = "project_sequence"
+  )
+  @Column(name = "project_id", updatable = false)
+  private Long id;
 
-    @Column(name = "is_available", nullable = false)
-    private boolean available;
+  @Column(name = "project_name", length = 50, nullable = false)
+  @ValidName
+  private String name;
 
-    @ManyToOne
-    @JoinColumn(
-            name = "account_id",
-            foreignKey = @ForeignKey(name = "FK_projects_account")
-    )
-    private Account account;
+  @Column(name = "is_available", nullable = false)
+  private boolean available;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDate createdAt;
+  @ManyToOne
+  @JoinColumn(
+      name = "account_id",
+      foreignKey = @ForeignKey(name = "FK_projects_account")
+  )
+  private Account account;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
-    @JoinColumn(
-            name = "project_id",
-            referencedColumnName = "project_id",
-            foreignKey = @ForeignKey(name = "FK_project_order")
-    )
-    @Valid
-    private Set<Order> orders;
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private LocalDate createdAt;
 
-    @OneToMany(cascade = {
-            CascadeType.PERSIST,
-            CascadeType.MERGE,
-            CascadeType.REMOVE
-    })
-    @JoinColumn(
-            name = "project_id",
-            referencedColumnName = "project_id",
-            foreignKey = @ForeignKey(name = "FK_project_sp")
-    )
-    @Valid
-    private Set<SubProject> subProjects;
+  @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+  @JoinColumn(
+      name = "project_id",
+      referencedColumnName = "project_id",
+      foreignKey = @ForeignKey(name = "FK_project_order")
+  )
+  @Valid
+  private Set<Order> orders;
 
-    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.REMOVE})
-    @JoinColumn(name = "project_id")
-    @JsonIgnore
-    private Set<ProjectAssociation> associations;
+  @OneToMany(cascade = {
+      CascadeType.PERSIST,
+      CascadeType.MERGE,
+      CascadeType.REMOVE
+  })
+  @JoinColumn(
+      name = "project_id",
+      referencedColumnName = "project_id",
+      foreignKey = @ForeignKey(name = "FK_project_sp")
+  )
+  @Valid
+  private Set<SubProject> subProjects;
 
-    public Project(Long projectId) {
-        this.id = projectId;
-    }
+  @OneToMany(cascade = {CascadeType.MERGE, CascadeType.REMOVE})
+  @JoinColumn(name = "project_id")
+  @JsonIgnore
+  private Set<ProjectAssociation> associations;
+
+  public Project(Long projectId) {
+    this.id = projectId;
+  }
 }

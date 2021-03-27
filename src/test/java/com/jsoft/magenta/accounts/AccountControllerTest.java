@@ -1,10 +1,24 @@
 package com.jsoft.magenta.accounts;
 
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.jsoft.magenta.accounts.domain.Account;
 import com.jsoft.magenta.contacts.Contact;
 import com.jsoft.magenta.contacts.ContactService;
 import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.util.Stringify;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,238 +34,229 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 @SpringBootTest
 @WithUserDetails("admin@admin.com")
 @AutoConfigureMockMvc
 public class AccountControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
 
-    @MockBean
-    private AccountService accountService;
+  @Autowired
+  private MockMvc mockMvc;
 
-    @MockBean
-    private ContactService contactService;
+  @MockBean
+  private AccountService accountService;
 
-    @BeforeEach
-    public void init() {
-        MockitoAnnotations.openMocks(this);
-    }
+  @MockBean
+  private ContactService contactService;
 
-    @Test
-    @DisplayName("Create account and get it back with generated id")
-    public void createAccount() throws Exception {
-        Account account = new Account();
-        account.setName("account");
-        Account returnedAccount = new Account();
-        returnedAccount.setId(1L);
+  @BeforeEach
+  public void init() {
+    MockitoAnnotations.openMocks(this);
+  }
 
-        when(accountService.createAccount(account, null, null, null)).thenReturn(returnedAccount);
+  @Test
+  @DisplayName("Create account and get it back with generated id")
+  public void createAccount() throws Exception {
+    Account account = new Account();
+    account.setName("account");
+    Account returnedAccount = new Account();
+    returnedAccount.setId(1L);
 
-        mockMvc.perform(post(Stringify.BASE_URL + "accounts")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(Stringify.asJsonString(account)))
-                .andDo(print())
-                .andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(Stringify.asJsonString(returnedAccount)))
-                .andExpect(jsonPath("$.id").isNotEmpty());
-    }
+    when(accountService.createAccount(account, null, null, null)).thenReturn(returnedAccount);
 
-    @Test
-    @DisplayName("Create association")
-    public void createAssociation() throws Exception
-    {
-        doNothing().when(accountService).createAssociation(1L, 1L , AccessPermission.MANAGE);
+    mockMvc.perform(post(Stringify.BASE_URL + "accounts")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(Stringify.asJsonString(account)))
+        .andDo(print())
+        .andExpect(status().isCreated())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(content().json(Stringify.asJsonString(returnedAccount)))
+        .andExpect(jsonPath("$.id").isNotEmpty());
+  }
 
-        mockMvc.perform(post(Stringify.BASE_URL + "accounts/{accountId}/association/{userId}", 1L, 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(AccessPermission.MANAGE.name()))
-                .andDo(print())
-                .andExpect(status().isOk());
+  @Test
+  @DisplayName("Create association")
+  public void createAssociation() throws Exception {
+    doNothing().when(accountService).createAssociation(1L, 1L, AccessPermission.MANAGE);
 
-        verify(accountService).createAssociation(1L, 1L, AccessPermission.MANAGE);
-    }
+    mockMvc.perform(post(Stringify.BASE_URL + "accounts/{accountId}/association/{userId}", 1L, 1L)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(AccessPermission.MANAGE.name()))
+        .andDo(print())
+        .andExpect(status().isOk());
 
-    @Test
-    @DisplayName("Update association")
-    public void updateAssociation() throws Exception
-    {
-        doNothing().when(accountService).updateAssociation(1L, 1L , AccessPermission.MANAGE);
+    verify(accountService).createAssociation(1L, 1L, AccessPermission.MANAGE);
+  }
 
-        mockMvc.perform(patch(Stringify.BASE_URL + "accounts/{accountId}/association/{userId}", 1L, 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(AccessPermission.MANAGE.name()))
-                .andDo(print())
-                .andExpect(status().isOk());
+  @Test
+  @DisplayName("Update association")
+  public void updateAssociation() throws Exception {
+    doNothing().when(accountService).updateAssociation(1L, 1L, AccessPermission.MANAGE);
 
-        verify(accountService).updateAssociation(1L, 1L, AccessPermission.MANAGE);
-    }
+    mockMvc.perform(patch(Stringify.BASE_URL + "accounts/{accountId}/association/{userId}", 1L, 1L)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(AccessPermission.MANAGE.name()))
+        .andDo(print())
+        .andExpect(status().isOk());
 
-    @Test
-    @DisplayName("Update account name")
-    public void updateAccountName() throws Exception {
-        Account account = new Account();
-        account.setId(1L);
-        account.setName("name");
+    verify(accountService).updateAssociation(1L, 1L, AccessPermission.MANAGE);
+  }
 
-        Account returnedAccount = new Account();
-        returnedAccount.setId(1L);
-        returnedAccount.setName("new name");
+  @Test
+  @DisplayName("Update account name")
+  public void updateAccountName() throws Exception {
+    Account account = new Account();
+    account.setId(1L);
+    account.setName("name");
 
-        when(accountService.createAccount(account, null, null, null)).thenReturn(account);
-        when(accountService.updateAccountName(account.getId(), "new name")).thenReturn(returnedAccount);
+    Account returnedAccount = new Account();
+    returnedAccount.setId(1L);
+    returnedAccount.setName("new name");
 
-        mockMvc.perform(patch(Stringify.BASE_URL + "accounts/name/{accountId}", account.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("new name"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(Stringify.asJsonString(returnedAccount)))
-                .andExpect(jsonPath("$.name").value("new name"));
-    }
+    when(accountService.createAccount(account, null, null, null)).thenReturn(account);
+    when(accountService.updateAccountName(account.getId(), "new name")).thenReturn(returnedAccount);
 
-    @Test
-    @DisplayName("Get account by id")
-    public void getAccountById() throws Exception {
-        Account account = new Account();
-        account.setId(1L);
-        account.setName("name");
+    mockMvc.perform(patch(Stringify.BASE_URL + "accounts/name/{accountId}", account.getId())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("new name"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(content().json(Stringify.asJsonString(returnedAccount)))
+        .andExpect(jsonPath("$.name").value("new name"));
+  }
 
-        when(accountService.getAccountById(account.getId())).thenReturn(account);
+  @Test
+  @DisplayName("Get account by id")
+  public void getAccountById() throws Exception {
+    Account account = new Account();
+    account.setId(1L);
+    account.setName("name");
 
-        mockMvc.perform(get(Stringify.BASE_URL + "accounts/{accountId}", account.getId())
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(Stringify.asJsonString(account)))
-                .andExpect(jsonPath("$.name").value("name"))
-                .andExpect(jsonPath("$.id").value(1L));
-    }
+    when(accountService.getAccountById(account.getId())).thenReturn(account);
 
-    @Test
-    @DisplayName("Get all accounts")
-    public void getAllAccounts() throws Exception {
-        Page<Account> accounts = new PageImpl<>(List.of(new Account()), PageRequest.of(0, 1), 1);
+    mockMvc.perform(get(Stringify.BASE_URL + "accounts/{accountId}", account.getId())
+        .contentType(MediaType.APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(content().json(Stringify.asJsonString(account)))
+        .andExpect(jsonPath("$.name").value("name"))
+        .andExpect(jsonPath("$.id").value(1L));
+  }
 
-        when(accountService.getAllAccounts(0, 5, "name", false))
-                .thenReturn(accounts);
+  @Test
+  @DisplayName("Get all accounts")
+  public void getAllAccounts() throws Exception {
+    Page<Account> accounts = new PageImpl<>(List.of(new Account()), PageRequest.of(0, 1), 1);
 
-        mockMvc.perform(get(Stringify.BASE_URL + "accounts")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.totalElements").exists())
-                .andExpect(jsonPath("$.content").exists());
+    when(accountService.getAllAccounts(0, 5, "name", false))
+        .thenReturn(accounts);
 
-        verify(accountService).getAllAccounts(0, 5, "name", false);
-    }
+    mockMvc.perform(get(Stringify.BASE_URL + "accounts")
+        .contentType(MediaType.APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.totalElements").exists())
+        .andExpect(jsonPath("$.content").exists());
 
-    @Test
-    @DisplayName("Delete account")
-    public void deleteAccount() throws Exception {
-        Account account = new Account();
-        account.setId(1L);
+    verify(accountService).getAllAccounts(0, 5, "name", false);
+  }
 
-        when(accountService.getAccountById(account.getId())).thenReturn(account);
-        doNothing().when(accountService).deleteAccount(account.getId());
+  @Test
+  @DisplayName("Delete account")
+  public void deleteAccount() throws Exception {
+    Account account = new Account();
+    account.setId(1L);
 
-        mockMvc.perform(delete(Stringify.BASE_URL + "accounts/{accountId}", account.getId())
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").doesNotExist());
-    }
+    when(accountService.getAccountById(account.getId())).thenReturn(account);
+    doNothing().when(accountService).deleteAccount(account.getId());
 
-    @Test
-    @DisplayName("Create contact")
-    public void createContact() throws Exception {
-        Account account = new Account();
-        account.setId(1L);
-        Contact contact = new Contact();
-        contact.setId(1L);
-        contact.setFirstName("first name");
-        contact.setLastName("last name");
-        contact.setEmail("email@email.com");
-        contact.setPhoneNumber("055-5555555");
+    mockMvc.perform(delete(Stringify.BASE_URL + "accounts/{accountId}", account.getId())
+        .contentType(MediaType.APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").doesNotExist());
+  }
 
-        when(contactService.createContact(account.getId(), contact)).thenReturn(contact);
+  @Test
+  @DisplayName("Create contact")
+  public void createContact() throws Exception {
+    Account account = new Account();
+    account.setId(1L);
+    Contact contact = new Contact();
+    contact.setId(1L);
+    contact.setFirstName("first name");
+    contact.setLastName("last name");
+    contact.setEmail("email@email.com");
+    contact.setPhoneNumber("055-5555555");
 
-        mockMvc.perform(post(Stringify.BASE_URL + "contacts/{accountId}", account.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(Stringify.asJsonString(contact)))
-                .andDo(print())
-                .andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(Stringify.asJsonString(contact)))
-                .andExpect(jsonPath("$.id").isNotEmpty());
-    }
+    when(contactService.createContact(account.getId(), contact)).thenReturn(contact);
 
-    @Test
-    @DisplayName("Update contact")
-    public void updateContact() throws Exception {
-        Account account = new Account();
-        account.setId(1L);
-        Contact contact = new Contact();
-        contact.setId(1L);
-        contact.setPhoneNumber("055-5555555");
-        contact.setEmail("email@email.com");
-        contact.setFirstName("first name");
-        contact.setLastName("last name");
+    mockMvc.perform(post(Stringify.BASE_URL + "contacts/{accountId}", account.getId())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(Stringify.asJsonString(contact)))
+        .andDo(print())
+        .andExpect(status().isCreated())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(content().json(Stringify.asJsonString(contact)))
+        .andExpect(jsonPath("$.id").isNotEmpty());
+  }
 
-        when(contactService.updateContact(contact)).thenReturn(contact);
+  @Test
+  @DisplayName("Update contact")
+  public void updateContact() throws Exception {
+    Account account = new Account();
+    account.setId(1L);
+    Contact contact = new Contact();
+    contact.setId(1L);
+    contact.setPhoneNumber("055-5555555");
+    contact.setEmail("email@email.com");
+    contact.setFirstName("first name");
+    contact.setLastName("last name");
 
-        mockMvc.perform(put(Stringify.BASE_URL + "contacts")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(Stringify.asJsonString(contact)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(Stringify.asJsonString(contact)));
-    }
+    when(contactService.updateContact(contact)).thenReturn(contact);
 
-    @Test
-    @DisplayName("Get all contacts")
-    public void getAllContacts() throws Exception {
-        Page<Contact> contacts = new PageImpl<>(List.of(new Contact()), PageRequest.of(0, 5), 5);
+    mockMvc.perform(put(Stringify.BASE_URL + "contacts")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(Stringify.asJsonString(contact)))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(content().json(Stringify.asJsonString(contact)));
+  }
 
-        when(contactService.getAllContacts(1L, 0, 5, "name", false))
-                .thenReturn(contacts);
+  @Test
+  @DisplayName("Get all contacts")
+  public void getAllContacts() throws Exception {
+    Page<Contact> contacts = new PageImpl<>(List.of(new Contact()), PageRequest.of(0, 5), 5);
 
-        mockMvc.perform(get(Stringify.BASE_URL + "contacts/{accountId}", 1L)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.totalElements").exists())
-                .andExpect(jsonPath("$.content").exists());
+    when(contactService.getAllContacts(1L, 0, 5, "name", false))
+        .thenReturn(contacts);
 
-        verify(contactService).getAllContacts(1L, 0, 5, "name", false);
-    }
+    mockMvc.perform(get(Stringify.BASE_URL + "contacts/{accountId}", 1L)
+        .contentType(MediaType.APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.totalElements").exists())
+        .andExpect(jsonPath("$.content").exists());
 
-    @Test
-    @DisplayName("Delete contact")
-    public void deleteContact() throws Exception
-    {
-        doNothing().when(contactService).deleteContact(1L);
+    verify(contactService).getAllContacts(1L, 0, 5, "name", false);
+  }
 
-        mockMvc.perform(delete(Stringify.BASE_URL + "contacts/{contactId}", 1L)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").doesNotExist());
+  @Test
+  @DisplayName("Delete contact")
+  public void deleteContact() throws Exception {
+    doNothing().when(contactService).deleteContact(1L);
 
-        verify(contactService).deleteContact(1L);
-    }
+    mockMvc.perform(delete(Stringify.BASE_URL + "contacts/{contactId}", 1L)
+        .contentType(MediaType.APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").doesNotExist());
+
+    verify(contactService).deleteContact(1L);
+  }
 
 }

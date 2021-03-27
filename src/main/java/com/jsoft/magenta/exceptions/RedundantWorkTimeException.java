@@ -4,7 +4,8 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 public class RedundantWorkTimeException extends RuntimeException {
-    public RedundantWorkTimeException(String message) {
-        super(message);
-    }
+
+  public RedundantWorkTimeException(String message) {
+    super(message);
+  }
 }

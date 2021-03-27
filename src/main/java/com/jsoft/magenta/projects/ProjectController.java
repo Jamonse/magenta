@@ -1,5 +1,11 @@
 package com.jsoft.magenta.projects;
 
+import static com.jsoft.magenta.util.AppDefaults.ASCENDING_SORT;
+import static com.jsoft.magenta.util.AppDefaults.PAGE_INDEX;
+import static com.jsoft.magenta.util.AppDefaults.PAGE_SIZE;
+import static com.jsoft.magenta.util.AppDefaults.PROJECTS_DEFAULT_SORT;
+import static com.jsoft.magenta.util.AppDefaults.RESULTS_COUNT;
+
 import com.jsoft.magenta.projects.domain.Project;
 import com.jsoft.magenta.projects.domain.ProjectSearchResult;
 import com.jsoft.magenta.security.annotations.projects.ProjectWritePermission;
@@ -8,131 +14,142 @@ import com.jsoft.magenta.subprojects.SubProject;
 import com.jsoft.magenta.subprojects.SubProjectSearchResult;
 import com.jsoft.magenta.util.validation.annotations.ValidName;
 import com.jsoft.magenta.util.validation.annotations.ValidPermission;
+import java.util.List;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import java.util.List;
-
-import static com.jsoft.magenta.util.AppDefaults.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 @Validated
 @RestController
 @RequestMapping("${application.url}projects")
 @RequiredArgsConstructor
 public class ProjectController {
-    private final ProjectService projectService;
 
-    @PostMapping("{accountId}")
-    @ResponseStatus(HttpStatus.CREATED)
-    @ProjectWritePermission
-    public Project createProject(
-            @PathVariable Long accountId,
-            @RequestBody @Valid Project project
-    ) {
-        return this.projectService.createProject(accountId, project);
-    }
+  private final ProjectService projectService;
 
-    @PostMapping("{projectId}/association/{userId}")
-    @ResponseStatus(HttpStatus.CREATED)
-    @ProjectWritePermission
-    public void createAssociation(
-            @PathVariable Long projectId,
-            @PathVariable Long userId,
-            @RequestBody @ValidPermission String permission
-    ) {
-        AccessPermission accessPermission = AccessPermission.valueOf(permission.toUpperCase());
-        this.projectService.createAssociation(userId, projectId, accessPermission);
-    }
+  @PostMapping("{accountId}")
+  @ResponseStatus(HttpStatus.CREATED)
+  @ProjectWritePermission
+  public Project createProject(
+      @PathVariable Long accountId,
+      @RequestBody @Valid Project project
+  ) {
+    return this.projectService.createProject(accountId, project);
+  }
 
-    @PutMapping
-    @ProjectWritePermission
-    public Project updateProject(@RequestBody @Valid Project project) {
-        return this.projectService.updateProject(project);
-    }
+  @PostMapping("{projectId}/association/{userId}")
+  @ResponseStatus(HttpStatus.CREATED)
+  @ProjectWritePermission
+  public void createAssociation(
+      @PathVariable Long projectId,
+      @PathVariable Long userId,
+      @RequestBody @ValidPermission String permission
+  ) {
+    AccessPermission accessPermission = AccessPermission.valueOf(permission.toUpperCase());
+    this.projectService.createAssociation(userId, projectId, accessPermission);
+  }
 
-    @PatchMapping("name/{projectId}")
-    @ProjectWritePermission
-    public Project updateProjectName(
-            @PathVariable Long projectId,
-            @RequestBody @ValidName String newName
-    ) {
-        return this.projectService.updateProjectName(projectId, newName);
-    }
+  @PutMapping
+  @ProjectWritePermission
+  public Project updateProject(@RequestBody @Valid Project project) {
+    return this.projectService.updateProject(project);
+  }
 
-    @PatchMapping("{projectId}/association/{userId}")
-    @ProjectWritePermission
-    public void updateAssociation(
-            @PathVariable Long projectId,
-            @PathVariable Long userId,
-            @RequestBody @ValidPermission String permission
-    ) {
-        AccessPermission accessPermission = AccessPermission.valueOf(permission.toUpperCase());
-        this.projectService.updateAssociation(userId, projectId, accessPermission);
-    }
+  @PatchMapping("name/{projectId}")
+  @ProjectWritePermission
+  public Project updateProjectName(
+      @PathVariable Long projectId,
+      @RequestBody @ValidName String newName
+  ) {
+    return this.projectService.updateProjectName(projectId, newName);
+  }
 
-    @GetMapping
-    public Page<Project> getAllProjects(
-            @RequestParam(required = false, defaultValue = PAGE_INDEX) int pageIndex,
-            @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
-            @RequestParam(required = false, defaultValue = PROJECTS_DEFAULT_SORT) String sortBy,
-            @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    ) {
-        return this.projectService.getAllProjects(pageIndex, pageSize, sortBy, asc);
-    }
+  @PatchMapping("{projectId}/association/{userId}")
+  @ProjectWritePermission
+  public void updateAssociation(
+      @PathVariable Long projectId,
+      @PathVariable Long userId,
+      @RequestBody @ValidPermission String permission
+  ) {
+    AccessPermission accessPermission = AccessPermission.valueOf(permission.toUpperCase());
+    this.projectService.updateAssociation(userId, projectId, accessPermission);
+  }
 
-    @GetMapping("search")
-    public List<ProjectSearchResult> getAllProjectsResultsByNameExample(
-            @RequestParam String nameExample,
-            @RequestParam(required = false, defaultValue = RESULTS_COUNT) int resultsCount
-    ) {
-        return this.projectService.getAllProjectsResultsByNameExample(nameExample, resultsCount);
-    }
+  @GetMapping
+  public Page<Project> getAllProjects(
+      @RequestParam(required = false, defaultValue = PAGE_INDEX) int pageIndex,
+      @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
+      @RequestParam(required = false, defaultValue = PROJECTS_DEFAULT_SORT) String sortBy,
+      @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
+  ) {
+    return this.projectService.getAllProjects(pageIndex, pageSize, sortBy, asc);
+  }
 
-    @GetMapping("{projectId}/sp")
-    public Page<SubProject> getProjectSubProjects(
-            @PathVariable Long projectId,
-            @RequestParam(required = false, defaultValue = PAGE_INDEX) int pageIndex,
-            @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
-            @RequestParam(required = false, defaultValue = PROJECTS_DEFAULT_SORT) String sortBy,
-            @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
-    ) {
-        return this.projectService.getAllProjectSubProjects(projectId, pageIndex, pageSize, sortBy, asc);
-    }
+  @GetMapping("search")
+  public List<ProjectSearchResult> getAllProjectsResultsByNameExample(
+      @RequestParam String nameExample,
+      @RequestParam(required = false, defaultValue = RESULTS_COUNT) int resultsCount
+  ) {
+    return this.projectService.getAllProjectsResultsByNameExample(nameExample, resultsCount);
+  }
 
-    @GetMapping("{projectId}/sp/results")
-    public List<SubProjectSearchResult> getProjectSubProjects(
-            @PathVariable Long projectId,
-            @RequestParam(required = false, defaultValue = RESULTS_COUNT) int resultsCount,
-            @RequestParam(required = false) String nameExample
-    ) {
-        if (nameExample == null)
-            return this.projectService.getProjectSubProjectResults(projectId, resultsCount);
-        return this.projectService.getProjectSubProjectResultsByNameExample(projectId, nameExample, resultsCount);
-    }
+  @GetMapping("{projectId}/sp")
+  public Page<SubProject> getProjectSubProjects(
+      @PathVariable Long projectId,
+      @RequestParam(required = false, defaultValue = PAGE_INDEX) int pageIndex,
+      @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
+      @RequestParam(required = false, defaultValue = PROJECTS_DEFAULT_SORT) String sortBy,
+      @RequestParam(required = false, defaultValue = ASCENDING_SORT) boolean asc
+  ) {
+    return this.projectService
+        .getAllProjectSubProjects(projectId, pageIndex, pageSize, sortBy, asc);
+  }
 
-    @DeleteMapping("{projectId}/association/{userId}")
-    @ProjectWritePermission
-    public void removeAssociation(
-            @PathVariable Long projectId,
-            @PathVariable Long userId
-    ) {
-        this.projectService.removeAssociation(userId, projectId);
+  @GetMapping("{projectId}/sp/results")
+  public List<SubProjectSearchResult> getProjectSubProjects(
+      @PathVariable Long projectId,
+      @RequestParam(required = false, defaultValue = RESULTS_COUNT) int resultsCount,
+      @RequestParam(required = false) String nameExample
+  ) {
+    if (nameExample == null) {
+      return this.projectService.getProjectSubProjectResults(projectId, resultsCount);
     }
+    return this.projectService
+        .getProjectSubProjectResultsByNameExample(projectId, nameExample, resultsCount);
+  }
 
-    @DeleteMapping("{projectId}/association")
-    @ProjectWritePermission
-    public void removeAllAssociations(@PathVariable Long projectId) {
-        this.projectService.removeAllAssociations(projectId);
-    }
+  @DeleteMapping("{projectId}/association/{userId}")
+  @ProjectWritePermission
+  public void removeAssociation(
+      @PathVariable Long projectId,
+      @PathVariable Long userId
+  ) {
+    this.projectService.removeAssociation(userId, projectId);
+  }
 
-    @DeleteMapping("{projectId}")
-    @ProjectWritePermission
-    public void deleteProject(@PathVariable Long projectId) {
-        this.projectService.deleteProject(projectId);
-    }
+  @DeleteMapping("{projectId}/association")
+  @ProjectWritePermission
+  public void removeAllAssociations(@PathVariable Long projectId) {
+    this.projectService.removeAllAssociations(projectId);
+  }
+
+  @DeleteMapping("{projectId}")
+  @ProjectWritePermission
+  public void deleteProject(@PathVariable Long projectId) {
+    this.projectService.deleteProject(projectId);
+  }
 
 }
