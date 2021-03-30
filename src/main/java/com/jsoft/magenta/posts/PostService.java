@@ -4,9 +4,11 @@ import com.jsoft.magenta.events.posts.PostReactiveEvent;
 import com.jsoft.magenta.events.reactive.ReactiveEventType;
 import com.jsoft.magenta.exceptions.NoSuchElementException;
 import com.jsoft.magenta.security.SecurityService;
+import com.jsoft.magenta.util.AppDefaults;
 import com.jsoft.magenta.util.PageRequestBuilder;
 import com.jsoft.magenta.util.WordFormatter;
 import java.time.LocalDateTime;
+import java.util.List;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -71,6 +73,14 @@ public class PostService {
     PageRequest pageRequest = PageRequestBuilder.buildPageRequest(pageIndex, pageSize, sortBy, asc);
     Page<Post> pageResult = this.postRepository.findAll(pageRequest);
     return new PageImpl<>(pageResult.getContent(), pageRequest, pageResult.getTotalElements());
+  }
+
+  public List<PostSearchResult> getAllPostsResultsByTextExample(String textExample,
+      int resultsCount) {
+    PageRequest pageRequest = PageRequestBuilder
+        .buildPageRequest(0, resultsCount, AppDefaults.DEFAULT_POST_SORT, false);
+    return this.postRepository
+        .findPostsByExample(textExample, pageRequest);
   }
 
   public Post getPost(Long postId) {

@@ -7,8 +7,10 @@ import static com.jsoft.magenta.util.AppDefaults.PAGE_SIZE;
 
 import com.jsoft.magenta.events.posts.PostReactiveEvent;
 import com.jsoft.magenta.security.annotations.posts.PostWritePermission;
+import com.jsoft.magenta.util.AppDefaults;
 import com.jsoft.magenta.util.validation.annotations.ValidContent;
 import com.jsoft.magenta.util.validation.annotations.ValidTitle;
+import java.util.List;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -80,6 +82,12 @@ public class PostController {
   @GetMapping("{postId}")
   public Post getPost(@PathVariable Long postId) {
     return this.postService.getPost(postId);
+  }
+
+  @GetMapping("search")
+  public List<PostSearchResult> getPostsResultsByTextExample(@RequestParam String textExample,
+      @RequestParam(required = false, defaultValue = AppDefaults.RESULTS_COUNT) int resultsCount) {
+    return this.postService.getAllPostsResultsByTextExample(textExample, resultsCount);
   }
 
   @GetMapping("newsfeed/{userId}")
