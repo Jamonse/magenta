@@ -6,7 +6,7 @@ import com.jsoft.magenta.orders.domain.Order;
 import com.jsoft.magenta.orders.domain.OrderSearchResult;
 import com.jsoft.magenta.projects.domain.Project;
 import com.jsoft.magenta.security.SecurityService;
-import com.jsoft.magenta.util.PageRequestBuilder;
+import com.jsoft.magenta.util.pagination.PageRequestBuilder;
 import com.jsoft.magenta.util.WordFormatter;
 import java.time.LocalDate;
 import java.util.List;

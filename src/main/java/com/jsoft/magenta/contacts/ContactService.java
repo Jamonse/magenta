@@ -6,7 +6,7 @@ import com.jsoft.magenta.exceptions.DuplicationException;
 import com.jsoft.magenta.exceptions.NoSuchElementException;
 import com.jsoft.magenta.security.SecurityService;
 import com.jsoft.magenta.util.AppDefaults;
-import com.jsoft.magenta.util.PageRequestBuilder;
+import com.jsoft.magenta.util.pagination.PageRequestBuilder;
 import java.util.List;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

@@ -16,7 +16,7 @@ import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.security.model.Privilege;
 import com.jsoft.magenta.util.AppConstants;
 import com.jsoft.magenta.util.AppDefaults;
-import com.jsoft.magenta.util.PageRequestBuilder;
+import com.jsoft.magenta.util.pagination.PageRequestBuilder;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;

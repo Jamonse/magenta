@@ -5,14 +5,14 @@ import com.jsoft.magenta.events.reactive.ReactiveEventType;
 import com.jsoft.magenta.exceptions.NoSuchElementException;
 import com.jsoft.magenta.security.SecurityService;
 import com.jsoft.magenta.util.AppDefaults;
-import com.jsoft.magenta.util.PageRequestBuilder;
+import com.jsoft.magenta.util.pagination.PageRequestBuilder;
 import com.jsoft.magenta.util.WordFormatter;
+import com.jsoft.magenta.util.pagination.PageResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -69,10 +69,10 @@ public class PostService {
     return savedPost;
   }
 
-  public Page<Post> getAllPosts(int pageIndex, int pageSize, String sortBy, boolean asc) {
+  public PageResponse<Post> getAllPosts(int pageIndex, int pageSize, String sortBy, boolean asc) {
     PageRequest pageRequest = PageRequestBuilder.buildPageRequest(pageIndex, pageSize, sortBy, asc);
     Page<Post> pageResult = this.postRepository.findAll(pageRequest);
-    return new PageImpl<>(pageResult.getContent(), pageRequest, pageResult.getTotalElements());
+    return new PageResponse<>(pageResult.getContent(), pageResult.getTotalElements(), pageRequest);
   }
 
   public List<PostSearchResult> getAllPostsResultsByTextExample(String textExample,

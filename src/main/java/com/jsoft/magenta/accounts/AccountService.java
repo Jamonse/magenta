@@ -21,7 +21,7 @@ import com.jsoft.magenta.security.SecurityService;
 import com.jsoft.magenta.security.model.AccessPermission;
 import com.jsoft.magenta.users.User;
 import com.jsoft.magenta.util.AppDefaults;
-import com.jsoft.magenta.util.PageRequestBuilder;
+import com.jsoft.magenta.util.pagination.PageRequestBuilder;
 import com.jsoft.magenta.util.WordFormatter;
 import java.time.LocalDate;
 import java.util.List;

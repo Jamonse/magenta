@@ -4,7 +4,7 @@ import com.jsoft.magenta.events.workplans.WorkPlanCreationEvent;
 import com.jsoft.magenta.exceptions.NoSuchElementException;
 import com.jsoft.magenta.security.SecurityService;
 import com.jsoft.magenta.users.User;
-import com.jsoft.magenta.util.PageRequestBuilder;
+import com.jsoft.magenta.util.pagination.PageRequestBuilder;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.util.List;

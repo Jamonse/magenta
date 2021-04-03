@@ -7,7 +7,7 @@ import com.jsoft.magenta.security.model.Privilege;
 import com.jsoft.magenta.security.model.PrivilegesGroup;
 import com.jsoft.magenta.security.model.PrivilegesGroupSearchResult;
 import com.jsoft.magenta.util.AppDefaults;
-import com.jsoft.magenta.util.PageRequestBuilder;
+import com.jsoft.magenta.util.pagination.PageRequestBuilder;
 import java.util.List;
 import java.util.Set;
 import javax.transaction.Transactional;

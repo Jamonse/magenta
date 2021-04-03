@@ -4,7 +4,7 @@ import com.jsoft.magenta.exceptions.NoSuchElementException;
 import com.jsoft.magenta.exceptions.ReminderException;
 import com.jsoft.magenta.exceptions.UpdateViolationException;
 import com.jsoft.magenta.security.SecurityService;
-import com.jsoft.magenta.util.PageRequestBuilder;
+import com.jsoft.magenta.util.pagination.PageRequestBuilder;
 import java.time.LocalDateTime;
 import java.util.List;
 import javax.transaction.Transactional;

@@ -23,7 +23,7 @@ import com.jsoft.magenta.subprojects.SubProject;
 import com.jsoft.magenta.subprojects.SubProjectSearchResult;
 import com.jsoft.magenta.users.User;
 import com.jsoft.magenta.util.AppDefaults;
-import com.jsoft.magenta.util.PageRequestBuilder;
+import com.jsoft.magenta.util.pagination.PageRequestBuilder;
 import java.time.LocalDate;
 import java.util.List;
 import javax.transaction.Transactional;

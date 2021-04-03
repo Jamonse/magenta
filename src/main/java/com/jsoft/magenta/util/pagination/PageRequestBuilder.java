@@ -1,4 +1,4 @@
-package com.jsoft.magenta.util;
+package com.jsoft.magenta.util.pagination;
 
 import java.util.List;
 import org.springframework.data.domain.PageRequest;

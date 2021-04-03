@@ -8,6 +8,7 @@ import static com.jsoft.magenta.util.AppDefaults.PAGE_SIZE;
 import com.jsoft.magenta.events.posts.PostReactiveEvent;
 import com.jsoft.magenta.security.annotations.posts.PostWritePermission;
 import com.jsoft.magenta.util.AppDefaults;
+import com.jsoft.magenta.util.pagination.PageResponse;
 import com.jsoft.magenta.util.validation.annotations.ValidContent;
 import com.jsoft.magenta.util.validation.annotations.ValidTitle;
 import java.util.List;
@@ -70,7 +71,7 @@ public class PostController {
   }
 
   @GetMapping
-  public Page<Post> getAllPosts(
+  public PageResponse<Post> getAllPosts(
       @RequestParam(required = false, defaultValue = PAGE_INDEX) int pageIndex,
       @RequestParam(required = false, defaultValue = PAGE_SIZE) int pageSize,
       @RequestParam(required = false, defaultValue = DEFAULT_POST_SORT) String sortBy,

@@ -2,6 +2,7 @@ package com.jsoft.magenta.posts;
 
 import com.jsoft.magenta.util.AppConstants;
 import com.jsoft.magenta.util.Stringify;
+import com.jsoft.magenta.util.pagination.PageResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -240,10 +241,11 @@ public class PostControllerTest {
       Sort sort = Sort.by("title").ascending();
       PageRequest pageRequest = PageRequest.of(0, 5, sort);
       List<Post> posts = List.of(new Post(), new Post());
-      Page<Post> results = new PageImpl<>(posts, pageRequest, posts.size());
+      Page<Post> postsResult = new PageImpl<>(posts, pageRequest, 2);
+      PageResponse<Post> postsResponse = new PageResponse<>(posts, posts.size(), pageRequest);
 
       Mockito.when(postService.getAllPosts(0, 5, "title", true))
-          .thenReturn(results);
+          .thenReturn(postsResponse);
 
       mockMvc.perform(MockMvcRequestBuilders.get(Stringify.BASE_URL + "posts")
           .queryParam("pageIndex", "0")

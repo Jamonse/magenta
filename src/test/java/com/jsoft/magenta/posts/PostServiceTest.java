@@ -7,6 +7,7 @@ import com.jsoft.magenta.events.posts.PostReactiveEvent;
 import com.jsoft.magenta.events.reactive.ReactiveEventType;
 import com.jsoft.magenta.security.SecurityService;
 import com.jsoft.magenta.util.WordFormatter;
+import com.jsoft.magenta.util.pagination.PageResponse;
 import java.util.List;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
@@ -156,16 +157,16 @@ public class PostServiceTest {
     Sort sort = Sort.by("title").ascending();
     PageRequest pageRequest = PageRequest.of(0, 5, sort);
     List<Post> postsList = List.of(new Post(), new Post());
-    Page<Post> posts = new PageImpl<>(postsList, pageRequest, 2);
+    Page<Post> postsResult = new PageImpl<>(postsList, pageRequest, 2);
+    PageResponse<Post> posts = new PageResponse<>(postsList, postsList.size(), pageRequest);
 
-    Mockito.when(postRepository.findAll(pageRequest)).thenReturn(posts);
+    Mockito.when(postRepository.findAll(pageRequest)).thenReturn(postsResult);
 
-    Page<Post> results = this.postService.getAllPosts(0, 5, "title", true);
+    PageResponse<Post> results = this.postService.getAllPosts(0, 5, "title", true);
 
     Assertions.assertThat(results)
-        .isNotEmpty()
-        .hasSameSizeAs(posts)
-        .containsAll(postsList);
+        .extracting("content")
+        .isNotNull();
 
     verify(postRepository).findAll(pageRequest);
   }

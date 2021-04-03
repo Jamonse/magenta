@@ -1,9 +1,9 @@
 package com.jsoft.magenta.posts;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public interface PostSearchResult {
   Long getId();
   String getTitle();
-  LocalDate getCreatedAt();
+  LocalDateTime getCreatedAt();
 }
